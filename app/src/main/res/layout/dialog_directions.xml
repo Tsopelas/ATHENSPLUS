@@ -1,25 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
     android:background="@drawable/dialog_bg">
+
+    <!-- Header with Summary -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="#6200EE">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Transit Directions"
-        android:textSize="20sp"
+            android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#2D3550"
+            android:textColor="#FFFFFF"
         android:layout_marginBottom="16dp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_total_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:text="Total Duration: 25 min" />
+
+                <TextView
+                    android:id="@+id/text_total_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="#E0E0E0"
+                    android:text="Distance: 3.2 km"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_route_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fastest Route"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/route_type_badge"
+                android:padding="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Route Steps -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:maxHeight="400dp">
+        android:maxHeight="400dp"
+        android:padding="16dp"
+        android:background="#F8F9FA">
 
         <LinearLayout
             android:id="@+id/instructions_container"
@@ -28,13 +81,37 @@
             android:orientation="vertical" />
     </ScrollView>
 
-    <Button
-        android:id="@+id/button_close"
+    <!-- Bottom Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#F8F9FA">
+
+        <Button
+            android:id="@+id/button_show_all_buses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show All Available Buses"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#FFFFFF"
+            android:textColor="#6200EE"
+            android:padding="16dp"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+        <Button
+            android:id="@+id/button_close"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Close"
         android:backgroundTint="#6200EE"
         android:textColor="#FFFFFF"
-        android:layout_marginTop="16dp" />
+            android:padding="16dp"
+            android:textSize="16sp"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
 
 </LinearLayout> 

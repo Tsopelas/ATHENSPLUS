@@ -7,4 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="accent">#FF4081</color>
+
+    <!-- Bus Status Colors -->
+    <color name="status_on_time">#4CAF50</color>  <!-- Green -->
+    <color name="status_delayed">#FFC107</color>  <!-- Amber -->
+    <color name="status_arriving">#2196F3</color> <!-- Blue -->
+    <color name="status_unknown">#9E9E9E</color>  <!-- Grey -->
+
+    <color name="error_red">#FF5252</color>
+    <color name="gray">#757575</color>
 </resources>

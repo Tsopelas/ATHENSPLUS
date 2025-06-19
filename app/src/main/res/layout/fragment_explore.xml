@@ -8,46 +8,66 @@
     android:padding="16dp">
 
     <!-- Search Bar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_search"
+                android:tint="#888888"
+                android:contentDescription="Search" />
+
+            <EditText
+                android:id="@+id/edit_search_explore"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="What are you looking for?"
+                android:textSize="16sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:inputType="text" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Trip Ideas Section -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:background="@drawable/search_bar_shadow"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:layout_marginBottom="24dp"
-        android:elevation="0dp">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_search"
-            android:tint="#888888"
-            android:contentDescription="Search" />
-
-        <EditText
-            android:id="@+id/edit_search_explore"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:hint="What are you looking for?"
-            android:textSize="16sp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:inputType="text" />
-    </LinearLayout>
-
-    <!-- Trip Idea Title -->
-    <TextView
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Trip Idea"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#2D3550"
-        android:layout_marginBottom="12dp" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Trip Ideas"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#2D3550" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="See All"
+            android:textColor="#4285F4"
+            android:textSize="14sp"
+            android:padding="8dp" />
+    </LinearLayout>
 
     <!-- Horizontal RecyclerView for Trip Cards -->
     <androidx.recyclerview.widget.RecyclerView
@@ -55,19 +75,36 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:orientation="horizontal"
-        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:layout_marginBottom="24dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-    <!-- My Schedule Title -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- My Schedule Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="My Schedule"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#2D3550"
-        android:layout_marginBottom="12dp" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Schedule"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#2D3550" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:textColor="#4285F4"
+            android:textSize="14sp"
+            android:padding="8dp" />
+    </LinearLayout>
 
     <!-- Vertical RecyclerView for Schedule -->
     <androidx.recyclerview.widget.RecyclerView
@@ -75,7 +112,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 </LinearLayout> 

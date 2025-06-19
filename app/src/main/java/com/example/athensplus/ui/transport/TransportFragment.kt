@@ -1,30 +1,51 @@
 package com.example.athensplus.ui.transport
 
+import android.Manifest
 import android.app.Dialog
-import android.location.Address
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.athensplus.R
 import com.example.athensplus.databinding.FragmentTransportBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,173 +56,899 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.util.Locale
-import kotlin.math.*
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
+
+data class RouteStep(
+    val startLocation: LatLng,
+    val endLocation: LatLng,
+    val instructions: String,
+    val distance: String,
+    val duration: String
+)
+
+data class TransitInstruction(
+    val type: String,
+    val details: String,
+    val duration: String
+)
 
 class TransportFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentTransportBinding? = null
     private val binding get() = _binding!!
+    
     private var googleMap: GoogleMap? = null
     private var directionsButton: Button? = null
     private var currentTransitInstructions: List<TransitStep> = emptyList()
     private lateinit var geocoder: Geocoder
-    
-    // Google API Key - same as used for Maps
     private val apiKey = "AIzaSyAbCaNy9okak33ITCpb1MWR_Idu6wqQq14"
+    private var fusedLocationClient: FusedLocationProviderClient? = null
+    private var locationPermissionGranted = false
+    private var selectedLocation: LatLng? = null
+    private var currentMarkers: MutableList<Marker> = mutableListOf()
+    private var selectedMode: String = "Metro"
+    private var selectedLine: String = "All Lines"
+    private var selectedStartStation: MetroStation? = null
+    private var selectedEndStation: MetroStation? = null
+    private var startStationMarker: Marker? = null
+    private var endStationMarker: Marker? = null
+
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
+    }
 
     data class TransitStep(
-        val mode: String, // "WALKING", "BUS", "METRO", "TRANSIT"
+        val mode: String, // "WALKING", "BUS", "METRO", "TRAM"
         val instruction: String,
         val duration: String,
-        val line: String? = null
+        val line: String? = null,
+        val departureStop: String? = null,
+        val arrivalStop: String? = null,
+        val nextArrival: String? = null,
+        val walkingDistance: String? = null
     )
 
     data class MetroStation(
-        val name: String,
+        val nameGreek: String,
+        val nameEnglish: String,
         val coords: LatLng,
-        val lines: List<String> // M1, M2, M3
+        val isInterchange: Boolean = false
     )
 
-    // Real Athens Metro Stations with actual coordinates and lines
-    private val metroStations = listOf(
-        // Line 1 (Green) - Piraeus to Kifissia
-        MetroStation("Piraeus", LatLng(37.9420, 23.6425), listOf("M1")),
-        MetroStation("Faliro", LatLng(37.9475, 23.6580), listOf("M1")),
-        MetroStation("Kallithea", LatLng(37.9520, 23.6720), listOf("M1")),
-        MetroStation("Tavros", LatLng(37.9565, 23.6860), listOf("M1")),
-        MetroStation("Petralona", LatLng(37.9610, 23.6980), listOf("M1")),
-        MetroStation("Thiseio", LatLng(37.9750, 23.7190), listOf("M1")),
-        MetroStation("Monastiraki", LatLng(37.9755, 23.7255), listOf("M1", "M3")),
-        MetroStation("Omonia", LatLng(37.9840, 23.7280), listOf("M1", "M2")),
-        MetroStation("Victoria", LatLng(37.9908, 23.7383), listOf("M1")),
-        MetroStation("Attiki", LatLng(37.9950, 23.7450), listOf("M1")),
-        MetroStation("Agios Nikolaos", LatLng(38.0020, 23.7520), listOf("M1")),
-        MetroStation("Kato Patissia", LatLng(38.0080, 23.7580), listOf("M1")),
-        MetroStation("Agios Eleftherios", LatLng(38.0140, 23.7640), listOf("M1")),
-        MetroStation("Ano Patissia", LatLng(38.0200, 23.7700), listOf("M1")),
-        MetroStation("Perissos", LatLng(38.0260, 23.7760), listOf("M1")),
-        MetroStation("Pefkakia", LatLng(38.0320, 23.7820), listOf("M1")),
-        MetroStation("Nea Ionia", LatLng(38.0380, 23.7880), listOf("M1")),
-        MetroStation("Herakleio", LatLng(38.0440, 23.7940), listOf("M1")),
-        MetroStation("Eirini", LatLng(38.0500, 23.8000), listOf("M1")),
-        MetroStation("Neratziotissa", LatLng(38.0560, 23.8060), listOf("M1")),
-        MetroStation("Kifissia", LatLng(38.0620, 23.8120), listOf("M1")),
+    data class TramStation(
+        val name: String,
+        val coords: LatLng
+    )
 
-        // Line 2 (Red) - Anthoupoli to Elliniko
-        MetroStation("Anthoupoli", LatLng(38.0650, 23.6850), listOf("M2")),
-        MetroStation("Peristeri", LatLng(38.0580, 23.6920), listOf("M2")),
-        MetroStation("Agios Antonios", LatLng(38.0510, 23.6990), listOf("M2")),
-        MetroStation("Sepolia", LatLng(38.0440, 23.7060), listOf("M2")),
-        MetroStation("Attiki", LatLng(38.0370, 23.7130), listOf("M2")),
-        MetroStation("Larissa Station", LatLng(38.0300, 23.7200), listOf("M2")),
-        MetroStation("Metaxourghio", LatLng(38.0230, 23.7270), listOf("M2")),
-        // Omonia already defined above
-        MetroStation("Panepistimio", LatLng(37.9770, 23.7340), listOf("M2")),
-        MetroStation("Syntagma", LatLng(37.9755, 23.7348), listOf("M2", "M3")),
-        MetroStation("Acropoli", LatLng(37.9715, 23.7267), listOf("M2")),
-        MetroStation("Sygrou-Fix", LatLng(37.9520, 23.7240), listOf("M2")),
-        MetroStation("Neos Kosmos", LatLng(37.9450, 23.7280), listOf("M2")),
-        MetroStation("Agios Ioannis", LatLng(37.9380, 23.7320), listOf("M2")),
-        MetroStation("Dafni", LatLng(37.9310, 23.7360), listOf("M2")),
-        MetroStation("Agios Dimitrios", LatLng(37.9240, 23.7400), listOf("M2")),
-        MetroStation("Ilioupoli", LatLng(37.9170, 23.7440), listOf("M2")),
-        MetroStation("Alimos", LatLng(37.9100, 23.7480), listOf("M2")),
-        MetroStation("Argyroupoli", LatLng(37.9030, 23.7520), listOf("M2")),
-        MetroStation("Elliniko", LatLng(37.8960, 23.7560), listOf("M2")),
+    data class BusStop(
+        val name: String,
+        val coords: LatLng
+    )
 
-        // Line 3 (Blue) - Nikaia to Airport
-        MetroStation("Nikaia", LatLng(37.9640, 23.6440), listOf("M3")),
-        MetroStation("Korydallos", LatLng(37.9680, 23.6520), listOf("M3")),
-        MetroStation("Agia Varvara", LatLng(37.9720, 23.6600), listOf("M3")),
-        MetroStation("Agia Marina", LatLng(37.9760, 23.6680), listOf("M3")),
-        MetroStation("Eleonas", LatLng(37.9800, 23.6760), listOf("M3")),
-        MetroStation("Kerameikos", LatLng(37.9780, 23.7080), listOf("M3")),
-        // Monastiraki already defined above
-        // Syntagma already defined above
-        MetroStation("Evangelismos", LatLng(37.9794, 23.7416), listOf("M3")),
-        MetroStation("Megaro Moussikis", LatLng(37.9833, 23.7500), listOf("M3")),
-        MetroStation("Ambelokipi", LatLng(37.9872, 23.7583), listOf("M3")),
-        MetroStation("Panormou", LatLng(37.9911, 23.7667), listOf("M3")),
-        MetroStation("Katehaki", LatLng(37.9950, 23.7750), listOf("M3")),
-        MetroStation("Ethniki Amyna", LatLng(37.9989, 23.7833), listOf("M3")),
-        MetroStation("Holargos", LatLng(38.0028, 23.7917), listOf("M3")),
-        MetroStation("Nomismatokopio", LatLng(38.0067, 23.8000), listOf("M3")),
-        MetroStation("Agia Paraskevi", LatLng(38.0106, 23.8083), listOf("M3")),
-        MetroStation("Halandri", LatLng(38.0145, 23.8167), listOf("M3")),
-        MetroStation("Doukissis Plakentias", LatLng(38.0184, 23.8250), listOf("M3")),
-        MetroStation("Airport", LatLng(37.9364, 23.9445), listOf("M3"))
+    // Official Athens Metro lines data (partial, for brevity; full list should be used in production)
+    val metroLine1 = listOf(
+        MetroStation("Κηφισιά", "Kifisia", LatLng(38.07373290671199, 23.808305136483852)),
+        MetroStation("ΚΑΤ", "KAT", LatLng(38.06591837925154, 23.804017818766344)),
+        MetroStation("Μαρούσι", "Marousi", LatLng(38.05619686161689, 23.80503609761142)),
+        MetroStation("Νερατζιώτισσα", "Neratziotissa", LatLng(38.04484194992877, 23.792862889776107)),
+        MetroStation("Ειρήνη", "Eirini", LatLng(38.04330588326173, 23.783400691393396)),
+        MetroStation("Ηράκλειο", "Irakleio", LatLng(38.0462292394805, 23.76607388463279)),
+        MetroStation("Πεύκα", "Pefkakia", LatLng(38.037165103011894, 23.75008681005388)),
+        MetroStation("Περισσός", "Perissos", LatLng(38.03266821407559, 23.744712039673153)),
+        MetroStation("Άνω Πατήσια", "Ano Patisia", LatLng(38.02382144738529, 23.736039815065507)),
+        MetroStation("Άγιος Ελευθέριος", "Agios Eleftherios", LatLng(38.02012753169261, 23.731728912700053)),
+        MetroStation("Κάτω Πατήσια", "Kato Patisia", LatLng(38.01160376209793, 23.728755698511065)),
+        MetroStation("Άγιος Νικόλαος", "Agios Nikolaos", LatLng(38.00692137614022, 23.72773410379398)),
+        MetroStation("Αττική", "Attiki", LatLng(37.99931374537682, 23.722117655786956), isInterchange = true),
+        MetroStation("Βικτώρια", "Victoria", LatLng(37.993070240716015, 23.730372320299832)),
+        MetroStation("Ομόνοια", "Omonia", LatLng(37.98420036534532, 23.728709865494178), isInterchange = true),
+        MetroStation("Μοναστηράκι", "Monastiraki", LatLng(37.976114278617565, 23.725633963810413), isInterchange = true),
+        MetroStation("Θησείο", "Thiseio", LatLng(37.97673744990198, 23.72063841824465)),
+        MetroStation("Πετράλωνα", "Petralona", LatLng(37.9686355751221, 23.709296406789832)),
+        MetroStation("Ταύρος", "Tavros", LatLng(37.962439214458016, 23.703328766874794)),
+        MetroStation("Καλλιθέα", "Kallithea", LatLng(37.96038993809849, 23.69735115718288)),
+        MetroStation("Μοσχάτο", "Moschato", LatLng(37.95503411820899, 23.679616546345812)),
+        MetroStation("Νέο Φάληρο", "Neo Faliro", LatLng(37.94503590091905, 23.665229397093032)),
+        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94806117043078, 23.643235606587858))
+    )
+
+    val metroLine2 = listOf(
+        MetroStation("Ελληνικό", "Elliniko", LatLng(37.892649697635335, 23.74758851630924)),
+        MetroStation("Αργυρούπολη", "Argyroupoli", LatLng(37.90312049238752, 23.745938957712156)),
+        MetroStation("Άλιμος", "Alimos", LatLng(37.91813201276993, 23.744191423118377)),
+        MetroStation("Ηλιούπολη", "Ilioupoli", LatLng(37.92980661834609, 23.744523084603305)),
+        MetroStation("Άγιος Δημήτριος", "Agios Dimitrios", LatLng(37.94057253079489, 23.740736185819)),
+        MetroStation("Δάφνη", "Dafni", LatLng(37.949211541316096, 23.737265287277935)),
+        MetroStation("Άγιος Ιωάννης", "Agios Ioannis", LatLng(37.95663952647803, 23.734630922893803)),
+        MetroStation("Νέος Κόσμος", "Neos Kosmos", LatLng(37.957596771154535, 23.728486607161212)),
+        MetroStation("Συγγρού-Φιξ", "Syngrou-Fix", LatLng(37.964075081691085, 23.726455951266303)),
+        MetroStation("Ακρόπολη", "Acropolis", LatLng(37.968791278421335, 23.729646981926912)),
+        MetroStation("Σύνταγμα", "Syntagma", LatLng(37.97568408036298, 23.73535892766162), isInterchange = true),
+        MetroStation("Πανεπιστήμιο", "Panepistimio", LatLng(37.98037292954861, 23.73307575719024)),
+        MetroStation("Ομόνοια", "Omonia", LatLng(37.98420036534532, 23.728709865494178), isInterchange = true),
+        MetroStation("Μεταξουργείο", "Metaxourgeio", LatLng(37.986246898920776, 23.721171206907755)),
+        MetroStation("Σταθμός Λαρίσης", "Larissa Station", LatLng(37.99199512016312, 23.721114088402935)),
+        MetroStation("Αττική", "Attiki", LatLng(37.99931374537682, 23.722117655786956), isInterchange = true),
+        MetroStation("Σεπόλια", "Sepolia", LatLng(38.0026582025189, 23.713618531964784)),
+        MetroStation("Άγιος Αντώνιος", "Agios Antonios", LatLng(38.00668188937669, 23.699473817226718)),
+        MetroStation("Περιστέρι", "Peristeri", LatLng(38.01316415384895, 23.695482322472614)),
+        MetroStation("Ανθούπολη", "Anthoupoli", LatLng(38.017089551895666, 23.691134987138266))
+    )
+
+    val metroLine3 = listOf(
+        MetroStation("Δημοτικό Θέατρο", "Dimotiko Theatro", LatLng(37.942987138386535, 23.64761813894496)),
+        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94826317831643, 23.643233750670223)),
+        MetroStation("Μανιάτικα", "Maniatika", LatLng(37.959568185347536, 23.63969873316419)),
+        MetroStation("Νίκαια", "Nikaia", LatLng(37.965641240168104, 23.647316509152287)),
+        MetroStation("Κορυδαλλός", "Korydallos", LatLng(37.97702502617706, 23.65035476643652)),
+        MetroStation("Αγία Βαρβάρα", "Agia Varvara", LatLng(37.9900618690817, 23.65932429578851)),
+        MetroStation("Αγία Μαρίνα", "Agia Marina", LatLng(37.99722077049423, 23.667344819154156)),
+        MetroStation("Αιγάλεω", "Aigaleo", LatLng(37.99197010485269, 23.68176929794242)),
+        MetroStation("Ελαιώνας", "Elaionas", LatLng(37.98787205461006, 23.69420027290326)),
+        MetroStation("Κεραμεικός", "Kerameikos", LatLng(37.97855799587991, 23.711527839122848)),
+        MetroStation("Μοναστηράκι", "Monastiraki", LatLng(37.976114278617565, 23.725633963810413), isInterchange = true),
+        MetroStation("Σύνταγμα", "Syntagma", LatLng(37.97568408036298, 23.73535892766162), isInterchange = true),
+        MetroStation("Ευαγγελισμός", "Evangelismos", LatLng(37.97644961902063, 23.747314144474466)),
+        MetroStation("Μέγαρο Μουσικής", "Megaro Mousikis", LatLng(37.979289172647675, 23.75291481651404)),
+        MetroStation("Αμπελόκηποι", "Ambelokipi", LatLng(37.98736656071125, 23.75703357239967)),
+        MetroStation("Πανόρμου", "Panormou", LatLng(37.99324246685057, 23.763372268004527)),
+        MetroStation("Κατεχάκη", "Katehaki", LatLng(37.99370654358875, 23.776255284953653)),
+        MetroStation("Εθνική Άμυνα", "Ethniki Amyna", LatLng(38.00031275851294, 23.78568239514545)),
+        MetroStation("Χολαργός", "Cholargos", LatLng(38.00456995086606, 23.794701985734786)),
+        MetroStation("Νομισματοκοπείο", "Nomismatokopeio", LatLng(38.00975632474917, 23.805353216074298)),
+        MetroStation("Αγία Παρασκευή", "Agia Paraskevi", LatLng(38.01773132519414, 23.81262417681338)),
+        MetroStation("Χαλάνδρι", "Chalandri", LatLng(38.021437720256365, 23.82139210120635)),
+        MetroStation("Δουκίσσης Πλακεντίας", "Doukissis Plakentias", LatLng(38.024189316487046, 23.833724220891263)),
+        MetroStation("Παλλήνη", "Pallini", LatLng(38.00601053761855, 23.869545425355156)),
+        MetroStation("Παιανία-Κάντζα", "Paiania-Kantza", LatLng(37.98417062046167, 23.869756642430122)),
+        MetroStation("Κορωπί", "Koropi", LatLng(37.9131505428903, 23.8958794023863)),
+        MetroStation("Αεροδρόμιο", "Airport", LatLng(37.936942775310406, 23.944783037869243))
+    )
+
+    private val tramStations = listOf(
+        TramStation("Syntagma", LatLng(37.9755, 23.7348)),
+        TramStation("Zappeio", LatLng(37.9717, 23.7372)),
+        TramStation("Neos Kosmos", LatLng(37.9578, 23.7289)),
+        TramStation("Agios Ioannis", LatLng(37.9539, 23.7250)),
+        TramStation("Dafni", LatLng(37.9500, 23.7211)),
+        TramStation("Agios Dimitrios", LatLng(37.9461, 23.7172)),
+        TramStation("Alimos", LatLng(37.9422, 23.7133)),
+        TramStation("Elliniko", LatLng(37.9383, 23.7094)),
+        TramStation("Asklipio Voulas", LatLng(37.9344, 23.7055)),
+        TramStation("Voula", LatLng(37.9306, 23.7017))
+    )
+
+    private val busStops = listOf(
+        BusStop("Syntagma", LatLng(37.9755, 23.7348)),
+        BusStop("Omonia", LatLng(37.9833, 23.7283)),
+        BusStop("Monastiraki", LatLng(37.9767, 23.7250)),
+        BusStop("Thissio", LatLng(37.9767, 23.7217)),
+        BusStop("Kerameikos", LatLng(37.9767, 23.7183)),
+        BusStop("Gazi", LatLng(37.9767, 23.7150)),
+        BusStop("Kallithea", LatLng(37.9550, 23.7000)),
+        BusStop("Nea Smyrni", LatLng(37.9450, 23.7100)),
+        BusStop("Palaio Faliro", LatLng(37.9350, 23.7000)),
+        BusStop("Glyfada", LatLng(37.8650, 23.7500))
+    )
+
+    val line3CurvedPoints = listOf(
+        LatLng(37.942987138386535, 23.64761813894496), // Dimotiko Theatro
+        LatLng(37.945, 23.645), // control point
+        LatLng(37.94826317831643, 23.643233750670223), // Pireus
+        LatLng(37.952, 23.641), // control point
+        LatLng(37.959568185347536, 23.63969873316419), // Maniatika
+        LatLng(37.962, 23.643), // control point
+        LatLng(37.965641240168104, 23.647316509152287), // Nikaia
+        LatLng(37.971, 23.649), // control point
+        LatLng(37.97702502617706, 23.65035476643652), // Koridalos
+        LatLng(37.984, 23.654), // control point
+        LatLng(37.9900618690817, 23.65932429578851), // Agia Barbara
+        LatLng(37.994, 23.663), // control point
+        LatLng(37.99722077049423, 23.667344819154156), // Agia Marina
+        LatLng(37.993, 23.674), // control point
+        LatLng(37.99197010485269, 23.68176929794242), // Aigaleo
+        LatLng(37.990, 23.688), // control point
+        LatLng(37.98787205461006, 23.69420027290326), // Elaionas
+        LatLng(37.983, 23.703), // control point
+        LatLng(37.97855799587991, 23.711527839122848), // Keramikos
+        LatLng(37.977, 23.718), // control point
+        LatLng(37.976114278617565, 23.725633963810413), // Monastiraki
+        LatLng(37.976, 23.730), // control point
+        LatLng(37.97568408036298, 23.73535892766162), // Syntagma
+        LatLng(37.976, 23.741), // control point
+        LatLng(37.97644961902063, 23.747314144474466), // Evangelismos
+        LatLng(37.978, 23.750), // control point
+        LatLng(37.979289172647675, 23.75291481651404), // Megaro Mousikis
+        LatLng(37.983, 23.754), // control point
+        LatLng(37.98736656071125, 23.75703357239967), // Ameplokipoi
+        LatLng(37.990, 23.760), // control point
+        LatLng(37.99324246685057, 23.763372268004527), // Panormou
+        LatLng(37.993, 23.770), // control point
+        LatLng(37.99370654358875, 23.776255284953653), // Katexaki
+        LatLng(37.997, 23.781), // control point
+        LatLng(38.00031275851294, 23.78568239514545), // Ethniki Amyna
+        LatLng(38.004, 23.790), // control point
+        LatLng(38.00456995086606, 23.794701985734786), // Holargos
+        LatLng(38.007, 23.800), // control point
+        LatLng(38.00975632474917, 23.805353216074298), // Nomismatokopeio
+        LatLng(38.013, 23.809), // control point
+        LatLng(38.01773132519414, 23.81262417681338), // Agia Paraskevi
+        LatLng(38.019, 23.817), // control point
+        LatLng(38.021437720256365, 23.82139210120635), // Xalandri
+        LatLng(38.023, 23.827), // control point
+        LatLng(38.024189316487046, 23.833724220891263), // Doukisis Plakentias
+        LatLng(38.015, 23.851), // control point
+        LatLng(38.00601053761855, 23.869545425355156), // Pallini
+        LatLng(37.995, 23.869), // control point
+        LatLng(37.98417062046167, 23.869756642430122), // Paiania-Katza
+        LatLng(37.950, 23.883), // control point
+        LatLng(37.9131505428903, 23.8958794023863), // Koropi
+        LatLng(37.925, 23.920), // control point
+        LatLng(37.936942775310406, 23.944783037869243) // Airport
+    )
+
+    val line2CurvedPoints = listOf(
+        LatLng(37.892649697635335, 23.74758851630924), // Elliniko
+        LatLng(37.898, 23.747), // control point
+        LatLng(37.90312049238752, 23.745938957712156), // Argyroupoli
+        LatLng(37.911, 23.745), // control point
+        LatLng(37.91813201276993, 23.744191423118377), // Alimos
+        LatLng(37.924, 23.744), // control point
+        LatLng(37.92980661834609, 23.744523084603305), // Hlioupoli
+        LatLng(37.935, 23.742), // control point
+        LatLng(37.94057253079489, 23.740736185819), // Agios Dimitrios
+        LatLng(37.945, 23.739), // control point
+        LatLng(37.949211541316096, 23.737265287277935), // Dafni
+        LatLng(37.953, 23.736), // control point
+        LatLng(37.95663952647803, 23.734630922893803), // Agios Ioanis
+        LatLng(37.957, 23.731), // control point
+        LatLng(37.957596771154535, 23.728486607161212), // Neos Kosmos
+        LatLng(37.961, 23.727), // control point
+        LatLng(37.964075081691085, 23.726455951266303), // Sugrou-Fix
+        LatLng(37.966, 23.728), // control point
+        LatLng(37.968791278421335, 23.729646981926912), // Akropoli
+        LatLng(37.972, 23.732), // control point
+        LatLng(37.97568408036298, 23.73535892766162), // Syntagma
+        LatLng(37.978, 23.734), // control point
+        LatLng(37.98037292954861, 23.73307575719024), // Panepistimio
+        LatLng(37.982, 23.731), // control point
+        LatLng(37.98420036534532, 23.728709865494178), // Omonoia
+        LatLng(37.985, 23.725), // control point
+        LatLng(37.986246898920776, 23.721171206907755), // Metaksourgeio
+        LatLng(37.989, 23.721), // control point
+        LatLng(37.99199512016312, 23.721114088402935), // Stathmos Larisis
+        LatLng(37.995, 23.721), // control point
+        LatLng(37.99931374537682, 23.722117655786956), // Attiki
+        LatLng(38.001, 23.718), // control point
+        LatLng(38.0026582025189, 23.713618531964784), // Sepolia
+        LatLng(38.004, 23.706), // control point
+        LatLng(38.00668188937669, 23.699473817226718), // Agios Antonios
+        LatLng(38.010, 23.697), // control point
+        LatLng(38.01316415384895, 23.695482322472614), // Peristeri
+        LatLng(38.015, 23.693), // control point
+        LatLng(38.017089551895666, 23.691134987138266) // Anthoupoli
+    )
+
+    val line1CurvedPoints = listOf(
+        LatLng(38.07373290671199, 23.808305136483852), // Kifisia
+        LatLng(38.070, 23.806), // control point
+        LatLng(38.06591837925154, 23.804017818766344), // KAT
+        LatLng(38.061, 23.804), // control point
+        LatLng(38.05619686161689, 23.80503609761142), // Marousi
+        LatLng(38.050, 23.799), // control point
+        LatLng(38.04484194992877, 23.792862889776107), // Neratziotisa
+        LatLng(38.043, 23.788), // control point
+        LatLng(38.04330588326173, 23.783400691393396), // Eirini
+        LatLng(38.045, 23.775), // control point
+        LatLng(38.0462292394805, 23.76607388463279), // Hrakleio
+        LatLng(38.042, 23.755), // control point
+        LatLng(38.037165103011894, 23.75008681005388), // Peukakia
+        LatLng(38.035, 23.747), // control point
+        LatLng(38.03266821407559, 23.744712039673153), // Perissos
+        LatLng(38.028, 23.740), // control point
+        LatLng(38.02382144738529, 23.736039815065507), // Ano Patisia
+        LatLng(38.022, 23.734), // control point
+        LatLng(38.02012753169261, 23.731728912700053), // Agios Eleftherios
+        LatLng(38.016, 23.730), // control point
+        LatLng(38.01160376209793, 23.728755698511065), // Kato Patisia
+        LatLng(38.009, 23.728), // control point
+        LatLng(38.00692137614022, 23.72773410379398), // Agios Nikolaos
+        LatLng(38.003, 23.725), // control point
+        LatLng(37.99931374537682, 23.722117655786956), // Attiki
+        LatLng(37.996, 23.726), // control point
+        LatLng(37.993070240716015, 23.730372320299832), // Victoria
+        LatLng(37.988, 23.729), // control point
+        LatLng(37.98420036534532, 23.728709865494178), // Omonoia
+        LatLng(37.980, 23.727), // control point
+        LatLng(37.976114278617565, 23.725633963810413), // Monastiraki
+        LatLng(37.976, 23.723), // control point
+        LatLng(37.97673744990198, 23.72063841824465), // Thiseio
+        LatLng(37.972, 23.715), // control point
+        LatLng(37.9686355751221, 23.709296406789832), // Petralona
+        LatLng(37.965, 23.706), // control point
+        LatLng(37.962439214458016, 23.703328766874794), // Tavros
+        LatLng(37.961, 23.700), // control point
+        LatLng(37.96038993809849, 23.69735115718288), // Kallithea
+        LatLng(37.957, 23.688), // control point
+        LatLng(37.95503411820899, 23.679616546345812), // Moschato
+        LatLng(37.950, 23.672), // control point
+        LatLng(37.94503590091905, 23.665229397093032), // Neo Faliro
+        LatLng(37.947, 23.654), // control point
+        LatLng(37.94806117043078, 23.643235606587858) // Piraeus
     )
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         _binding = FragmentTransportBinding.inflate(inflater, container, false)
-        geocoder = Geocoder(requireContext(), Locale.getDefault())
+
+        try {
+            // Initialize MapView
+            binding.mapView.onCreate(savedInstanceState)
+            // Initialize location services
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+            // Get location permission
+            getLocationPermission()
+            // Initialize geocoder
+            geocoder = Geocoder(requireContext(), Locale.getDefault())
+            // Setup selection controls
+            setupSelectionControls()
+            Log.d("TransportFragment", "Fragment view created successfully")
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error in onCreateView", e)
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.transport_map) as? SupportMapFragment
-        mapFragment?.getMapAsync(this)
-        
+        binding.mapView.getMapAsync(this)
         // Set up directions button click listener
         binding.buttonDirections.setOnClickListener {
             showTransitDirections()
         }
+        // Request location permission
+        getLocationPermission()
+
+        // Set up mode picker button
+        binding.buttonModePicker.setOnClickListener {
+            showModePickerMenu()
+        }
+        // Set up line picker button
+        binding.buttonLinePicker.setOnClickListener {
+            showLinePickerMenu()
+        }
     }
 
-    override fun onMapReady(map: GoogleMap) {
-        googleMap = map
+    // Add MapView lifecycle methods
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapView.onPause()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        hideDirectionsButton()
+        binding.mapView.onDestroy()
+        _binding = null
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        binding.mapView.onLowMemory()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
+    }
+
+    private fun getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            locationPermissionGranted = true
+            updateLocationUI()
+            getDeviceLocation()
+        } else {
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        locationPermissionGranted = false
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    locationPermissionGranted = true
+                    updateLocationUI()
+                    getDeviceLocation()
+                }
+            }
+        }
+    }
+
+    private fun updateLocationUI() {
+        if (googleMap == null) {
+            return
+        }
+        try {
+            if (locationPermissionGranted) {
+                googleMap?.isMyLocationEnabled = true
+                googleMap?.uiSettings?.isMyLocationButtonEnabled = true
+            } else {
+                googleMap?.isMyLocationEnabled = false
+                googleMap?.uiSettings?.isMyLocationButtonEnabled = false
+            }
+        } catch (e: SecurityException) {
+            Log.e("TransportFragment", "Error updating location UI", e)
+        }
+    }
+
+    private fun getDeviceLocation() {
+        try {
+            if (locationPermissionGranted) {
+                fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val userLatLng = LatLng(location.latitude, location.longitude)
+                        googleMap?.animateCamera(
+                            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 15f)
+                        )
+                    }
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e("TransportFragment", "Error getting device location", e)
+            // Fallback to Athens center
+            val athensCenter = LatLng(37.9755, 23.7348)
+            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(athensCenter, 15f))
+        }
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        this.googleMap = googleMap
+        Log.d("TransportFragment", "Map is ready")
+
+        // Force custom map style
+        try {
+            val style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
+            googleMap.setMapStyle(style)
+            Log.d("TransportFragment", "Custom map style applied")
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error applying map style", e)
+        }
+
+        // Disable all overlays and UI elements
+        googleMap.isTrafficEnabled = false
+        googleMap.isBuildingsEnabled = true
+        googleMap.isIndoorEnabled = false
+        googleMap.uiSettings.isMapToolbarEnabled = false
+        googleMap.uiSettings.isCompassEnabled = false
+        googleMap.uiSettings.isIndoorLevelPickerEnabled = false
+        googleMap.uiSettings.isZoomControlsEnabled = false
+        googleMap.uiSettings.isMyLocationButtonEnabled = false
+        googleMap.uiSettings.isScrollGesturesEnabled = true
+        googleMap.uiSettings.isZoomGesturesEnabled = true
+        googleMap.uiSettings.isTiltGesturesEnabled = false
+        googleMap.uiSettings.isRotateGesturesEnabled = false
+
+        // Only add schematic's stations and lines based on selection
+        updateMapForSelection()
+        updateStationMarkers(googleMap.cameraPosition.zoom)
+        googleMap.setOnCameraIdleListener {
+            val zoom = googleMap.cameraPosition.zoom
+            updateStationMarkers(zoom)
+        }
+
+        // No other overlays or listeners
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true
+            googleMap?.isMyLocationEnabled = true // Show blue dot
+            moveToCurrentLocationIfPossible()
+        } else {
+            // Request permissions if not granted (optional: handle this if not already)
+        }
+
+        // Add marker click listener
+        googleMap.setOnMarkerClickListener { marker ->
+            showStationMenu(marker)
+            true
+        }
+    }
+
+    private fun moveToCurrentLocationIfPossible() {
+        if (locationPermissionGranted) {
+            try {
+                fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val userLatLng = LatLng(location.latitude, location.longitude)
+                        googleMap?.animateCamera(
+                            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 15f)
+                        )
+                    }
+                }
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun createStationCircleMarker(context: Context, outlineColor: Int, outlineWidth: Float = 12f, radius: Float = 24f, isSelected: Boolean = false): BitmapDescriptor {
+        val actualRadius = if (isSelected) radius * 1.5f else radius
+        val actualOutlineWidth = if (isSelected) outlineWidth * 1.5f else outlineWidth
+        val size = ((actualRadius + actualOutlineWidth) * 2).toInt()
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val center = size / 2f
+
+        // Draw outline
+        val outlinePaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeWidth = actualOutlineWidth
+            color = outlineColor
+        }
+        canvas.drawCircle(center, center, actualRadius, outlinePaint)
+
+        // Draw fill - black for selected stations, white for others
+        val fillPaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.FILL
+            color = if (isSelected) Color.BLACK else Color.WHITE
+        }
+        canvas.drawCircle(center, center, actualRadius - actualOutlineWidth / 2, fillPaint)
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun createStationLabel(context: Context, station: MetroStation, color: Int, textOffset: Float = 0f, isFirstOrLast: Boolean = false): BitmapDescriptor {
+        val greekText = station.nameGreek
+        val englishText = station.nameEnglish
+        val greekFontSize = 54f
+        val englishFontSize = 40f
+        val padding = 10f
+        val lineSpacing = 6f
+        val labelOffset = 10f // bring text closer to the circle
+
+        val greekTypeface = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+        val englishTypeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
+
+        val greekPaint = Paint().apply {
+            isAntiAlias = true
+            textSize = greekFontSize
+            typeface = greekTypeface
+            textAlign = Paint.Align.LEFT
+        }
+
+        val englishPaint = Paint().apply {
+            isAntiAlias = true
+            textSize = englishFontSize
+            typeface = englishTypeface
+            textAlign = Paint.Align.LEFT
+        }
+
+        val greekBounds = Rect()
+        val englishBounds = Rect()
+        greekPaint.getTextBounds(greekText, 0, greekText.length, greekBounds)
+        englishPaint.getTextBounds(englishText, 0, englishText.length, englishBounds)
+
+        val textWidth = maxOf(greekPaint.measureText(greekText), englishPaint.measureText(englishText))
+        val textHeight = greekBounds.height() + englishBounds.height() + lineSpacing
+        val width = (textWidth + 2 * padding).toInt()
+        val height = if (isFirstOrLast) {
+            (textHeight + 2 * padding).toInt()
+        } else {
+            (textHeight + 2 * padding + textOffset).toInt()
+        }
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        if (isFirstOrLast) {
+            val bgPaint = Paint().apply {
+                this.color = color
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
+            canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 24f, 24f, bgPaint)
+            greekPaint.color = Color.WHITE
+            englishPaint.color = Color.WHITE
+        } else if (station.isInterchange) {
+            greekPaint.color = Color.BLACK
+            englishPaint.color = Color.BLACK
+        } else {
+            greekPaint.color = color
+            englishPaint.color = color
+        }
+
+        // Draw Greek text
+        canvas.drawText(
+            greekText,
+            padding,
+            padding + greekBounds.height() - labelOffset,
+            greekPaint
+        )
+
+        // Draw English text
+        canvas.drawText(
+            englishText,
+            padding,
+            padding + greekBounds.height() + lineSpacing + englishBounds.height() - labelOffset,
+            englishPaint
+        )
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun updateStationMarkers(zoom: Float) {
+        currentMarkers.forEach { it.remove() }
+        currentMarkers.clear()
+        val showAll = zoom >= 12.5f
+        if (!showAll) return
+
+        // Update the map lines first
+        updateMapForSelection()
+
+        fun addMarkers(line: List<MetroStation>, color: Int) {
+            line.forEachIndexed { index, station ->
+                // Get interchange station if it exists
+                val interchangeStation = if (selectedStartStation != null && selectedEndStation != null) {
+                    findInterchangeStation(selectedStartStation!!, selectedEndStation!!)
+                } else null
+
+                // Skip stations that are not between selected start and end stations when both are selected
+                if (selectedStartStation != null && selectedEndStation != null) {
+                    val isOnRoute = if (interchangeStation != null) {
+                        // Check if station is on either segment of the route
+                        isStationBetween(station, selectedStartStation!!, interchangeStation) ||
+                        isStationBetween(station, interchangeStation, selectedEndStation!!)
+                    } else {
+                        isStationBetween(station, selectedStartStation!!, selectedEndStation!!)
+                    }
+                    if (!isOnRoute && station != selectedStartStation && station != selectedEndStation && station != interchangeStation) {
+                        return@forEachIndexed
+                    }
+                }
+
+                val isSelected = station == selectedStartStation || station == selectedEndStation || station == interchangeStation
+                val textOffset = calculateTextOffset(station, line, index)
+                val isFirstOrLast = (index == 0 || index == line.size - 1)
+                
+                val circleMarker = googleMap?.addMarker(
+                    MarkerOptions()
+                        .position(station.coords)
+                        .title("${station.nameGreek} / ${station.nameEnglish}")
+                        .icon(createStationCircleMarker(requireContext(), color, isSelected = isSelected))
+                        .anchor(0.5f, 0.5f)
+                        .zIndex(if (isSelected) 3f else if (station.isInterchange) 2f else 1f)
+                )
+                
+                circleMarker?.let { 
+                    currentMarkers.add(it)
+                    // Store references to selected station markers
+                    when (station) {
+                        selectedStartStation -> startStationMarker = it
+                        selectedEndStation -> endStationMarker = it
+                    }
+                }
+
+                val textLatLng = LatLng(
+                    station.coords.latitude,
+                    station.coords.longitude + 0.0015
+                )
+                val textMarker = googleMap?.addMarker(
+                    MarkerOptions()
+                        .position(textLatLng)
+                        .icon(createStationLabel(requireContext(), station, color, textOffset, isFirstOrLast))
+                        .anchor(0f, 0.5f)
+                        .zIndex(1f)
+                )
+                textMarker?.let { currentMarkers.add(it) }
+            }
+        }
+        when (selectedLine) {
+            "All Lines" -> {
+                addMarkers(metroLine1, Color.parseColor("#009640"))
+                addMarkers(metroLine2, Color.parseColor("#e30613"))
+                addMarkers(metroLine3, Color.parseColor("#0057a8"))
+            }
+            "Line 1" -> addMarkers(metroLine1, Color.parseColor("#009640"))
+            "Line 2" -> addMarkers(metroLine2, Color.parseColor("#e30613"))
+            "Line 3" -> addMarkers(metroLine3, Color.parseColor("#0057a8"))
+        }
+    }
+
+    private fun isStationBetween(station: MetroStation, start: MetroStation, end: MetroStation): Boolean {
+        // Find which line contains both start and end stations
+        val line = when {
+            metroLine1.contains(start) && metroLine1.contains(end) -> metroLine1
+            metroLine2.contains(start) && metroLine2.contains(end) -> metroLine2
+            metroLine3.contains(start) && metroLine3.contains(end) -> metroLine3
+            else -> return false // Stations are on different lines
+        }
+
+        val startIndex = line.indexOf(start)
+        val endIndex = line.indexOf(end)
+        val stationIndex = line.indexOf(station)
+
+        // Check if station index is between start and end indices (inclusive)
+        return if (startIndex <= endIndex) {
+            stationIndex in startIndex..endIndex
+        } else {
+            stationIndex in endIndex..startIndex
+        }
+    }
+
+    private fun calculateTextOffset(station: MetroStation, line: List<MetroStation>, index: Int): Float {
+        var offset = 0f
         
-        // Set map type to normal
-        googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+        // Check if text would overlap with metro lines
+        val isOnLine = isStationOnLine(station.coords)
+        if (isOnLine) {
+            offset += 40f // Move text below the line
+        }
         
-        // Disable traffic layer to focus on transit
-        googleMap?.isTrafficEnabled = false
+        // Check nearby stations for potential text overlap
+        val nearbyStations = mutableListOf<MetroStation>()
         
-        // Enable zoom controls
-        googleMap?.uiSettings?.isZoomControlsEnabled = true
+        // Look at previous and next stations
+        if (index > 0) nearbyStations.add(line[index - 1])
+        if (index < line.size - 1) nearbyStations.add(line[index + 1])
         
-        // Configure map settings
-        googleMap?.uiSettings?.isMapToolbarEnabled = false
+        // Calculate if text might overlap with nearby stations
+        nearbyStations.forEach { nearby ->
+            val distance = calculateDistance(station.coords, nearby.coords)
+            if (distance < 0.005) { // If stations are very close (about 500m)
+                offset += 30f
+            }
+        }
         
-        // Center on Athens and zoom to show transit
-        val athensCenter = LatLng(37.9755, 23.7348) // Syntagma Square
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(athensCenter, 15f))
+        return offset
+    }
+
+    private fun isStationOnLine(stationCoords: LatLng): Boolean {
+        // Check if station is on any line segment
+        val allLines = listOf(line1CurvedPoints, line2CurvedPoints, line3CurvedPoints)
+        for (line in allLines) {
+            for (i in 0 until line.size - 1) {
+                if (isPointNearLineSegment(stationCoords, line[i], line[i + 1])) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun isPointNearLineSegment(point: LatLng, lineStart: LatLng, lineEnd: LatLng): Boolean {
+        val tolerance = 0.0001 // Approximately 10 meters
+        
+        // Calculate the distance from point to line segment
+        val a = point.latitude - lineStart.latitude
+        val b = point.longitude - lineStart.longitude
+        val c = lineEnd.latitude - lineStart.latitude
+        val d = lineEnd.longitude - lineStart.longitude
+        
+        val dot = a * c + b * d
+        val lenSq = c * c + d * d
+        
+        var param = -1.0
+        if (lenSq != 0.0) param = dot / lenSq
+        
+        var nearestPoint = LatLng(0.0, 0.0)
+        if (param < 0) {
+            nearestPoint = lineStart
+        } else if (param > 1) {
+            nearestPoint = lineEnd
+        } else {
+            nearestPoint = LatLng(
+                lineStart.latitude + param * c,
+                lineStart.longitude + param * d
+            )
+        }
+        
+        val distance = calculateDistance(point, nearestPoint)
+        return distance < tolerance
+    }
+
+    private fun calculateDistance(point1: LatLng, point2: LatLng): Double {
+        val lat1 = Math.toRadians(point1.latitude)
+        val lon1 = Math.toRadians(point1.longitude)
+        val lat2 = Math.toRadians(point2.latitude)
+        val lon2 = Math.toRadians(point2.longitude)
+        
+        val dlon = lon2 - lon1
+        val dlat = lat2 - lat1
+        
+        val a = sin(dlat / 2).pow(2) + cos(lat1) * cos(lat2) * sin(dlon / 2).pow(2)
+        val c = 2 * asin(sqrt(a))
+        
+        // Radius of earth in kilometers
+        val r = 6371
+        
+        return c * r
+    }
+
+    private fun addTransitStationsToMap() {
+        try {
+            Log.d("TransportFragment", "Drawing Athens Metro lines and stations")
+            googleMap?.clear()
+            // Draw Metro Line 1 (Green)
+            googleMap?.addPolyline(
+                PolylineOptions()
+                    .addAll(line1CurvedPoints)
+                    .color(Color.parseColor("#009640"))
+                    .width(22f)
+                    .geodesic(false)  // Disable geodesic line drawing
+                    .jointType(JointType.ROUND)  // Use round joints for smoother connections
+            )
+            // Draw Metro Line 2 (Red)
+            googleMap?.addPolyline(
+                PolylineOptions()
+                    .addAll(line2CurvedPoints)
+                    .color(Color.parseColor("#e30613"))
+                    .width(22f)
+                    .geodesic(false)  // Disable geodesic line drawing
+                    .jointType(JointType.ROUND)  // Use round joints for smoother connections
+            )
+            // Draw Metro Line 3 (Blue)
+            googleMap?.addPolyline(
+                PolylineOptions()
+                    .addAll(line3CurvedPoints)
+                    .color(Color.parseColor("#0057a8"))
+                    .width(22f)
+                    .geodesic(false)  // Disable geodesic line drawing
+                    .jointType(JointType.ROUND)  // Use round joints for smoother connections
+            )
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error drawing metro map", e)
+        }
     }
 
     private fun showTransitDirections() {
-        val fromText = binding.editFrom.text.toString().trim()
         val toText = binding.editTo.text.toString().trim()
-        
-        if (fromText.isEmpty() || toText.isEmpty()) {
-            Toast.makeText(context, "Please enter both 'From' and 'To' locations", Toast.LENGTH_SHORT).show()
+        if (toText.isEmpty()) {
+            Toast.makeText(context, "Please enter a destination", Toast.LENGTH_SHORT).show()
             return
         }
-        
         // Clear previous markers and polylines
         googleMap?.clear()
         hideDirectionsButton()
-        
         // Show loading message
         Toast.makeText(context, "Finding best route...", Toast.LENGTH_SHORT).show()
-        
         // Get directions from Google Directions API
         lifecycleScope.launch {
             try {
-                val directionsResult = getGoogleDirections(fromText, toText)
-                
+                val directionsResult = getGoogleDirections("Athens, Greece", toText)
                 withContext(Dispatchers.Main) {
                     if (directionsResult != null) {
                         displayDirectionsResult(directionsResult)
                         Toast.makeText(context, "Route found!", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, "Could not find route between locations", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Could not find route to destination", Toast.LENGTH_LONG).show()
                     }
                 }
-                
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Error finding route: ${e.message}", Toast.LENGTH_LONG).show()
@@ -322,7 +1069,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                         }
                         
                         val detailedInstruction = "Take $lineName from $departureStop to $arrivalStop"
-                        transitSteps.add(TransitStep(mode, detailedInstruction, duration, lineName))
+                        transitSteps.add(TransitStep(mode, detailedInstruction, duration, lineName, departureStop, arrivalStop))
                     }
                 }
             }
@@ -427,18 +1174,19 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             textSize = 16f
             elevation = 8f
             setOnClickListener {
-                showDirectionsPopup()
+                val location = selectedLocation ?: LatLng(37.9755, 23.7348)
+                showDirectionsPopup(location)
             }
         }
         
-        // Find the map fragment container (FrameLayout)
-        val mapContainer = binding.root.findViewById<View>(R.id.transport_map).parent as ViewGroup
+        // Only declare this ONCE:
+        val mapContainer = binding.mapView.parent as ViewGroup
         
         val layoutParams = ViewGroup.MarginLayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
-            setMargins(0, 0, 0, 32) // 32dp from bottom
+            setMargins(0, 0, 0, 32)
         }
         
         if (mapContainer is FrameLayout) {
@@ -459,57 +1207,778 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         directionsButton = null
     }
     
-    private fun showDirectionsPopup() {
-        val dialog = Dialog(requireContext())
-        dialog.setContentView(R.layout.dialog_directions)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+    private fun showDirectionsPopup(selectedLocation: LatLng) {
+        try {
+            Log.d("TransportFragment", "Showing directions popup for location: $selectedLocation")
+            val dialog = Dialog(requireContext())
+            dialog.setContentView(R.layout.dialog_directions)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         
-        val instructionsContainer = dialog.findViewById<LinearLayout>(R.id.instructions_container)
-        val closeButton = dialog.findViewById<Button>(R.id.button_close)
-        
-        currentTransitInstructions.forEach { step ->
-            val stepView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.item_transit_step, instructionsContainer, false)
-            
-            val modeIcon = stepView.findViewById<TextView>(R.id.text_mode)
-            val instruction = stepView.findViewById<TextView>(R.id.text_instruction)
-            val duration = stepView.findViewById<TextView>(R.id.text_duration)
-            val line = stepView.findViewById<TextView>(R.id.text_line)
-            
-            when (step.mode) {
-                "WALKING" -> modeIcon.text = "🚶"
-                "BUS" -> modeIcon.text = "🚌"
-                "METRO" -> modeIcon.text = "🚇"
-                "TRAM" -> modeIcon.text = "🚋"
-                else -> modeIcon.text = "🚌"
+            // Set up close button
+            val closeButton = dialog.findViewById<Button>(R.id.button_close)
+            closeButton.setOnClickListener {
+                dialog.dismiss()
             }
-            
-            instruction.text = step.instruction
-            duration.text = step.duration
-            
-            if (step.line != null) {
-                line.text = step.line
-                line.visibility = View.VISIBLE
-            } else {
-                line.visibility = View.GONE
+
+            // Set up show all buses button
+            val showAllBusesButton = dialog.findViewById<Button>(R.id.button_show_all_buses)
+            showAllBusesButton.setOnClickListener {
+                dialog.dismiss()
+                showAllAvailableBuses(selectedLocation)
             }
-            
-            instructionsContainer.addView(stepView)
+
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error showing directions popup", e)
+            Toast.makeText(
+                requireContext(),
+                "Error showing directions options",
+                Toast.LENGTH_SHORT
+            ).show()
         }
-        
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
-        
-        dialog.show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        hideDirectionsButton()
-        _binding = null
+    private fun showAllAvailableBuses(selectedLocation: LatLng) {
+        try {
+            Log.d("TransportFragment", "Showing all available buses for location: $selectedLocation")
+            val dialog = Dialog(requireContext())
+            dialog.setContentView(R.layout.dialog_bus_directions)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+
+            // Set up close button
+            val closeButton = dialog.findViewById<Button>(R.id.button_close)
+            closeButton.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            // Get available buses
+            getAvailableBuses(selectedLocation) { buses ->
+                // Update UI with bus information
+                // This will be implemented when we have the bus data
+            }
+
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error showing all available buses", e)
+            Toast.makeText(
+                requireContext(),
+                "Error showing available buses",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun getAvailableBuses(selectedLocation: LatLng, callback: (List<BusInfo>) -> Unit) {
+        try {
+            Log.d("TransportFragment", "Getting available buses for location: $selectedLocation")
+            // This will be implemented when we have the bus data
+            // For now, return an empty list
+            callback(emptyList())
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error getting available buses", e)
+            callback(emptyList())
+        }
+    }
+
+    data class BusInfo(
+        val number: String,
+        val destination: String,
+        val arrivalTime: String,
+        val status: String // "On Time", "Delayed", "Arriving", etc.
+    )
+
+    private fun showBusDirections(busInfo: BusInfo) {
+        try {
+            Log.d("TransportFragment", "Showing bus directions for bus: ${busInfo.number}")
+            // Use the selected location or default to Syntagma Square
+            val location = selectedLocation ?: LatLng(37.9755, 23.7348)
+            showDirectionsPopup(location)
+        } catch (e: Exception) {
+            Log.e("TransportFragment", "Error showing bus directions", e)
+            Toast.makeText(
+                requireContext(),
+                "Error showing bus directions",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun isTextOverlappingWithLines(position: LatLng, text: String, lines: List<List<LatLng>>): Boolean {
+        val textBounds = getTextBounds(position, text)
+        
+        for (line in lines) {
+            for (i in 0 until line.size - 1) {
+                val start = line[i]
+                val end = line[i + 1]
+                if (doesLineIntersectRect(start, end, textBounds)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun isTextOverlappingWithOtherTexts(position: LatLng, text: String, existingLabels: List<Pair<LatLng, String>>): Boolean {
+        val textBounds = getTextBounds(position, text)
+        
+        for (label in existingLabels) {
+            val otherBounds = getTextBounds(label.first, label.second)
+            if (doRectsOverlap(textBounds, otherBounds)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun getTextBounds(position: LatLng, text: String): RectF {
+        // Approximate text dimensions in coordinate space
+        val textWidth = text.length * 0.0003 // Adjust these values based on your font size
+        val textHeight = 0.0002
+        return RectF(
+            position.longitude.toFloat() - textWidth.toFloat() / 2,
+            position.latitude.toFloat() - textHeight.toFloat() / 2,
+            position.longitude.toFloat() + textWidth.toFloat() / 2,
+            position.latitude.toFloat() + textHeight.toFloat() / 2
+        )
+    }
+
+    private fun doesLineIntersectRect(lineStart: LatLng, lineEnd: LatLng, rect: RectF): Boolean {
+        // Check if line intersects with any of the rectangle's edges
+        val lines = listOf(
+            Pair(PointF(rect.left, rect.top), PointF(rect.right, rect.top)),
+            Pair(PointF(rect.right, rect.top), PointF(rect.right, rect.bottom)),
+            Pair(PointF(rect.right, rect.bottom), PointF(rect.left, rect.bottom)),
+            Pair(PointF(rect.left, rect.bottom), PointF(rect.left, rect.top))
+        )
+
+        val p1 = PointF(lineStart.longitude.toFloat(), lineStart.latitude.toFloat())
+        val p2 = PointF(lineEnd.longitude.toFloat(), lineEnd.latitude.toFloat())
+
+        for (rectLine in lines) {
+            if (doLinesIntersect(p1, p2, rectLine.first, rectLine.second)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun doLinesIntersect(p1: PointF, p2: PointF, p3: PointF, p4: PointF): Boolean {
+        val denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y)
+        if (denominator == 0f) return false
+
+        val ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denominator
+        val ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denominator
+
+        return ua in 0f..1f && ub in 0f..1f
+    }
+
+    private fun doRectsOverlap(rect1: RectF, rect2: RectF): Boolean {
+        return !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom)
+    }
+
+    private fun findOptimalTextPosition(
+        originalPosition: LatLng,
+        text: String,
+        existingLabels: List<Pair<LatLng, String>>,
+        lines: List<List<LatLng>>
+    ): LatLng {
+        // Offsets to try in order (right, below, above, left)
+        val offsets = listOf(
+            Pair(0.0015, 0.0), // right
+            Pair(0.0, -0.0015), // below
+            Pair(0.0, 0.0015),  // above
+            Pair(-0.0015, 0.0), // left
+            Pair(0.0015, 0.0015), // diagonal top-right
+            Pair(0.0015, -0.0015), // diagonal bottom-right
+            Pair(-0.0015, 0.0015), // diagonal top-left
+            Pair(-0.0015, -0.0015) // diagonal bottom-left
+        )
+
+        for (offset in offsets) {
+            val newPosition = LatLng(
+                originalPosition.latitude + offset.second,
+                originalPosition.longitude + offset.first
+            )
+            
+            if (!isTextOverlappingWithLines(newPosition, text, lines) &&
+                !isTextOverlappingWithOtherTexts(newPosition, text, existingLabels)) {
+                return newPosition
+            }
+        }
+
+        // If no position works, return the original position
+        return originalPosition
+    }
+
+    private fun setupTransportControls() {
+        val modeButton = binding.buttonModePicker
+        val lineButton = binding.buttonLinePicker
+
+        modeButton.setOnClickListener {
+            showModePickerMenu()
+        }
+
+        lineButton.setOnClickListener {
+            showLinePickerMenu()
+        }
+    }
+
+    private fun showLinePickerMenu() {
+        // Create the popup window layout
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            background = ContextCompat.getDrawable(context, R.drawable.dropdown_menu_background)
+            elevation = resources.getDimension(R.dimen.cardview_default_elevation)
+        }
+
+        // Create the popup window
+        val popupWindow = PopupWindow(
+            popupView,
+            binding.buttonLinePicker.width,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = resources.getDimension(R.dimen.cardview_default_elevation)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            isOutsideTouchable = true
+        }
+
+        val menuItems = listOf(
+            Triple("All Lines", 0, "#663399"),
+            Triple("Line 1", R.drawable.dropdown_dot_green, "#2ECC40"),
+            Triple("Line 2", R.drawable.dropdown_dot_red, "#FF4136"),
+            Triple("Line 3", R.drawable.dropdown_dot_blue, "#0074D9")
+        )
+
+        // Add menu items to the popup
+        menuItems.forEach { (title, dotRes, color) ->
+            val itemView = inflater.inflate(R.layout.item_line_dropdown, null)
+            val dot = itemView.findViewById<View>(R.id.line_dot)
+            val text = itemView.findViewById<TextView>(R.id.line_text)
+
+            if (dotRes != 0) {
+                dot.setBackgroundResource(dotRes)
+                dot.visibility = View.VISIBLE
+            } else {
+                dot.visibility = View.GONE
+            }
+
+            text.text = title
+            text.setTextColor(Color.parseColor(color))
+
+            itemView.setOnClickListener {
+                selectedLine = title
+                binding.lineText.text = title
+                binding.lineText.setTextColor(Color.parseColor(color))
+                
+                // Update the button's dot visibility and color based on selection
+                val buttonDot = binding.buttonLinePicker.findViewById<View>(R.id.line_dot)
+                if (dotRes != 0) {
+                    buttonDot.setBackgroundResource(dotRes)
+                    buttonDot.visibility = View.VISIBLE
+                } else {
+                    buttonDot.visibility = View.GONE
+                }
+                
+                updateMapForSelection()
+                popupWindow.dismiss()
+            }
+
+            popupView.addView(itemView)
+        }
+
+        // Measure the popup view to get its height
+        popupView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val popupHeight = popupView.measuredHeight
+
+        // Show the popup above the button
+        popupWindow.showAsDropDown(
+            binding.buttonLinePicker,
+            0,
+            -popupHeight - binding.buttonLinePicker.height
+        )
+    }
+
+    private fun showModePickerMenu() {
+        // Create the popup window layout
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            background = ContextCompat.getDrawable(context, R.drawable.dropdown_menu_background)
+            elevation = resources.getDimension(R.dimen.cardview_default_elevation)
+        }
+
+        // Create the popup window
+        val popupWindow = PopupWindow(
+            popupView,
+            binding.buttonModePicker.width,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = resources.getDimension(R.dimen.cardview_default_elevation)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            isOutsideTouchable = true
+        }
+
+        // Set button text and icon color to purple when menu opens
+        binding.modeText.setTextColor(Color.parseColor("#663399"))
+        binding.modeIcon.setColorFilter(Color.parseColor("#663399"))
+
+        val menuItems = listOf(
+            Triple("Metro", R.drawable.ic_metro, "#663399"),
+            Triple("Bus Stops", R.drawable.ic_transport, "#663399"),
+            Triple("Tram", R.drawable.ic_tram, "#663399")
+        )
+
+        // Add menu items to the popup
+        menuItems.forEach { (title, iconRes, color) ->
+            val itemView = inflater.inflate(R.layout.popup_menu_item, null).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(
+                    resources.getDimensionPixelSize(R.dimen.activity_horizontal_margin),
+                    resources.getDimensionPixelSize(R.dimen.activity_vertical_margin) / 2,
+                    resources.getDimensionPixelSize(R.dimen.activity_horizontal_margin),
+                    resources.getDimensionPixelSize(R.dimen.activity_vertical_margin) / 2
+                )
+            }
+
+            val icon = itemView.findViewById<ImageView>(R.id.menu_item_icon)
+            val text = itemView.findViewById<TextView>(R.id.menu_item_text)
+
+            icon.setImageResource(iconRes)
+            icon.setColorFilter(Color.parseColor(color))
+            text.text = title
+            text.setTextColor(Color.parseColor(color))
+
+            itemView.setOnClickListener {
+                selectedMode = title
+                binding.modeText.text = title
+                binding.modeIcon.setImageResource(iconRes)
+                // Always set text and icon color to purple after selection
+                binding.modeText.setTextColor(Color.parseColor("#663399"))
+                binding.modeIcon.setColorFilter(Color.parseColor("#663399"))
+                updateMapForSelection()
+                popupWindow.dismiss()
+            }
+
+            popupView.addView(itemView)
+        }
+
+        // Measure the popup view to get its height
+        popupView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val popupHeight = popupView.measuredHeight
+
+        // Show the popup above the button
+        popupWindow.showAsDropDown(
+            binding.buttonModePicker,
+            0,
+            -popupHeight - binding.buttonModePicker.height
+        )
+    }
+
+    private fun updateMapForSelection() {
+        googleMap?.clear()
+        if (selectedMode == "Metro") {
+            when (selectedLine) {
+                "All Lines" -> {
+                    // Draw lines based on selection state
+                    if (selectedStartStation != null && selectedEndStation != null) {
+                        // Only draw segments between selected stations
+                        drawLineSegments(metroLine1, line1CurvedPoints, Color.parseColor("#009640"))
+                        drawLineSegments(metroLine2, line2CurvedPoints, Color.parseColor("#e30613"))
+                        drawLineSegments(metroLine3, line3CurvedPoints, Color.parseColor("#0057a8"))
+                    } else {
+                        // Draw all lines when no stations are selected
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line1CurvedPoints)
+                                .color(Color.parseColor("#009640"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line2CurvedPoints)
+                                .color(Color.parseColor("#e30613"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line3CurvedPoints)
+                                .color(Color.parseColor("#0057a8"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                    }
+                }
+                "Line 1" -> {
+                    if (selectedStartStation != null && selectedEndStation != null) {
+                        drawLineSegments(metroLine1, line1CurvedPoints, Color.parseColor("#009640"))
+                    } else {
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line1CurvedPoints)
+                                .color(Color.parseColor("#009640"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                    }
+                }
+                "Line 2" -> {
+                    if (selectedStartStation != null && selectedEndStation != null) {
+                        drawLineSegments(metroLine2, line2CurvedPoints, Color.parseColor("#e30613"))
+                    } else {
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line2CurvedPoints)
+                                .color(Color.parseColor("#e30613"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                    }
+                }
+                "Line 3" -> {
+                    if (selectedStartStation != null && selectedEndStation != null) {
+                        drawLineSegments(metroLine3, line3CurvedPoints, Color.parseColor("#0057a8"))
+                    } else {
+                        googleMap?.addPolyline(
+                            PolylineOptions()
+                                .addAll(line3CurvedPoints)
+                                .color(Color.parseColor("#0057a8"))
+                                .width(22f)
+                                .geodesic(false)
+                                .jointType(JointType.ROUND)
+                        )
+                    }
+                }
+            }
+        } else {
+            // For Bus Stops and Tram, show nothing for now
+        }
+    }
+
+    private fun drawLineSegments(stations: List<MetroStation>, curvedPoints: List<LatLng>, color: Int) {
+        if (selectedStartStation == null || selectedEndStation == null) return
+
+        // Check if we need to draw a direct route or an interchange route
+        val interchangeStation = findInterchangeStation(selectedStartStation!!, selectedEndStation!!)
+        
+        if (interchangeStation != null) {
+            // Draw first segment if it's on this line
+            if (stations.contains(selectedStartStation) && stations.contains(interchangeStation)) {
+                drawSegmentBetweenStations(selectedStartStation!!, interchangeStation, stations, curvedPoints, color)
+            }
+            // Draw second segment if it's on this line
+            if (stations.contains(interchangeStation) && stations.contains(selectedEndStation)) {
+                drawSegmentBetweenStations(interchangeStation, selectedEndStation!!, stations, curvedPoints, color)
+            }
+        } else {
+            // Direct route on same line
+            if (stations.contains(selectedStartStation) && stations.contains(selectedEndStation)) {
+                drawSegmentBetweenStations(selectedStartStation!!, selectedEndStation!!, stations, curvedPoints, color)
+            }
+        }
+    }
+
+    private fun drawSegmentBetweenStations(start: MetroStation, end: MetroStation, stations: List<MetroStation>, curvedPoints: List<LatLng>, color: Int) {
+        val startIndex = stations.indexOf(start)
+        val endIndex = stations.indexOf(end)
+        
+        // Find the corresponding curved points for the selected stations
+        val startPointIndex = findClosestCurvedPointIndex(start.coords, curvedPoints)
+        val endPointIndex = findClosestCurvedPointIndex(end.coords, curvedPoints)
+
+        // Create a sublist of curved points between the selected stations
+        val segmentPoints = if (startPointIndex <= endPointIndex) {
+            curvedPoints.subList(startPointIndex, endPointIndex + 1)
+        } else {
+            curvedPoints.subList(endPointIndex, startPointIndex + 1)
+        }
+
+        // Draw the line segment
+        if (segmentPoints.size >= 2) {
+            googleMap?.addPolyline(
+                PolylineOptions()
+                    .addAll(segmentPoints)
+                    .color(color)
+                    .width(22f)
+                    .geodesic(false)
+                    .jointType(JointType.ROUND)
+            )
+        }
+    }
+
+    private fun findClosestCurvedPointIndex(stationCoords: LatLng, curvedPoints: List<LatLng>): Int {
+        var closestIndex = 0
+        var minDistance = Double.MAX_VALUE
+
+        curvedPoints.forEachIndexed { index, point ->
+            val distance = calculateDistance(stationCoords, point)
+            if (distance < minDistance) {
+                minDistance = distance
+                closestIndex = index
+            }
+        }
+
+        return closestIndex
+    }
+
+    private fun showStationMenu(marker: Marker) {
+        val inflater = LayoutInflater.from(requireContext())
+        val menuView = inflater.inflate(R.layout.station_menu_layout, null)
+
+        // Set station names
+        val greekName = marker.title?.substringBefore(" / ") ?: ""
+        val englishName = marker.title?.substringAfter(" / ") ?: ""
+
+        // Find the current station object
+        val currentStation = listOf(metroLine1, metroLine2, metroLine3)
+            .flatten()
+            .find { it.nameGreek == greekName && it.nameEnglish == englishName }
+            ?: return
+
+        // Determine which line the station belongs to and get its color
+        val lineColor = getStationColor(currentStation)
+
+        // Set text colors
+        val greekNameText = menuView.findViewById<TextView>(R.id.station_name_greek)
+        val englishNameText = menuView.findViewById<TextView>(R.id.station_name_english)
+        greekNameText.text = greekName
+        englishNameText.text = englishName
+        greekNameText.setTextColor(lineColor)
+        englishNameText.setTextColor(lineColor)
+
+        // Create popup window first
+        val popupWindow = PopupWindow(
+            menuView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = resources.getDimension(R.dimen.cardview_default_elevation)
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            isOutsideTouchable = true
+        }
+
+        // Set card background colors and update button text/visibility based on selection state
+        val cards = listOf(
+            menuView.findViewById<CardView>(R.id.card_1),
+            menuView.findViewById<CardView>(R.id.card_2),
+            menuView.findViewById<CardView>(R.id.card_3)
+        )
+
+        // Configure buttons based on selection state
+        val card1 = cards[0]
+        val card2 = cards[1]
+        val card3 = cards[2]
+
+        // Hide all cards initially
+        cards.forEach { it.visibility = View.GONE }
+
+        when {
+            selectedStartStation == null -> {
+                // No station selected - show "Set as start" button
+                card1.visibility = View.VISIBLE
+                card1.findViewById<TextView>(android.R.id.text1)?.text = "1"
+                card1.setOnClickListener {
+                    selectedStartStation = currentStation
+                    updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+                    updateSelectionIndicator()
+                    popupWindow.dismiss()
+                }
+            }
+            selectedStartStation != null && selectedEndStation == null && currentStation != selectedStartStation -> {
+                // Start station selected - show "Set as destination" button
+                card1.visibility = View.VISIBLE
+                card1.findViewById<TextView>(android.R.id.text1)?.text = "1"
+                card1.setOnClickListener {
+                    selectedEndStation = currentStation
+                    updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+                    updateSelectionIndicator()
+                    popupWindow.dismiss()
+                }
+            }
+            currentStation == selectedStartStation || currentStation == selectedEndStation -> {
+                // This is a selected station - show "Clear selection" button
+                card1.visibility = View.VISIBLE
+                card1.findViewById<TextView>(android.R.id.text1)?.text = "×"
+                card1.setOnClickListener {
+                    if (currentStation == selectedStartStation) {
+                        selectedStartStation = null
+                        selectedEndStation = null // Clear both if start is cleared
+                    } else {
+                        selectedEndStation = null
+                    }
+                    updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+                    updateSelectionIndicator()
+                    popupWindow.dismiss()
+                }
+            }
+        }
+
+        cards.forEach { card ->
+            card.findViewById<LinearLayout>(android.R.id.content)?.setBackgroundColor(lineColor)
+            if (card.childCount > 0 && card.getChildAt(0) is LinearLayout) {
+                (card.getChildAt(0) as LinearLayout).setBackgroundColor(lineColor)
+            }
+        }
+
+        // Calculate position to show popup below the marker
+        val projection = googleMap?.projection
+        val markerScreenPosition = projection?.toScreenLocation(marker.position)
+        
+        if (markerScreenPosition != null) {
+            // Show popup below the marker
+            popupWindow.showAtLocation(
+                binding.mapView,
+                Gravity.NO_GRAVITY,
+                markerScreenPosition.x - 100, // Center horizontally (menu is ~200dp wide)
+                markerScreenPosition.y + 20 // Show slightly below marker
+            )
+        }
+    }
+
+    private fun findInterchangeStation(start: MetroStation, end: MetroStation): MetroStation? {
+        // If stations are on the same line, no interchange needed
+        if (metroLine1.contains(start) && metroLine1.contains(end) ||
+            metroLine2.contains(start) && metroLine2.contains(end) ||
+            metroLine3.contains(start) && metroLine3.contains(end)) {
+            return null
+        }
+
+        // Find all interchange stations
+        val interchangeStations = listOf(metroLine1, metroLine2, metroLine3)
+            .flatten()
+            .filter { it.isInterchange }
+
+        // Find an interchange station that connects the start and end lines
+        return interchangeStations.find { interchange ->
+            val isOnStartLine = metroLine1.contains(start) && metroLine1.contains(interchange) ||
+                               metroLine2.contains(start) && metroLine2.contains(interchange) ||
+                               metroLine3.contains(start) && metroLine3.contains(interchange)
+            val isOnEndLine = metroLine1.contains(end) && metroLine1.contains(interchange) ||
+                             metroLine2.contains(end) && metroLine2.contains(interchange) ||
+                             metroLine3.contains(end) && metroLine3.contains(interchange)
+            isOnStartLine && isOnEndLine
+        }
+    }
+
+    private fun updateSelectionIndicator() {
+        val startText = binding.startStationText
+        val endText = binding.endStationText
+        val swapButton = binding.swapStationsButton
+        val enterButton = binding.enterButton
+        val interchangeContainer = binding.interchangeContainer
+        val interchangeText = binding.interchangeStationText
+        val firstArrow = binding.firstArrow
+        val secondArrow = binding.secondArrow
+
+        when {
+            selectedStartStation == null -> {
+                startText.text = "Select Station"
+                startText.setTextColor(Color.parseColor("#663399"))
+                endText.text = "Select Station"
+                endText.setTextColor(Color.parseColor("#663399"))
+                swapButton.visibility = View.INVISIBLE
+                enterButton.visibility = View.INVISIBLE
+                interchangeContainer.visibility = View.GONE
+                secondArrow.visibility = View.GONE
+            }
+            selectedEndStation == null -> {
+                // Start station selected, waiting for end station
+                startText.text = selectedStartStation!!.nameEnglish
+                startText.setTextColor(getStationColor(selectedStartStation!!))
+                endText.text = "Select Station"
+                endText.setTextColor(Color.parseColor("#663399"))
+                swapButton.visibility = View.INVISIBLE
+                enterButton.visibility = View.INVISIBLE
+                interchangeContainer.visibility = View.GONE
+                secondArrow.visibility = View.GONE
+            }
+            else -> {
+                // Both stations selected
+                startText.text = selectedStartStation!!.nameEnglish
+                startText.setTextColor(getStationColor(selectedStartStation!!))
+                endText.text = selectedEndStation!!.nameEnglish
+                endText.setTextColor(getStationColor(selectedEndStation!!))
+                swapButton.visibility = View.VISIBLE
+                enterButton.visibility = View.VISIBLE
+
+                // Check for interchange
+                val interchangeStation = findInterchangeStation(selectedStartStation!!, selectedEndStation!!)
+                if (interchangeStation != null) {
+                    interchangeContainer.visibility = View.VISIBLE
+                    secondArrow.visibility = View.VISIBLE
+                    interchangeText.text = interchangeStation.nameEnglish
+                    interchangeText.setTextColor(getStationColor(interchangeStation))
+                } else {
+                    interchangeContainer.visibility = View.GONE
+                    secondArrow.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun getStationColor(station: MetroStation): Int {
+        return when {
+            metroLine1.contains(station) -> Color.parseColor("#009640")
+            metroLine2.contains(station) -> Color.parseColor("#e30613")
+            metroLine3.contains(station) -> Color.parseColor("#0057a8")
+            else -> Color.parseColor("#663399")
+        }
+    }
+
+    private fun setupSelectionControls() {
+        binding.swapStationsButton.setOnClickListener {
+            if (selectedStartStation != null && selectedEndStation != null) {
+                val temp = selectedStartStation
+                selectedStartStation = selectedEndStation
+                selectedEndStation = temp
+                updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+                updateSelectionIndicator()
+            }
+        }
+
+        binding.enterButton.setOnClickListener {
+            if (selectedStartStation != null && selectedEndStation != null) {
+                // We'll implement directions functionality later
+                Toast.makeText(context, "Directions coming soon!", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
