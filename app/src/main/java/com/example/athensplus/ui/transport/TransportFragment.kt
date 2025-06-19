@@ -423,6 +423,14 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         binding.buttonLinePicker.setOnClickListener {
             showLinePickerMenu()
         }
+        
+        // Set up reset map button
+        binding.resetMapButton.setOnClickListener {
+            resetMap()
+        }
+        
+        // Initialize UI state - hide reset button initially
+        updateSelectionIndicator()
     }
 
     // Add MapView lifecycle methods
@@ -712,6 +720,9 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         updateMapForSelection()
 
         fun addMarkers(line: List<MetroStation>, color: Int) {
+            // Keep track of existing labels for overlap checking
+            val existingLabels = mutableListOf<Pair<LatLng, String>>()
+            
             line.forEachIndexed { index, station ->
                 // Get interchange station if it exists
                 val interchangeStation = if (selectedStartStation != null && selectedEndStation != null) {
@@ -733,7 +744,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 }
 
                 val isSelected = station == selectedStartStation || station == selectedEndStation || station == interchangeStation
-                val textOffset = calculateTextOffset(station, line, index)
                 val isFirstOrLast = (index == 0 || index == line.size - 1)
                 
                 val circleMarker = googleMap?.addMarker(
@@ -754,18 +764,25 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
 
-                val textLatLng = LatLng(
-                    station.coords.latitude,
-                    station.coords.longitude + 0.0015
+                // Find optimal position for text that doesn't overlap with lines
+                val textPosition = findOptimalTextPosition(
+                    station.coords,
+                    station.nameEnglish,
+                    existingLabels,
+                    listOf(line1CurvedPoints, line2CurvedPoints, line3CurvedPoints)
                 )
+                
                 val textMarker = googleMap?.addMarker(
                     MarkerOptions()
-                        .position(textLatLng)
-                        .icon(createStationLabel(requireContext(), station, color, textOffset, isFirstOrLast))
+                        .position(textPosition)
+                        .icon(createStationLabel(requireContext(), station, color, 0f, isFirstOrLast))
                         .anchor(0f, 0.5f)
                         .zIndex(1f)
                 )
-                textMarker?.let { currentMarkers.add(it) }
+                textMarker?.let { 
+                    currentMarkers.add(it)
+                    existingLabels.add(Pair(textPosition, station.nameEnglish))
+                }
             }
         }
         when (selectedLine) {
@@ -1318,12 +1335,37 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             for (i in 0 until line.size - 1) {
                 val start = line[i]
                 val end = line[i + 1]
-                if (doesLineIntersectRect(start, end, textBounds)) {
+                
+                // Check if line segment is close to the text bounds
+                if (isLineCloseToRect(start, end, textBounds) || doesLineIntersectRect(start, end, textBounds)) {
                     return true
                 }
             }
         }
         return false
+    }
+
+    private fun isLineCloseToRect(lineStart: LatLng, lineEnd: LatLng, rect: RectF): Boolean {
+        // Minimal line detection buffer
+        val buffer = 0.0001f
+        
+        val expandedRect = RectF(
+            rect.left - buffer,
+            rect.top - buffer,
+            rect.right + buffer,
+            rect.bottom + buffer
+        )
+        
+        // Check if line endpoints are within the expanded rectangle
+        val startPoint = PointF(lineStart.longitude.toFloat(), lineStart.latitude.toFloat())
+        val endPoint = PointF(lineEnd.longitude.toFloat(), lineEnd.latitude.toFloat())
+        
+        return isPointInRect(startPoint, expandedRect) || isPointInRect(endPoint, expandedRect)
+    }
+
+    private fun isPointInRect(point: PointF, rect: RectF): Boolean {
+        return point.x >= rect.left && point.x <= rect.right &&
+               point.y >= rect.top && point.y <= rect.bottom
     }
 
     private fun isTextOverlappingWithOtherTexts(position: LatLng, text: String, existingLabels: List<Pair<LatLng, String>>): Boolean {
@@ -1339,14 +1381,18 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getTextBounds(position: LatLng, text: String): RectF {
-        // Approximate text dimensions in coordinate space
-        val textWidth = text.length * 0.0003 // Adjust these values based on your font size
-        val textHeight = 0.0002
+        // Minimal text dimensions - as close as possible to stations
+        val textWidth = text.length * 0.0004  // Reduced from 0.0006
+        val textHeight = 0.0003  // Reduced from 0.0004
+        
+        // Very minimal buffer
+        val buffer = 0.0001
+        
         return RectF(
-            position.longitude.toFloat() - textWidth.toFloat() / 2,
-            position.latitude.toFloat() - textHeight.toFloat() / 2,
-            position.longitude.toFloat() + textWidth.toFloat() / 2,
-            position.latitude.toFloat() + textHeight.toFloat() / 2
+            (position.longitude - (textWidth + buffer) / 2).toFloat(),
+            (position.latitude - (textHeight + buffer) / 2).toFloat(),
+            (position.longitude + (textWidth + buffer) / 2).toFloat(),
+            (position.latitude + (textHeight + buffer) / 2).toFloat()
         )
     }
 
@@ -1393,32 +1439,41 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         existingLabels: List<Pair<LatLng, String>>,
         lines: List<List<LatLng>>
     ): LatLng {
-        // Offsets to try in order (right, below, above, left)
-        val offsets = listOf(
-            Pair(0.0015, 0.0), // right
-            Pair(0.0, -0.0015), // below
-            Pair(0.0, 0.0015),  // above
-            Pair(-0.0015, 0.0), // left
-            Pair(0.0015, 0.0015), // diagonal top-right
-            Pair(0.0015, -0.0015), // diagonal bottom-right
-            Pair(-0.0015, 0.0015), // diagonal top-left
-            Pair(-0.0015, -0.0015) // diagonal bottom-left
-        )
-
-        for (offset in offsets) {
-            val newPosition = LatLng(
-                originalPosition.latitude + offset.second,
-                originalPosition.longitude + offset.first
-            )
+        // Base offset value
+        val baseOffset = 0.0015
+        
+        // Try positions with increasing vertical offsets
+        for (multiplier in 1..3) {
+            val currentOffset = baseOffset * multiplier
             
-            if (!isTextOverlappingWithLines(newPosition, text, lines) &&
-                !isTextOverlappingWithOtherTexts(newPosition, text, existingLabels)) {
-                return newPosition
+            // Try above/below first, then diagonals
+            val offsets = listOf(
+                Pair(0.0, currentOffset),  // above
+                Pair(0.0, -currentOffset), // below
+                Pair(currentOffset, currentOffset),     // diagonal top-right
+                Pair(currentOffset, -currentOffset),    // diagonal bottom-right
+                Pair(-currentOffset, currentOffset),    // diagonal top-left
+                Pair(-currentOffset, -currentOffset)    // diagonal bottom-left
+            )
+
+            for (offset in offsets) {
+                val newPosition = LatLng(
+                    originalPosition.latitude + offset.second,
+                    originalPosition.longitude + offset.first
+                )
+                
+                if (!isTextOverlappingWithLines(newPosition, text, lines) &&
+                    !isTextOverlappingWithOtherTexts(newPosition, text, existingLabels)) {
+                    return newPosition
+                }
             }
         }
 
-        // If no position works, return the original position
-        return originalPosition
+        // If no position works, return a position well above the station
+        return LatLng(
+            originalPosition.latitude + baseOffset * 3,
+            originalPosition.longitude
+        )
     }
 
     private fun setupTransportControls() {
@@ -1905,8 +1960,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         val enterButton = binding.enterButton
         val interchangeContainer = binding.interchangeContainer
         val interchangeText = binding.interchangeStationText
-        val firstArrow = binding.firstArrow
         val secondArrow = binding.secondArrow
+        val resetButton = binding.resetMapButton
 
         when {
             selectedStartStation == null -> {
@@ -1914,10 +1969,11 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 startText.setTextColor(Color.parseColor("#663399"))
                 endText.text = "Select Station"
                 endText.setTextColor(Color.parseColor("#663399"))
-                swapButton.visibility = View.INVISIBLE
-                enterButton.visibility = View.INVISIBLE
+                swapButton.isEnabled = false
+                enterButton.visibility = View.VISIBLE
                 interchangeContainer.visibility = View.GONE
                 secondArrow.visibility = View.GONE
+                resetButton.visibility = View.GONE
             }
             selectedEndStation == null -> {
                 // Start station selected, waiting for end station
@@ -1925,10 +1981,11 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 startText.setTextColor(getStationColor(selectedStartStation!!))
                 endText.text = "Select Station"
                 endText.setTextColor(Color.parseColor("#663399"))
-                swapButton.visibility = View.INVISIBLE
-                enterButton.visibility = View.INVISIBLE
+                swapButton.isEnabled = false
+                enterButton.visibility = View.VISIBLE
                 interchangeContainer.visibility = View.GONE
                 secondArrow.visibility = View.GONE
+                resetButton.visibility = View.VISIBLE
             }
             else -> {
                 // Both stations selected
@@ -1936,8 +1993,9 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 startText.setTextColor(getStationColor(selectedStartStation!!))
                 endText.text = selectedEndStation!!.nameEnglish
                 endText.setTextColor(getStationColor(selectedEndStation!!))
-                swapButton.visibility = View.VISIBLE
+                swapButton.isEnabled = true
                 enterButton.visibility = View.VISIBLE
+                resetButton.visibility = View.VISIBLE
 
                 // Check for interchange
                 val interchangeStation = findInterchangeStation(selectedStartStation!!, selectedEndStation!!)
@@ -1951,6 +2009,17 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                     secondArrow.visibility = View.GONE
                 }
             }
+        }
+        
+        // Update enter button colors based on selection state
+        if (selectedStartStation != null && selectedEndStation != null) {
+            // Both stations selected - purple background, white icon
+            enterButton.setBackgroundResource(R.drawable.rounded_button_bg)
+            enterButton.setColorFilter(Color.WHITE)
+        } else {
+            // Not both selected - gray circular background, purple icon
+            enterButton.setBackgroundResource(R.drawable.rounded_button_bg_gray)
+            enterButton.setColorFilter(Color.parseColor("#663399"))
         }
     }
 
@@ -1980,5 +2049,23 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 Toast.makeText(context, "Directions coming soon!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun resetMap() {
+        // Clear selected stations
+        selectedStartStation = null
+        selectedEndStation = null
+        
+        // Clear station markers
+        startStationMarker?.remove()
+        endStationMarker?.remove()
+        startStationMarker = null
+        endStationMarker = null
+        
+        // Clear map and redraw metro lines and stations
+        googleMap?.clear()
+        updateMapForSelection()
+        updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+        updateSelectionIndicator()
     }
 }
