@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/dropdown_menu_background"
+    android:layout_margin="16dp">
+
+    <!-- Header with station name and close button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/station_name_greek"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ΜΕΓΑΡΟ ΜΟΥΣΙΚΗΣ"
+                android:textColor="#663399"
+                android:textSize="18sp"
+                android:fontFamily="@font/montserrat_bold"/>
+
+            <TextView
+                android:id="@+id/station_name_english"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Megaro Mousikis"
+                android:textColor="#663399"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_medium"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            app:tint="#663399"/>
+    </LinearLayout>
+
+    <!-- Timetable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="400dp">
+
+        <LinearLayout
+            android:id="@+id/timetable_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Content will be dynamically added here -->
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout> 

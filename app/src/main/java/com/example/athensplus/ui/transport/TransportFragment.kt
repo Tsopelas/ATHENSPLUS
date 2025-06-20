@@ -24,6 +24,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
@@ -128,31 +130,38 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         val coords: LatLng
     )
 
+    data class TimetableTable(
+        val direction: String,
+        val headers: List<String>,
+        val rows: List<List<String>>
+    )
+
     // Official Athens Metro lines data (partial, for brevity; full list should be used in production)
     val metroLine1 = listOf(
-        MetroStation("Κηφισιά", "Kifisia", LatLng(38.07373290671199, 23.808305136483852)),
-        MetroStation("ΚΑΤ", "KAT", LatLng(38.06591837925154, 23.804017818766344)),
-        MetroStation("Μαρούσι", "Marousi", LatLng(38.05619686161689, 23.80503609761142)),
-        MetroStation("Νερατζιώτισσα", "Neratziotissa", LatLng(38.04484194992877, 23.792862889776107)),
-        MetroStation("Ειρήνη", "Eirini", LatLng(38.04330588326173, 23.783400691393396)),
-        MetroStation("Ηράκλειο", "Irakleio", LatLng(38.0462292394805, 23.76607388463279)),
-        MetroStation("Πεύκα", "Pefkakia", LatLng(38.037165103011894, 23.75008681005388)),
-        MetroStation("Περισσός", "Perissos", LatLng(38.03266821407559, 23.744712039673153)),
-        MetroStation("Άνω Πατήσια", "Ano Patisia", LatLng(38.02382144738529, 23.736039815065507)),
-        MetroStation("Άγιος Ελευθέριος", "Agios Eleftherios", LatLng(38.02012753169261, 23.731728912700053)),
-        MetroStation("Κάτω Πατήσια", "Kato Patisia", LatLng(38.01160376209793, 23.728755698511065)),
-        MetroStation("Άγιος Νικόλαος", "Agios Nikolaos", LatLng(38.00692137614022, 23.72773410379398)),
-        MetroStation("Αττική", "Attiki", LatLng(37.99931374537682, 23.722117655786956), isInterchange = true),
-        MetroStation("Βικτώρια", "Victoria", LatLng(37.993070240716015, 23.730372320299832)),
-        MetroStation("Ομόνοια", "Omonia", LatLng(37.98420036534532, 23.728709865494178), isInterchange = true),
-        MetroStation("Μοναστηράκι", "Monastiraki", LatLng(37.976114278617565, 23.725633963810413), isInterchange = true),
-        MetroStation("Θησείο", "Thiseio", LatLng(37.97673744990198, 23.72063841824465)),
-        MetroStation("Πετράλωνα", "Petralona", LatLng(37.9686355751221, 23.709296406789832)),
-        MetroStation("Ταύρος", "Tavros", LatLng(37.962439214458016, 23.703328766874794)),
-        MetroStation("Καλλιθέα", "Kallithea", LatLng(37.96038993809849, 23.69735115718288)),
+        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94806117043078, 23.643235606587858)),
+        MetroStation("Φάληρο", "Faliro", LatLng(37.94503590091905, 23.665229397093032)),
         MetroStation("Μοσχάτο", "Moschato", LatLng(37.95503411820899, 23.679616546345812)),
-        MetroStation("Νέο Φάληρο", "Neo Faliro", LatLng(37.94503590091905, 23.665229397093032)),
-        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94806117043078, 23.643235606587858))
+        MetroStation("Καλλιθέα", "Kallithea", LatLng(37.96038993809849, 23.69735115718288)),
+        MetroStation("Ταύρος", "Tavros", LatLng(37.962439214458016, 23.703328766874794)),
+        MetroStation("Πετράλωνα", "Petralona", LatLng(37.9686355751221, 23.709296406789832)),
+        MetroStation("Θησείο", "Thiseio", LatLng(37.97673744990198, 23.72063841824465)),
+        MetroStation("Μοναστηράκι", "Monastiraki", LatLng(37.976114278617565, 23.725633963810413), isInterchange = true),
+        MetroStation("Ομόνοια", "Omonia", LatLng(37.98420036534532, 23.728709865494178), isInterchange = true),
+        MetroStation("Βικτώρια", "Victoria", LatLng(37.993070240716015, 23.730372320299832)),
+        MetroStation("Αττική", "Attiki", LatLng(37.99931374537682, 23.722117655786956), isInterchange = true),
+        MetroStation("Άγιος Νικόλαος", "Agios Nikolaos", LatLng(38.00692137614022, 23.72773410379398)),
+        MetroStation("Κάτω Πατήσια", "Kato Patisia", LatLng(38.01160376209793, 23.728755698511065)),
+        MetroStation("Άγιος Ελευθέριος", "Agios Eleftherios", LatLng(38.02012753169261, 23.731728912700053)),
+        MetroStation("Άνω Πατήσια", "Ano Patisia", LatLng(38.02382144738529, 23.736039815065507)),
+        MetroStation("Περισσός", "Perissos", LatLng(38.03266821407559, 23.744712039673153)),
+        MetroStation("Πευκάκια", "Pefkakia", LatLng(38.037165103011894, 23.75008681005388)),
+        MetroStation("Νέα Ιωνία", "Nea Ionia", LatLng(38.041430, 23.754835)),
+        MetroStation("Ηράκλειο", "Irakleio", LatLng(38.0462292394805, 23.76607388463279)),
+        MetroStation("Ειρήνη", "Eirini", LatLng(38.04330588326173, 23.783400691393396)),
+        MetroStation("Νερατζιώτισσα", "Neratziotissa", LatLng(38.04484194992877, 23.792862889776107)),
+        MetroStation("Μαρούσι", "Marousi", LatLng(38.05619686161689, 23.80503609761142)),
+        MetroStation("Κ.Α.Τ.", "K.A.T.", LatLng(38.06591837925154, 23.804017818766344)),
+        MetroStation("Κηφισιά", "Kifisia", LatLng(38.07373290671199, 23.808305136483852))
     )
 
     val metroLine2 = listOf(
@@ -1853,23 +1862,43 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         // Set card background colors and update button text/visibility based on selection state
         val cards = listOf(
             menuView.findViewById<CardView>(R.id.card_1),
-            menuView.findViewById<CardView>(R.id.card_2),
-            menuView.findViewById<CardView>(R.id.card_3)
+            menuView.findViewById<CardView>(R.id.card_time),
+            menuView.findViewById<CardView>(R.id.card_parking),
+            menuView.findViewById<CardView>(R.id.card_airport),
+            menuView.findViewById<CardView>(R.id.card_harbor),
+            menuView.findViewById<CardView>(R.id.card_information)
         )
 
         // Configure buttons based on selection state
         val card1 = cards[0]
-        val card2 = cards[1]
-        val card3 = cards[2]
+        val cardTime = cards[1]
+        val cardParking = cards[2]
+        val cardAirport = cards[3]
+        val cardHarbor = cards[4]
+        val cardInformation = cards[5]
 
         // Hide all cards initially
         cards.forEach { it.visibility = View.GONE }
+
+        // Show airport, harbor, and information buttons for all stations
+        cardAirport.visibility = View.VISIBLE
+        cardHarbor.visibility = View.VISIBLE
+        cardInformation.visibility = View.VISIBLE
+        cardTime.visibility = View.VISIBLE
+        cardParking.visibility = View.VISIBLE
+
+        // Add click listeners for the new buttons
+        cardTime.setOnClickListener {
+            showStationTimetable(currentStation)
+            popupWindow.dismiss()
+        }
 
         when {
             selectedStartStation == null -> {
                 // No station selected - show "Set as start" button
                 card1.visibility = View.VISIBLE
-                card1.findViewById<TextView>(android.R.id.text1)?.text = "1"
+                val icon = card1.findViewById<ImageView>(R.id.card_icon)
+                icon.setImageResource(R.drawable.ic_checkshalf)
                 card1.setOnClickListener {
                     selectedStartStation = currentStation
                     updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
@@ -1880,7 +1909,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             selectedStartStation != null && selectedEndStation == null && currentStation != selectedStartStation -> {
                 // Start station selected - show "Set as destination" button
                 card1.visibility = View.VISIBLE
-                card1.findViewById<TextView>(android.R.id.text1)?.text = "1"
+                val icon = card1.findViewById<ImageView>(R.id.card_icon)
+                icon.setImageResource(R.drawable.ic_checks)
                 card1.setOnClickListener {
                     selectedEndStation = currentStation
                     updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
@@ -1891,7 +1921,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             currentStation == selectedStartStation || currentStation == selectedEndStation -> {
                 // This is a selected station - show "Clear selection" button
                 card1.visibility = View.VISIBLE
-                card1.findViewById<TextView>(android.R.id.text1)?.text = "×"
+                val icon = card1.findViewById<ImageView>(R.id.card_icon)
+                icon.setImageResource(R.drawable.ic_clear)
                 card1.setOnClickListener {
                     if (currentStation == selectedStartStation) {
                         selectedStartStation = null
@@ -2067,5 +2098,344 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         updateMapForSelection()
         updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
         updateSelectionIndicator()
+    }
+
+    private fun showStationTimetable(station: MetroStation) {
+        // Create a custom dialog with the new layout
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.dialog_timetable)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        // Set station names
+        val greekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
+        val englishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
+        greekNameText.text = station.nameGreek
+        englishNameText.text = station.nameEnglish
+
+        // Set close button
+        val closeButton = dialog.findViewById<ImageView>(R.id.close_button)
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Show loading state
+        val timetableContainer = dialog.findViewById<LinearLayout>(R.id.timetable_container)
+        val loadingView = TextView(requireContext()).apply {
+            text = "Loading timetable..."
+            textSize = 14f
+            setTextColor(Color.parseColor("#663399"))
+            gravity = Gravity.CENTER
+            setPadding(32, 32, 32, 32)
+        }
+        timetableContainer.addView(loadingView)
+
+        dialog.show()
+
+        // Fetch timetable data
+        fetchStationTimetable(station, dialog)
+    }
+
+    private fun fetchStationTimetable(station: MetroStation, dialog: Dialog) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val timetableTables = when {
+                    metroLine1.contains(station) -> parseLine1Timetable(station)
+                    metroLine2.contains(station) -> parseLine2Timetable(station)
+                    metroLine3.contains(station) -> parseLine3Timetable(station)
+                    else -> emptyList()
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (timetableTables.isNotEmpty()) {
+                        updateTimetableDialog(dialog, timetableTables, station)
+                    } else {
+                        dialog.findViewById<LinearLayout>(R.id.timetable_container).apply {
+                            removeAllViews()
+                            val errorView = TextView(requireContext()).apply {
+                                text = "Timetable not available for this station."
+                                setTextColor(Color.RED)
+                                gravity = Gravity.CENTER
+                                setPadding(16, 48, 16, 48)
+                            }
+                            addView(errorView)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("TransportFragment", "Error fetching timetable", e)
+                    dialog.findViewById<LinearLayout>(R.id.timetable_container).apply {
+                        removeAllViews()
+                        val errorView = TextView(requireContext()).apply {
+                            text = "Failed to load timetable."
+                            setTextColor(Color.RED)
+                            gravity = Gravity.CENTER
+                            setPadding(16, 48, 16, 48)
+                        }
+                        addView(errorView)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateTimetableDialog(dialog: Dialog, tables: List<TimetableTable>, station: MetroStation) {
+        val container = dialog.findViewById<LinearLayout>(R.id.timetable_container)
+        container.removeAllViews()
+        val lineColor = getStationColor(station)
+
+        tables.forEach { tableData ->
+            val inflater = LayoutInflater.from(dialog.context)
+            val tableView = inflater.inflate(R.layout.item_timetable_table, container, false)
+            
+            val title = tableView.findViewById<TextView>(R.id.direction_title)
+            val tableLayout = tableView.findViewById<TableLayout>(R.id.timetable_table_layout)
+
+            title.text = tableData.direction
+            title.setTextColor(lineColor)
+
+            // Create Header Row
+            val headerRow = TableRow(dialog.context)
+            tableData.headers.forEach { headerText ->
+                val headerTextView = TextView(dialog.context).apply {
+                    text = headerText
+                    setTextColor(lineColor)
+                    setPadding(16, 16, 16, 16)
+                    typeface = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+                    gravity = Gravity.CENTER
+                }
+                headerRow.addView(headerTextView)
+            }
+            tableLayout.addView(headerRow)
+
+            // Create Data Rows
+            tableData.rows.forEach { rowData ->
+                val tableRow = TableRow(dialog.context)
+                rowData.forEach { cellData ->
+                    val cellTextView = TextView(dialog.context).apply {
+                        text = cellData
+                        setTextColor(Color.BLACK)
+                        setPadding(16, 16, 16, 16)
+                        typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
+                        gravity = Gravity.CENTER
+                    }
+                    tableRow.addView(cellTextView)
+                }
+                tableLayout.addView(tableRow)
+            }
+            container.addView(tableView)
+        }
+    }
+
+    private fun parseLine1Timetable(station: MetroStation): List<TimetableTable> {
+        val inputStream = resources.openRawResource(R.raw.line1_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationBlock = text.split("STATION:").find { it.trim().startsWith(station.nameGreek) } ?: return emptyList()
+
+        val lines = stationBlock.trim().split("\n").map { it.trim() }
+        val result = mutableListOf<TimetableTable>()
+
+        lines.forEach { line ->
+            val parts = line.split(";")
+            if (line.startsWith("TOWARDS_KIFISIA")) {
+                val first = parts.getOrNull(2) ?: "-"
+                val last = parts.getOrNull(4) ?: "-"
+                val lastOmonia = parts.getOrNull(6)
+                
+                val rows = mutableListOf(listOf("Kifisia", first, last))
+                lastOmonia?.let { rows.add(listOf("Omonia", "-", it)) }
+
+                result.add(TimetableTable("Towards Kifisia", listOf("To", "First", "Last"), rows))
+            } else if (line.startsWith("TOWARDS_PIRAEUS")) {
+                val first = parts.getOrNull(2) ?: "-"
+                val last = parts.getOrNull(4) ?: "-"
+                result.add(TimetableTable("Towards Piraeus", listOf("To", "First", "Last"), listOf(listOf("Piraeus", first, last))))
+            }
+        }
+        return result
+    }
+
+    private fun parseLine2Timetable(station: MetroStation): List<TimetableTable> {
+        val inputStream = resources.openRawResource(R.raw.line2_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationBlock = text.split("STATION:").find { it.trim().startsWith(station.nameGreek) } ?: return emptyList()
+
+        val lines = stationBlock.trim().split("\n").map { it.trim() }
+        val result = mutableListOf<TimetableTable>()
+        
+        lines.forEach { line ->
+            val parts = line.split(";")
+            if (line.startsWith("TOWARDS_ELLINIKO")) {
+                 val headers = listOf("First (Mon-Fri)", "First (Sat-Sun)", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                 val row = listOf(
+                    parts.getOrNull(2) ?: "-",
+                    parts.getOrNull(4) ?: "-",
+                    parts.getOrNull(6) ?: "-",
+                    parts.getOrNull(8) ?: "-"
+                 )
+                result.add(TimetableTable("Towards Elliniko", headers, listOf(row)))
+            } else if (line.startsWith("TOWARDS_ANTHOUPOLI")) {
+                val headers = listOf("First (All Days)", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                val row = listOf(
+                    parts.getOrNull(2) ?: "-",
+                    parts.getOrNull(4) ?: "-",
+                    parts.getOrNull(6) ?: "-"
+                )
+                result.add(TimetableTable("Towards Anthoupoli", headers, listOf(row)))
+            }
+        }
+        return result
+    }
+
+    private fun parseLine3Timetable(station: MetroStation): List<TimetableTable> {
+        val inputStream = resources.openRawResource(R.raw.line3_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationBlock = text.split("STATION:").find { it.trim().startsWith(station.nameGreek) } ?: return emptyList()
+
+        val lines = stationBlock.trim().split("\n").map { it.trim() }
+        val result = mutableListOf<TimetableTable>()
+
+        lines.forEach { line ->
+            val parts = line.split(";")
+            if (line.startsWith("TOWARDS_AIRPORT")) {
+                val headers = listOf("To", "First", "Second", "Last", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                val rowAirport = listOf(
+                    "Airport",
+                    parts.getOrNull(4) ?: "-",
+                    parts.getOrNull(6) ?: "-",
+                    parts.getOrNull(8) ?: "-",
+                    parts.getOrNull(8) ?: "-", // No separate last train on weekday
+                    parts.getOrNull(8) ?: "-"  // No separate last train on weekend
+                )
+                val rowDPL = listOf(
+                    "D. Plakentias",
+                    parts.getOrNull(2) ?: "-",
+                    "-", // No second train to DPL
+                    "-", // No dedicated last train to DPL in this field
+                    parts.getOrNull(10) ?: "-",
+                    parts.getOrNull(12) ?: "-"
+                )
+                result.add(TimetableTable("Towards Airport / D. Plakentias", headers, listOf(rowAirport, rowDPL)))
+            } else if (line.startsWith("TOWARDS_DIMOTIKO_THEATRO")) {
+                val headers = listOf("First", "Last")
+                val row = listOf(parts.getOrNull(2) ?: "-", parts.getOrNull(4) ?: "-")
+                result.add(TimetableTable("Towards Dimotiko Theatro", headers, listOf(row)))
+            }
+        }
+        return result
+    }
+
+    private fun readLine1Timetable(station: MetroStation): String {
+        val inputStream = resources.openRawResource(R.raw.line1_timetable)
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val lines = reader.readLines()
+        reader.close()
+
+        val stationName = station.nameGreek
+        val stationData = StringBuilder()
+        var foundStation = false
+        var stationIndex = -1
+
+        // First, find the line index for the requested station
+        for (i in lines.indices) {
+            if (lines[i].equals("STATION: $stationName", ignoreCase = true)) {
+                foundStation = true
+                stationIndex = i
+                break
+            }
+        }
+
+        if (foundStation) {
+            // Now, look at the lines immediately following the station line
+            var currentIndex = stationIndex + 1
+            while (currentIndex < lines.size && !lines[currentIndex].startsWith("STATION:")) {
+                val line = lines[currentIndex]
+                val parts = line.split(";")
+
+                if (line.startsWith("TOWARDS_PIRAEUS")) {
+                    stationData.append("Towards Piraeus:\n")
+                    val firstTime = parts.getOrNull(2) ?: "N/A"
+                    val lastTime = parts.getOrNull(4) ?: "N/A"
+                    stationData.append("  - First: $firstTime\n")
+                    stationData.append("  - Last: $lastTime\n\n")
+                } else if (line.startsWith("TOWARDS_KIFISIA")) {
+                    stationData.append("Towards Kifisia:\n")
+                    val firstTime = parts.getOrNull(2) ?: "N/A"
+                    val lastTime = parts.getOrNull(4) ?: "N/A"
+                    val lastOmoniaTime = parts.getOrNull(6)
+
+                    stationData.append("  - First: $firstTime\n")
+                    stationData.append("  - Last: $lastTime\n")
+                    if (lastOmoniaTime != null) {
+                        stationData.append("  - Last (to Omonia): $lastOmoniaTime\n")
+                    }
+                    stationData.append("\n")
+                }
+                currentIndex++
+            }
+        } else {
+            return "Timetable not found for station: $stationName"
+        }
+
+        return stationData.toString().trim()
+    }
+    
+    private fun readLine2Timetable(station: MetroStation): String {
+        val inputStream = resources.openRawResource(R.raw.line2_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationBlock = text.split("STATION:").find { it.trim().startsWith(station.nameGreek) } ?: return "Timetable not found for station: ${station.nameGreek}"
+
+        val lines = stationBlock.trim().split("\n").map { it.trim() }
+        val stationData = StringBuilder()
+
+        lines.forEach { line ->
+            val parts = line.split(";")
+            if (line.startsWith("TOWARDS_ELLINIKO")) {
+                stationData.append("Towards Elliniko:\n")
+                stationData.append("  - First (Mon-Fri): ${parts.getOrNull(2) ?: "-"}\n")
+                stationData.append("  - First (Sat-Sun): ${parts.getOrNull(4) ?: "-"}\n")
+                stationData.append("  - Last (Mon-Thu, Sun): ${parts.getOrNull(6) ?: "-"}\n")
+                stationData.append("  - Last (Fri-Sat): ${parts.getOrNull(8) ?: "-"}\n\n")
+            } else if (line.startsWith("TOWARDS_ANTHOUPOLI")) {
+                stationData.append("Towards Anthoupoli:\n")
+                stationData.append("  - First (All days): ${parts.getOrNull(2) ?: "-"}\n")
+                stationData.append("  - Last (Mon-Thu, Sun): ${parts.getOrNull(4) ?: "-"}\n")
+                stationData.append("  - Last (Fri-Sat): ${parts.getOrNull(6) ?: "-"}\n")
+            }
+        }
+
+        return stationData.toString().trim()
+    }
+    
+    private fun readLine3Timetable(station: MetroStation): String {
+        val inputStream = resources.openRawResource(R.raw.line3_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationBlock = text.split("STATION:").find { it.trim().startsWith(station.nameGreek) } ?: return "Timetable not found for station: ${station.nameGreek}"
+
+        val lines = stationBlock.trim().split("\n").map { it.trim() }
+        val stationData = StringBuilder()
+
+        lines.forEach { line ->
+            val parts = line.split(";")
+            if (line.startsWith("TOWARDS_AIRPORT")) {
+                stationData.append("Towards Airport:\n")
+                stationData.append("  - First (to D.Plakentias): ${parts.getOrNull(2) ?: "-"}\n")
+                stationData.append("  - First (to Airport): ${parts.getOrNull(4) ?: "-"}\n")
+                stationData.append("  - Second (to Airport): ${parts.getOrNull(6) ?: "-"}\n")
+                stationData.append("  - Last (to Airport): ${parts.getOrNull(8) ?: "-"}\n")
+                stationData.append("  - Last (to D.Plakentias, Mon-Thu, Sun): ${parts.getOrNull(10) ?: "-"}\n")
+                stationData.append("  - Last (to D.Plakentias, Fri-Sat): ${parts.getOrNull(12) ?: "-"}\n\n")
+            } else if (line.startsWith("TOWARDS_DIMOTIKO_THEATRO")) {
+                stationData.append("Towards Dimotiko Theatro:\n")
+                stationData.append("  - First: ${parts.getOrNull(2) ?: "-"}\n")
+                stationData.append("  - Last: ${parts.getOrNull(4) ?: "-"}\n")
+            }
+        }
+
+        return stationData.toString().trim()
     }
 }
