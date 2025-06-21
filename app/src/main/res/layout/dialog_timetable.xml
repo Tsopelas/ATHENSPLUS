@@ -37,8 +37,21 @@
                 android:layout_height="wrap_content"
                 android:text="Megaro Mousikis"
                 android:textColor="#663399"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:fontFamily="@font/montserrat_medium"/>
+
+            <TextView
+                android:id="@+id/interchange_info_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interchange info"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_regular"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <ImageView

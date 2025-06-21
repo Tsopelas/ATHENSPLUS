@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.athensplus.ui.transport
 
 import android.Manifest
@@ -436,6 +438,13 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         // Set up reset map button
         binding.resetMapButton.setOnClickListener {
             resetMap()
+        }
+        
+        // Set up airport timetable button
+        binding.airportTimetableButton.setOnClickListener {
+            if (selectedStartStation != null) {
+                showAirportTimetable(selectedStartStation!!)
+            }
         }
         
         // Initialize UI state - hide reset button initially
@@ -1893,6 +1902,22 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             popupWindow.dismiss()
         }
 
+        cardAirport.setOnClickListener {
+            selectedStartStation = currentStation
+            selectedEndStation = metroLine3.find { it.nameEnglish == "Airport" }
+            updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+            updateSelectionIndicator()
+            popupWindow.dismiss()
+        }
+
+        cardHarbor.setOnClickListener {
+            selectedStartStation = currentStation
+            selectedEndStation = metroLine1.find { it.nameEnglish == "Piraeus" }
+            updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
+            updateSelectionIndicator()
+            popupWindow.dismiss()
+        }
+
         when {
             selectedStartStation == null -> {
                 // No station selected - show "Set as start" button
@@ -1993,6 +2018,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         val interchangeText = binding.interchangeStationText
         val secondArrow = binding.secondArrow
         val resetButton = binding.resetMapButton
+        val airportTimetableButton = binding.airportTimetableButton
+        val harborGateMapButton = binding.harborGateMapButton
 
         when {
             selectedStartStation == null -> {
@@ -2005,6 +2032,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 interchangeContainer.visibility = View.GONE
                 secondArrow.visibility = View.GONE
                 resetButton.visibility = View.GONE
+                airportTimetableButton.visibility = View.GONE
+                harborGateMapButton.visibility = View.GONE
             }
             selectedEndStation == null -> {
                 // Start station selected, waiting for end station
@@ -2017,6 +2046,8 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 interchangeContainer.visibility = View.GONE
                 secondArrow.visibility = View.GONE
                 resetButton.visibility = View.VISIBLE
+                airportTimetableButton.visibility = View.GONE
+                harborGateMapButton.visibility = View.GONE
             }
             else -> {
                 // Both stations selected
@@ -2027,6 +2058,20 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 swapButton.isEnabled = true
                 enterButton.visibility = View.VISIBLE
                 resetButton.visibility = View.VISIBLE
+
+                // Show airport timetable button if end station is airport
+                if (selectedEndStation!!.nameEnglish == "Airport") {
+                    airportTimetableButton.visibility = View.VISIBLE
+                } else {
+                    airportTimetableButton.visibility = View.GONE
+                }
+
+                // Show harbor gate map button if end station is Piraeus
+                if (selectedEndStation!!.nameEnglish == "Piraeus") {
+                    harborGateMapButton.visibility = View.VISIBLE
+                } else {
+                    harborGateMapButton.visibility = View.GONE
+                }
 
                 // Check for interchange
                 val interchangeStation = findInterchangeStation(selectedStartStation!!, selectedEndStation!!)
@@ -2080,6 +2125,10 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 Toast.makeText(context, "Directions coming soon!", Toast.LENGTH_SHORT).show()
             }
         }
+
+        binding.harborGateMapButton.setOnClickListener {
+            showPiraeusGateMap()
+        }
     }
 
     private fun resetMap() {
@@ -2098,6 +2147,117 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         updateMapForSelection()
         updateStationMarkers(googleMap?.cameraPosition?.zoom ?: 15f)
         updateSelectionIndicator()
+        
+        // Hide airport timetable button
+        binding.airportTimetableButton.visibility = View.GONE
+        binding.harborGateMapButton.visibility = View.GONE
+    }
+
+    private fun findNearestInterchangeToLine3(station: MetroStation): MetroStation? {
+        val line3Interchanges = metroLine3.filter { it.isInterchange }
+
+        val stationLine = when {
+            metroLine1.contains(station) -> metroLine1
+            metroLine2.contains(station) -> metroLine2
+            else -> null
+        }
+
+        return stationLine?.let { line ->
+            line3Interchanges.firstOrNull { interchange ->
+                line.contains(interchange)
+            }
+        }
+    }
+
+    private fun showAirportTimetable(station: MetroStation) {
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.dialog_timetable)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
+        val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
+        val interchangeInfoText = dialog.findViewById<TextView>(R.id.interchange_info_text)
+        
+        val stationColor = getStationColor(station)
+        stationGreekNameText.text = station.nameGreek
+        stationEnglishNameText.text = station.nameEnglish
+        stationGreekNameText.setTextColor(stationColor)
+        stationEnglishNameText.setTextColor(stationColor)
+
+        dialog.findViewById<ImageView>(R.id.close_button).setOnClickListener { dialog.dismiss() }
+
+        val timetableContainer = dialog.findViewById<LinearLayout>(R.id.timetable_container)
+        val loadingView = TextView(requireContext()).apply {
+            text = "Loading timetable..."
+            textSize = 14f
+            setTextColor(Color.parseColor("#663399"))
+            gravity = Gravity.CENTER
+            setPadding(32, 32, 32, 32)
+        }
+        timetableContainer.addView(loadingView)
+        dialog.show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            var stationForTimetable = station
+            var instructionText: String? = null
+
+            if (!metroLine3.contains(station)) {
+                val interchangeStation = findNearestInterchangeToLine3(station)
+                if (interchangeStation != null) {
+                    stationForTimetable = interchangeStation
+                    instructionText = "Take Metro to ${interchangeStation.nameEnglish} for Airport Line (Directions shown on map)"
+                } else {
+                    instructionText = "No direct route to Airport Line found."
+                }
+            }
+            
+            val times = parseAirportTimetable(stationForTimetable)
+            withContext(Dispatchers.Main) {
+                timetableContainer.removeAllViews()
+
+                if (instructionText != null) {
+                    interchangeInfoText.text = instructionText
+                    interchangeInfoText.visibility = View.VISIBLE
+                } else {
+                    interchangeInfoText.visibility = View.GONE
+                }
+
+                if (times.isNotEmpty()) {
+                    val inflater = LayoutInflater.from(dialog.context)
+                    val airportView = inflater.inflate(R.layout.item_airport_timetable, timetableContainer, false)
+                    val title = airportView.findViewById<TextView>(R.id.direction_title)
+                    val timesContainer = airportView.findViewById<LinearLayout>(R.id.times_container)
+
+                    title.text = "Departures from ${stationForTimetable.nameEnglish} to Airport"
+                    title.setTextColor(Color.parseColor("#0057a8")) // Line 3 color
+
+                    val timesText = times.joinToString(separator = "  •  ")
+                    
+                    val cellTextView = TextView(dialog.context).apply {
+                        text = timesText
+                        setTextColor(Color.BLACK)
+                        setPadding(16, 16, 16, 16)
+                        typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
+                        gravity = Gravity.CENTER
+                        isSingleLine = false
+                    }
+                    timesContainer.addView(cellTextView)
+                    timetableContainer.addView(airportView)
+                } else {
+                     val errorView = TextView(requireContext()).apply {
+                        text = "Timetable not available for this station."
+                        setTextColor(Color.RED)
+                        gravity = Gravity.CENTER
+                        setPadding(16, 48, 16, 48)
+                    }
+                    timetableContainer.addView(errorView)
+                }
+            }
+        }
     }
 
     private fun showStationTimetable(station: MetroStation) {
@@ -2329,6 +2489,27 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         return result
     }
 
+    private fun parseAirportTimetable(station: MetroStation): List<String> {
+        val inputStream = resources.openRawResource(R.raw.airport_timetable)
+        val text = inputStream.bufferedReader().use { it.readText() }
+        val stationLine = text.split("\n").find {
+            val parts = it.split(";")
+            // Use English name for matching, case-insensitively
+            parts.size > 1 && parts[1].trim().equals(station.nameEnglish, ignoreCase = true)
+        }
+
+        return if (stationLine != null) {
+            stationLine.split(";").drop(2).map { it.trim() }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun getStationName(marker: Marker): String {
+        val title = marker.title
+        return title?.substringBefore(" / ") ?: ""
+    }
+
     private fun readLine1Timetable(station: MetroStation): String {
         val inputStream = resources.openRawResource(R.raw.line1_timetable)
         val reader = BufferedReader(InputStreamReader(inputStream))
@@ -2437,5 +2618,34 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         }
 
         return stationData.toString().trim()
+    }
+
+    private fun showPiraeusGateMap() {
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.dialog_timetable) // Reusing the same base dialog
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        // Set station names and title
+        dialog.findViewById<TextView>(R.id.station_name_greek).text = "Πειραιάς"
+        dialog.findViewById<TextView>(R.id.station_name_english).text = "Piraeus"
+        dialog.findViewById<ImageView>(R.id.close_button).setOnClickListener { dialog.dismiss() }
+
+        val timetableContainer = dialog.findViewById<LinearLayout>(R.id.timetable_container)
+        timetableContainer.removeAllViews() // Clear any previous content
+
+        val messageText = TextView(requireContext()).apply {
+            text = "Piraeus Gate Map Coming Soon!"
+            textSize = 16f
+            setTextColor(Color.parseColor("#009640"))
+            gravity = Gravity.CENTER
+            setPadding(32, 64, 32, 64)
+        }
+        timetableContainer.addView(messageText)
+
+        dialog.show()
     }
 }

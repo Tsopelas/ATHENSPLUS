@@ -25,5 +25,4 @@
             <!-- Rows will be added dynamically -->
         </TableLayout>
     </HorizontalScrollView>
-
 </LinearLayout> 
