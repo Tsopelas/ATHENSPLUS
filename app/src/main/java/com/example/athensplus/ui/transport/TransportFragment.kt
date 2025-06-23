@@ -16,6 +16,9 @@ import android.graphics.RectF
 import android.graphics.drawable.ColorDrawable
 import android.location.Geocoder
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -59,27 +62,22 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
+import android.os.Build
+import androidx.core.text.HtmlCompat
+import com.google.android.material.card.MaterialCardView
 
-data class RouteStep(
-    val startLocation: LatLng,
-    val endLocation: LatLng,
-    val instructions: String,
-    val distance: String,
-    val duration: String
+@Suppress("SpellCheckingInspection", "RemoveExplicitTypeArguments", "LiftReturnOrAssignment",
+    "UNUSED_ANONYMOUS_PARAMETER"
 )
-
-data class TransitInstruction(
-    val type: String,
-    val details: String,
-    val duration: String
-)
-
 class TransportFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentTransportBinding? = null
     private val binding get() = _binding!!
@@ -140,7 +138,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
 
     // Official Athens Metro lines data (partial, for brevity; full list should be used in production)
     val metroLine1 = listOf(
-        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94806117043078, 23.643235606587858)),
+        MetroStation("Πειραιάς", "Piraeus", LatLng(37.948263, 23.643233), isInterchange = true),
         MetroStation("Φάληρο", "Faliro", LatLng(37.94503590091905, 23.665229397093032)),
         MetroStation("Μοσχάτο", "Moschato", LatLng(37.95503411820899, 23.679616546345812)),
         MetroStation("Καλλιθέα", "Kallithea", LatLng(37.96038993809849, 23.69735115718288)),
@@ -191,7 +189,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
 
     val metroLine3 = listOf(
         MetroStation("Δημοτικό Θέατρο", "Dimotiko Theatro", LatLng(37.942987138386535, 23.64761813894496)),
-        MetroStation("Πειραιάς", "Piraeus", LatLng(37.94826317831643, 23.643233750670223)),
+        MetroStation("Πειραιάς", "Piraeus", LatLng(37.948263, 23.643233), isInterchange = true),
         MetroStation("Μανιάτικα", "Maniatika", LatLng(37.959568185347536, 23.63969873316419)),
         MetroStation("Νίκαια", "Nikaia", LatLng(37.965641240168104, 23.647316509152287)),
         MetroStation("Κορυδαλλός", "Korydallos", LatLng(37.97702502617706, 23.65035476643652)),
@@ -487,7 +485,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         ) {
             locationPermissionGranted = true
             updateLocationUI()
-            getDeviceLocation()
         } else {
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -509,7 +506,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 ) {
                     locationPermissionGranted = true
                     updateLocationUI()
-                    getDeviceLocation()
                 }
             }
         }
@@ -529,26 +525,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: SecurityException) {
             Log.e("TransportFragment", "Error updating location UI", e)
-        }
-    }
-
-    private fun getDeviceLocation() {
-        try {
-            if (locationPermissionGranted) {
-                fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
-                    if (location != null) {
-                        val userLatLng = LatLng(location.latitude, location.longitude)
-                        googleMap?.animateCamera(
-                            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 15f)
-                        )
-                    }
-                }
-            }
-        } catch (e: SecurityException) {
-            Log.e("TransportFragment", "Error getting device location", e)
-            // Fallback to Athens center
-            val athensCenter = LatLng(37.9755, 23.7348)
-            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(athensCenter, 15f))
         }
     }
 
@@ -579,6 +555,10 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         googleMap.uiSettings.isTiltGesturesEnabled = false
         googleMap.uiSettings.isRotateGesturesEnabled = false
 
+        // Focus on Ethniki Amyna
+        val ethnikiAmyna = LatLng(38.00031275851294, 23.78568239514545)
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ethnikiAmyna, 10.5f))
+
         // Only add schematic's stations and lines based on selection
         updateMapForSelection()
         updateStationMarkers(googleMap.cameraPosition.zoom)
@@ -592,7 +572,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true
             googleMap?.isMyLocationEnabled = true // Show blue dot
-            moveToCurrentLocationIfPossible()
         } else {
             // Request permissions if not granted (optional: handle this if not already)
         }
@@ -601,23 +580,6 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         googleMap.setOnMarkerClickListener { marker ->
             showStationMenu(marker)
             true
-        }
-    }
-
-    private fun moveToCurrentLocationIfPossible() {
-        if (locationPermissionGranted) {
-            try {
-                fusedLocationClient?.lastLocation?.addOnSuccessListener { location ->
-                    if (location != null) {
-                        val userLatLng = LatLng(location.latitude, location.longitude)
-                        googleMap?.animateCamera(
-                            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 15f)
-                        )
-                    }
-                }
-            } catch (e: SecurityException) {
-                e.printStackTrace()
-            }
         }
     }
 
@@ -1872,19 +1834,15 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         val cards = listOf(
             menuView.findViewById<CardView>(R.id.card_1),
             menuView.findViewById<CardView>(R.id.card_time),
-            menuView.findViewById<CardView>(R.id.card_parking),
             menuView.findViewById<CardView>(R.id.card_airport),
-            menuView.findViewById<CardView>(R.id.card_harbor),
-            menuView.findViewById<CardView>(R.id.card_information)
+            menuView.findViewById<CardView>(R.id.card_harbor)
         )
 
         // Configure buttons based on selection state
         val card1 = cards[0]
         val cardTime = cards[1]
-        val cardParking = cards[2]
-        val cardAirport = cards[3]
-        val cardHarbor = cards[4]
-        val cardInformation = cards[5]
+        val cardAirport = cards[2]
+        val cardHarbor = cards[3]
 
         // Hide all cards initially
         cards.forEach { it.visibility = View.GONE }
@@ -1892,9 +1850,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         // Show airport, harbor, and information buttons for all stations
         cardAirport.visibility = View.VISIBLE
         cardHarbor.visibility = View.VISIBLE
-        cardInformation.visibility = View.VISIBLE
         cardTime.visibility = View.VISIBLE
-        cardParking.visibility = View.VISIBLE
 
         // Add click listeners for the new buttons
         cardTime.setOnClickListener {
@@ -1969,17 +1925,64 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             }
         }
 
-        // Calculate position to show popup below the marker
+        // --- New positioning logic ---
+
+        // We need to measure the popup to get its dimensions
+        menuView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val popupWidth = menuView.measuredWidth
+        val popupHeight = menuView.measuredHeight
+
+        // Get the marker's position on the screen
         val projection = googleMap?.projection
         val markerScreenPosition = projection?.toScreenLocation(marker.position)
-        
+
         if (markerScreenPosition != null) {
-            // Show popup below the marker
+            // Get the map's visible display frame on the screen
+            val mapVisibleRect = Rect()
+            binding.mapView.getGlobalVisibleRect(mapVisibleRect)
+
+            // Get the location of the top menu to avoid overlapping it
+            val topMenuLocation = IntArray(2)
+            binding.stationSelectionContainer.getLocationOnScreen(topMenuLocation)
+            val topMenuBottomY = topMenuLocation[1] + binding.stationSelectionContainer.height
+
+            // The top of our available space is the bottom of the top menu
+            val availableTop = maxOf(mapVisibleRect.top, topMenuBottomY)
+
+            // Calculate initial desired position (centered horizontally, below the marker)
+            var x = markerScreenPosition.x - popupWidth / 2
+            var y = markerScreenPosition.y + 20 // 20px below marker anchor
+
+            // If it goes off the bottom, try placing it above the marker
+            if (y + popupHeight > mapVisibleRect.bottom) {
+                y = markerScreenPosition.y - popupHeight - 20
+            }
+
+            // Now, clamp the coordinates to be within the available space
+            // Clamp horizontally
+            if (x < mapVisibleRect.left) {
+                x = mapVisibleRect.left
+            }
+            if (x + popupWidth > mapVisibleRect.right) {
+                x = mapVisibleRect.right - popupWidth
+            }
+
+            // Clamp vertically
+            if (y < availableTop) {
+                y = availableTop
+            }
+            if (y + popupHeight > mapVisibleRect.bottom) {
+                y = mapVisibleRect.bottom - popupHeight
+            }
+
             popupWindow.showAtLocation(
-                binding.mapView,
+                binding.root, // Use a root view for NO_GRAVITY
                 Gravity.NO_GRAVITY,
-                markerScreenPosition.x - 100, // Center horizontally (menu is ~200dp wide)
-                markerScreenPosition.y + 20 // Show slightly below marker
+                x,
+                y
             )
         }
     }
@@ -2276,6 +2279,11 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         greekNameText.text = station.nameGreek
         englishNameText.text = station.nameEnglish
 
+        // Get the line color and apply it to the station name
+        val lineColor = getStationColor(station)
+        greekNameText.setTextColor(lineColor)
+        englishNameText.setTextColor(lineColor)
+
         // Set close button
         val closeButton = dialog.findViewById<ImageView>(R.id.close_button)
         closeButton.setOnClickListener {
@@ -2295,55 +2303,112 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
 
         dialog.show()
 
-        // Fetch timetable data
+        // Fetch timetable data and then wait time
         fetchStationTimetable(station, dialog)
     }
 
     private fun fetchStationTimetable(station: MetroStation, dialog: Dialog) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val timetableTables = when {
+        lifecycleScope.launch(Dispatchers.Main) {
+            // First, show the conventional timetable
+            val timetableTables = withContext(Dispatchers.IO) {
+                when {
                     metroLine1.contains(station) -> parseLine1Timetable(station)
                     metroLine2.contains(station) -> parseLine2Timetable(station)
                     metroLine3.contains(station) -> parseLine3Timetable(station)
                     else -> emptyList()
                 }
+            }
 
-                withContext(Dispatchers.Main) {
-                    if (timetableTables.isNotEmpty()) {
-                        updateTimetableDialog(dialog, timetableTables, station)
-                    } else {
-                        dialog.findViewById<LinearLayout>(R.id.timetable_container).apply {
-                            removeAllViews()
-                            val errorView = TextView(requireContext()).apply {
-                                text = "Timetable not available for this station."
-                                setTextColor(Color.RED)
-                                gravity = Gravity.CENTER
-                                setPadding(16, 48, 16, 48)
-                            }
-                            addView(errorView)
-                        }
+            if (timetableTables.isNotEmpty()) {
+                updateTimetableDialog(dialog, timetableTables, station)
+            } else {
+                dialog.findViewById<LinearLayout>(R.id.timetable_container).apply {
+                    removeAllViews()
+                    val errorView = TextView(requireContext()).apply {
+                        text = "Timetable not available for this station."
+                        setTextColor(Color.RED)
+                        gravity = Gravity.CENTER
+                        setPadding(16, 48, 16, 48)
                     }
+                    addView(errorView)
                 }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e("TransportFragment", "Error fetching timetable", e)
-                    dialog.findViewById<LinearLayout>(R.id.timetable_container).apply {
-                        removeAllViews()
-                        val errorView = TextView(requireContext()).apply {
-                            text = "Failed to load timetable."
-                            setTextColor(Color.RED)
-                            gravity = Gravity.CENTER
-                            setPadding(16, 48, 16, 48)
-                        }
-                        addView(errorView)
-                    }
+            }
+
+            // For Line 3, also fetch and display the live wait time from the local file
+            if (metroLine3.contains(station)) {
+                val waitTimeData = withContext(Dispatchers.IO) {
+                    readWaitTimeData()
                 }
+                val currentWaitTime = withContext(Dispatchers.Default) {
+                    parseWaitTime(waitTimeData)
+                }
+                // Pass the wait time to the dialog update function
+                updateTimetableDialog(dialog, timetableTables, station, currentWaitTime)
+            } else {
+                 // For other lines, call the dialog update without wait time
+                updateTimetableDialog(dialog, timetableTables, station)
             }
         }
     }
+    
+    private fun readWaitTimeData(): List<String> {
+        val inputStream = resources.openRawResource(R.raw.line3_averagewaittime)
+        return inputStream.bufferedReader().use { it.readLines() }
+    }
 
-    private fun updateTimetableDialog(dialog: Dialog, tables: List<TimetableTable>, station: MetroStation) {
+    private fun parseWaitTime(waitTimeData: List<String>): String {
+        val now = Calendar.getInstance()
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val nowTimeStr = sdf.format(now.time)
+
+        // Function to check today's and yesterday's schedules for a matching time
+        fun findWaitTime(calendar: Calendar, checkOvernight: Boolean): String? {
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+            val dayTag = when (dayOfWeek) {
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY -> "MON-THU"
+                Calendar.FRIDAY -> "FRI"
+                Calendar.SATURDAY -> "SAT"
+                Calendar.SUNDAY -> "SUN"
+                else -> null
+            }
+
+            dayTag?.let {
+                for (line in waitTimeData) {
+                    val parts = line.split(";")
+                    if (parts.size == 3 && parts[0] == it) {
+                        val timeRange = parts[1].split("-")
+                        val startTimeStr = timeRange[0].trim()
+                        val endTimeStr = timeRange[1].trim()
+                        val wait = parts[2]
+
+                        val isOvernight = startTimeStr > endTimeStr
+                        if (isOvernight) {
+                            if (checkOvernight && nowTimeStr < endTimeStr) return wait // Early morning check
+                            if (!checkOvernight && nowTimeStr >= startTimeStr) return wait // Late night check
+                        } else if (!checkOvernight) {
+                            if (nowTimeStr >= startTimeStr && nowTimeStr < endTimeStr) return wait
+                        }
+                    }
+                }
+            }
+            return null
+        }
+
+        // 1. Check if we are in an "overnight" slot from yesterday's schedule (e.g., it's 1 AM Sunday, check Saturday's late schedule)
+        if (now.get(Calendar.HOUR_OF_DAY) < 4) { // 4 AM is a safe cutoff
+            val yesterday = Calendar.getInstance().apply { add(Calendar.DATE, -1) }
+            val waitTime = findWaitTime(yesterday, true)
+            if (waitTime != null) return waitTime
+        }
+
+        // 2. Check today's schedule for a matching time slot
+        val waitTime = findWaitTime(now, false)
+        if (waitTime != null) return waitTime
+
+        return "Not available at this time"
+    }
+
+    private fun updateTimetableDialog(dialog: Dialog, tables: List<TimetableTable>, station: MetroStation, waitTime: String? = null) {
         val container = dialog.findViewById<LinearLayout>(R.id.timetable_container)
         container.removeAllViews()
         val lineColor = getStationColor(station)
@@ -2352,8 +2417,17 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             val inflater = LayoutInflater.from(dialog.context)
             val tableView = inflater.inflate(R.layout.item_timetable_table, container, false)
             
+            // --- Set consistent margins for all table views ---
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.setMargins(0, 0, 0, 16) // Add 16dp bottom margin
+            tableView.layoutParams = lp
+
             val title = tableView.findViewById<TextView>(R.id.direction_title)
             val tableLayout = tableView.findViewById<TableLayout>(R.id.timetable_table_layout)
+            tableLayout.isStretchAllColumns = true // Force columns to stretch
 
             title.text = tableData.direction
             title.setTextColor(lineColor)
@@ -2362,11 +2436,24 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
             val headerRow = TableRow(dialog.context)
             tableData.headers.forEach { headerText ->
                 val headerTextView = TextView(dialog.context).apply {
-                    text = headerText
+                    textSize = 15f
                     setTextColor(lineColor)
-                    setPadding(16, 16, 16, 16)
-                    typeface = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+                    setPadding(12, 16, 12, 16)
                     gravity = Gravity.CENTER
+
+                    // Apply custom font to sub-header if it exists
+                    if (headerText.contains("\n")) {
+                        val parts = headerText.split("\n", limit = 2)
+                        val mainText = parts[0]
+                        val subText = parts[1]
+                        
+                        val htmlText = "<b>$mainText</b><br/><small>$subText</small>"
+                        text = HtmlCompat.fromHtml(htmlText, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                        
+                    } else {
+                        typeface = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+                        text = headerText
+                    }
                 }
                 headerRow.addView(headerTextView)
             }
@@ -2379,7 +2466,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                     val cellTextView = TextView(dialog.context).apply {
                         text = cellData
                         setTextColor(Color.BLACK)
-                        setPadding(16, 16, 16, 16)
+                        setPadding(12, 16, 12, 16) // Corrected horizontal padding
                         typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
                         gravity = Gravity.CENTER
                     }
@@ -2388,6 +2475,72 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                 tableLayout.addView(tableRow)
             }
             container.addView(tableView)
+        }
+        
+        // --- Add the Estimated Wait Time section for Line 3 ---
+        if (waitTime != null) {
+          val inflater = LayoutInflater.from(dialog.context)
+
+          // Use the existing item_timetable_table.xml layout for the entire section
+          val waitTimeView = inflater.inflate(R.layout.item_timetable_table, container, false)
+          
+          // --- Apply the same consistent margins ---
+          val lpWait = LinearLayout.LayoutParams(
+              LinearLayout.LayoutParams.MATCH_PARENT,
+              LinearLayout.LayoutParams.WRAP_CONTENT
+          )
+          lpWait.setMargins(0, 0, 0, 16) // Add 16dp bottom margin
+          waitTimeView.layoutParams = lpWait
+
+          // Set the title
+          val title = waitTimeView.findViewById<TextView>(R.id.direction_title)
+          val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+          val time = sdf.format(Date())
+          title.text = "Estimated Wait Time ($time)"
+          title.setTextColor(lineColor)
+          
+          // Get the TableLayout from the inflated view
+          val tableLayout = waitTimeView.findViewById<TableLayout>(R.id.timetable_table_layout)
+          tableLayout.isStretchAllColumns = true // Force columns to stretch
+          tableLayout.removeAllViews() // Clear any default rows if they existed
+
+          // Helper function to create a styled cell
+          fun createCell(text: String, isHeader: Boolean = false): TextView {
+            return TextView(dialog.context).apply {
+              this.text = text
+              this.setPadding(12, 16, 12, 16)
+              this.gravity = Gravity.CENTER
+              if (isHeader) {
+                this.typeface = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+                this.textSize = 15f
+                this.setTextColor(lineColor)
+              } else {
+                this.typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
+                this.setTextColor(Color.BLACK)
+              }
+            }
+          }
+
+          // Header Row
+          val headerRow = TableRow(dialog.context)
+          headerRow.addView(createCell("To", true))
+          headerRow.addView(createCell("Wait Time", true))
+          tableLayout.addView(headerRow)
+
+          // Airport Row
+          val airportRow = TableRow(dialog.context)
+          airportRow.addView(createCell("Airport"))
+          airportRow.addView(createCell("36'"))
+          tableLayout.addView(airportRow)
+
+          // Dynamic Wait Time Row
+          val dynamicRow = TableRow(dialog.context)
+          dynamicRow.addView(createCell("D. Theatro"))
+          dynamicRow.addView(createCell(waitTime))
+          tableLayout.addView(dynamicRow)
+
+          // Add the complete, styled view to the container
+          container.addView(waitTimeView)
         }
     }
 
@@ -2430,7 +2583,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         lines.forEach { line ->
             val parts = line.split(";")
             if (line.startsWith("TOWARDS_ELLINIKO")) {
-                 val headers = listOf("First (Mon-Fri)", "First (Sat-Sun)", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                 val headers = listOf("First\n(Mon-Fri)", "First\n(Sat-Sun)", "Last\n(Sun-Thu)", "Last\n(Fri-Sat)")
                  val row = listOf(
                     parts.getOrNull(2) ?: "-",
                     parts.getOrNull(4) ?: "-",
@@ -2439,7 +2592,7 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
                  )
                 result.add(TimetableTable("Towards Elliniko", headers, listOf(row)))
             } else if (line.startsWith("TOWARDS_ANTHOUPOLI")) {
-                val headers = listOf("First (All Days)", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                val headers = listOf("First\n(All Days)", "Last\n(Sun-Thu)", "Last\n(Fri-Sat)")
                 val row = listOf(
                     parts.getOrNull(2) ?: "-",
                     parts.getOrNull(4) ?: "-",
@@ -2462,22 +2615,23 @@ class TransportFragment : Fragment(), OnMapReadyCallback {
         lines.forEach { line ->
             val parts = line.split(";")
             if (line.startsWith("TOWARDS_AIRPORT")) {
-                val headers = listOf("To", "First", "Second", "Last", "Last (Mon-Thu, Sun)", "Last (Fri-Sat)")
+                // Simplified headers further, removing generic "Last"
+                val headers = listOf("To", "First", "Last\n(Sun-Thu)", "Last\n(Fri-Sat)")
+                
+                // Airport row with last time populated for specific day columns
                 val rowAirport = listOf(
                     "Airport",
-                    parts.getOrNull(4) ?: "-",
-                    parts.getOrNull(6) ?: "-",
-                    parts.getOrNull(8) ?: "-",
-                    parts.getOrNull(8) ?: "-", // No separate last train on weekday
-                    parts.getOrNull(8) ?: "-"  // No separate last train on weekend
+                    parts.getOrNull(4) ?: "-", // First to Airport
+                    parts.getOrNull(8) ?: "-", // Last to Airport (applies to all days)
+                    parts.getOrNull(8) ?: "-"  // Last to Airport (applies to all days)
                 )
+                
+                // D. Plakentias row adjusted to new headers
                 val rowDPL = listOf(
                     "D. Plakentias",
-                    parts.getOrNull(2) ?: "-",
-                    "-", // No second train to DPL
-                    "-", // No dedicated last train to DPL in this field
-                    parts.getOrNull(10) ?: "-",
-                    parts.getOrNull(12) ?: "-"
+                    parts.getOrNull(2) ?: "-", // First to DPL
+                    parts.getOrNull(10) ?: "-", // Last on Weekday/Sun
+                    parts.getOrNull(12) ?: "-"  // Last on Fri/Sat
                 )
                 result.add(TimetableTable("Towards Airport / D. Plakentias", headers, listOf(rowAirport, rowDPL)))
             } else if (line.startsWith("TOWARDS_DIMOTIKO_THEATRO")) {
