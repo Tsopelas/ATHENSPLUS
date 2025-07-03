@@ -1,4 +1,4 @@
-package com.example.athensplus.ui.home
+package com.example.athensplus.presentation.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,8 +13,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+
     private val binding get() = _binding!!
 
     override fun onCreateView(

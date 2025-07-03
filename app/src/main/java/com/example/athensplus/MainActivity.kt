@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.athensplus.databinding.ActivityMainBinding
-import com.example.athensplus.ui.bottombar.BottomBar
+import com.example.athensplus.presentation.common.BottomBar
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,7 +12,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomBar: BottomBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Force light mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
 

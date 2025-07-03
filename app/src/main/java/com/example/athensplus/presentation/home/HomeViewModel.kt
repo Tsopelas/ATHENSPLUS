@@ -1,4 +1,4 @@
-package com.example.athensplus.ui.home
+package com.example.athensplus.presentation.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

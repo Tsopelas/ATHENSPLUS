@@ -1,14 +1,14 @@
-package com.example.athensplus.ui.explore
+package com.example.athensplus.presentation.info
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.example.athensplus.databinding.FragmentExploreBinding
+import com.example.athensplus.databinding.FragmentInfoBinding
 
-class ExploreFragment : Fragment() {
-    private var _binding: FragmentExploreBinding? = null
+class InfoFragment : Fragment() {
+    private var _binding: FragmentInfoBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -16,7 +16,7 @@ class ExploreFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentExploreBinding.inflate(inflater, container, false)
+        _binding = FragmentInfoBinding.inflate(inflater, container, false)
         return binding.root
     }
 
