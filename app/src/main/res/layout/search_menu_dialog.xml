@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:padding="16dp">
+
+    <!-- Search Bar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="2dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/search_start_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_location"
+                android:tint="#663399" />
+
+            <EditText
+                android:id="@+id/search_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Search for a place or address"
+                android:textColor="#2D3550"
+                android:textColorHint="#B39DDB"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textSize="16sp"
+                android:fontFamily="@font/montserrat_medium" />
+
+            <ImageButton
+                android:id="@+id/search_clear_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_clear"
+                android:tint="#663399"
+                android:contentDescription="Clear" />
+
+            <ImageButton
+                android:id="@+id/search_add_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_enter"
+                android:tint="#663399"
+                android:contentDescription="Enter" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Chips Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="start"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_dropoff"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dropoff"
+            app:chipIcon="@drawable/ic_circle_red"
+            app:chipIconTint="@color/design_default_color_error"
+            app:chipBackgroundColor="@color/white"
+            app:strokeColor="#663399"
+            app:strokeWidth="1dp"
+            app:closeIconEnabled="false"
+            android:textColor="#663399"
+            android:layout_marginEnd="8dp" />
+    </LinearLayout>
+
+    <!-- Menu Items -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="start|center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_menu"
+            android:tint="#663399"
+            android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/menu_choose_on_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose on map"
+            android:textColor="#2D3550"
+            android:textSize="16sp"
+            android:fontFamily="@font/montserrat_medium" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/menu_show_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show all"
+        android:textColor="#663399"
+        android:backgroundTint="#F3F1F7"
+        android:fontFamily="@font/montserrat_bold"
+        android:layout_marginBottom="8dp"
+        android:layout_gravity="start"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:background="@drawable/modern_button_bg" />
+
+    <!-- Section: Current location -->
+    <TextView
+        android:id="@+id/section_current_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Current location"
+        android:textColor="#663399"
+        android:textSize="14sp"
+        android:fontFamily="@font/montserrat_bold"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Suggestions List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/search_suggestions_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/transparent" />
+
+</LinearLayout> 

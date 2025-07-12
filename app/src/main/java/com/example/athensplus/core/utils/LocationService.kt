@@ -9,6 +9,9 @@ import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 class LocationService(private val fragment: Fragment) {
     private var fusedLocationClient: FusedLocationProviderClient? = null
@@ -72,4 +75,28 @@ class LocationService(private val fragment: Fragment) {
     }
 
     fun isLocationPermissionGranted(): Boolean = locationPermissionGranted
+
+    suspend fun getCurrentLocation(): LatLng? {
+        return if (locationPermissionGranted && fusedLocationClient != null) {
+            try {
+                suspendCancellableCoroutine { continuation ->
+                    fusedLocationClient!!.lastLocation
+                        .addOnSuccessListener { location ->
+                            if (location != null) {
+                                continuation.resume(LatLng(location.latitude, location.longitude))
+                            } else {
+                                continuation.resume(null)
+                            }
+                        }
+                        .addOnFailureListener {
+                            continuation.resume(null)
+                        }
+                }
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+    }
 } 

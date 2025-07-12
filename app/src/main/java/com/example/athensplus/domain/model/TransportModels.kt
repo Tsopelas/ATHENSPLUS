@@ -10,7 +10,8 @@ data class TransitStep(
     val departureStop: String? = null,
     val arrivalStop: String? = null,
     val nextArrival: String? = null,
-    val walkingDistance: String? = null
+    val walkingDistance: String? = null,
+    val vehicleType: String? = null
 )
 
 data class MetroStation(

@@ -3,115 +3,203 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:background="@drawable/dialog_background"
     android:orientation="vertical"
-    android:background="@drawable/dialog_bg">
+    android:padding="20dp">
 
-    <!-- Header with Summary -->
+    <!-- Header with Title and X Button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:background="#6200EE">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Transit Directions"
-            android:textSize="24sp"
-        android:textStyle="bold"
-            android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/text_total_duration"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF"
-                    android:text="Total Duration: 25 min" />
-
-                <TextView
-                    android:id="@+id/text_total_distance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:textColor="#E0E0E0"
-                    android:text="Distance: 3.2 km"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/ic_go"
+                android:tint="#663399"
+                android:scaleType="centerInside" />
 
             <TextView
-                android:id="@+id/text_route_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fastest Route"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/route_type_badge"
-                android:padding="12dp"
-                android:textSize="14sp" />
+                android:text="Directions"
+                android:textColor="#663399"
+                android:textSize="20sp"
+                android:fontFamily="@font/montserrat_bold" />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/close_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close"
+            android:tint="#663399"
+            android:scaleType="centerInside"
+            android:contentDescription="Close" />
     </LinearLayout>
 
-    <!-- Route Steps -->
+    <!-- From Location (Modern Card Style, less round, outlined circle left icon) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="10dp">
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="#F3F1F7">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/circle_purple_outline"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="8dp" />
+                <EditText
+                    android:id="@+id/edit_from_location"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:textColor="#663399"
+                    android:hint="Current Location"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:textSize="16sp"
+                    android:textColorHint="#B39DDB"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical|start"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="false" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <ImageButton
+            android:id="@+id/button_add_from"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/modern_button_bg"
+            android:src="@drawable/ic_addstop"
+            android:tint="#663399"
+            android:scaleType="centerInside"
+            android:padding="2dp"
+            android:contentDescription="Add stop" />
+    </LinearLayout>
+
+    <!-- To Location (Modern Card Style, less round, filled circle left icon) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="#F3F1F7">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="8dp">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/circle_purple_filled"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="8dp" />
+                <EditText
+                    android:id="@+id/edit_to_location"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:textColor="#663399"
+                    android:hint="To Where?"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:textSize="16sp"
+                    android:textColorHint="#B39DDB"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical|start" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <ImageButton
+            android:id="@+id/button_update_to"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/modern_button_bg"
+            android:src="@drawable/ic_enter"
+            android:tint="#663399"
+            android:scaleType="centerInside"
+            android:padding="12dp"
+            android:contentDescription="Update directions" />
+    </LinearLayout>
+
+    <!-- Summary Text -->
+    <TextView
+        android:id="@+id/summary_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#663399"
+        android:textSize="15sp"
+        android:fontFamily="@font/montserrat_bold"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone" />
+
+    <!-- Fixed Height ScrollView for Directions -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:maxHeight="400dp"
-        android:padding="16dp"
-        android:background="#F8F9FA">
-
+        android:overScrollMode="never"
+        android:fillViewport="true"
+        android:background="@android:color/transparent">
+        
         <LinearLayout
-            android:id="@+id/instructions_container"
+            android:id="@+id/steps_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:background="@android:color/transparent" />
     </ScrollView>
-
-    <!-- Bottom Actions -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="#F8F9FA">
-
-        <Button
-            android:id="@+id/button_show_all_buses"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Show All Available Buses"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="#FFFFFF"
-            android:textColor="#6200EE"
-            android:padding="16dp"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-
-        <Button
-            android:id="@+id/button_close"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Close"
-        android:backgroundTint="#6200EE"
-        android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:textSize="16sp"
-            app:cornerRadius="12dp" />
-    </LinearLayout>
 
 </LinearLayout> 

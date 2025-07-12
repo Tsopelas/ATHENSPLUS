@@ -4,15 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:background="?attr/selectableItemBackground">
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/step_item_bg">
 
     <ImageView
-        android:id="@+id/directionIcon"
+        android:id="@+id/mode_icon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginEnd="16dp"
-        android:contentDescription="Direction icon" />
+        android:layout_marginEnd="12dp"
+        android:scaleType="centerInside" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -21,26 +21,37 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/instructionText"
+            android:id="@+id/instruction_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textColor="@color/black"
+            android:text="Walk to Syntagma station"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat_medium"
             android:layout_marginBottom="4dp" />
 
         <TextView
-            android:id="@+id/detailsText"
+            android:id="@+id/details_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/gray" />
+            android:text="Distance: 200m"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_regular"
+            android:layout_marginBottom="4dp" />
 
         <TextView
-            android:id="@+id/timeInfo"
-            android:layout_width="match_parent"
+            android:id="@+id/duration_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:layout_marginTop="4dp" />
+            android:text="3 min"
+            android:textColor="#663399"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_bold"
+            android:background="@drawable/status_badge_bg"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp" />
+
     </LinearLayout>
+
 </LinearLayout> 
