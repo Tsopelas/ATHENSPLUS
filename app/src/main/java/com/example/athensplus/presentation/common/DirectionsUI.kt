@@ -22,7 +22,8 @@ class DirectionsUI(private val context: Context) {
 
     fun showDirectionsDialog(
         directionsResult: DirectionsResult,
-        onRouteDrawn: (List<LatLng>) -> Unit
+        onRouteDrawn: (List<LatLng>) -> Unit,
+        onChooseOnMap: ((editText: android.widget.EditText) -> Unit)? = null
     ) {
         val dialog = Dialog(context)
         dialog.setContentView(R.layout.dialog_directions)
@@ -33,7 +34,10 @@ class DirectionsUI(private val context: Context) {
         )
 
         val stepsContainer = dialog.findViewById<LinearLayout>(R.id.steps_container)
-        val closeButton = dialog.findViewById<Button>(R.id.close_button)
+        val closeButton = dialog.findViewById<View>(R.id.close_button)
+        val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
+        val editToLocation = dialog.findViewById<android.widget.EditText>(R.id.edit_to_location)
+        val editFromLocation = dialog.findViewById<android.widget.EditText>(R.id.edit_from_location)
 
         stepsContainer.removeAllViews()
         directionsResult.steps.forEach { step ->
@@ -45,8 +49,17 @@ class DirectionsUI(private val context: Context) {
             dialog.dismiss()
         }
 
+        chooseOnMapButton?.setOnClickListener {
+            val toFocused = editToLocation.isFocused
+            val fromFocused = editFromLocation.isFocused
+            when {
+                toFocused -> onChooseOnMap?.invoke(editToLocation)
+                fromFocused -> onChooseOnMap?.invoke(editFromLocation)
+                else -> onChooseOnMap?.invoke(editFromLocation)
+            }
+        }
+
         dialog.show()
-        
         onRouteDrawn(directionsResult.routePoints)
     }
 

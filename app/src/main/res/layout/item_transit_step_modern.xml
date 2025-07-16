@@ -6,12 +6,16 @@
 
     <!-- Step Container with Gray Box -->
     <LinearLayout
+        android:id="@+id/step_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="16dp"
-        android:background="@drawable/modern_button_bg">
+        android:background="@drawable/modern_button_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
 
         <ImageView
             android:id="@+id/step_icon"
@@ -56,6 +60,50 @@
             android:fontFamily="@font/montserrat_bold"
             android:layout_marginStart="12dp"
             android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Expanded Wait Time Information -->
+    <LinearLayout
+        android:id="@+id/wait_time_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/route_details_bg"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_time"
+                android:tint="#663399"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/wait_time_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Loading wait time..."
+                android:textColor="#663399"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_medium" />
+
+            <TextView
+                android:id="@+id/next_departure_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#B39DDB"
+                android:textSize="12sp"
+                android:fontFamily="@font/montserrat_medium" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Purple Connecting Line (except for last item) -->

@@ -8,7 +8,6 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <!-- Header with Title and X Button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,7 +50,6 @@
             android:contentDescription="Close" />
     </LinearLayout>
 
-    <!-- From Location (Modern Card Style, less round, outlined circle left icon) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -113,7 +111,44 @@
             android:contentDescription="Add stop" />
     </LinearLayout>
 
-    <!-- To Location (Modern Card Style, less round, filled circle left icon) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:id="@+id/button_choose_on_map_to"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/modern_button_bg"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_mapsearching"
+                android:tint="#663399"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose on Map"
+                android:textColor="#663399"
+                android:textSize="16sp"
+                android:fontFamily="@font/montserrat_semibold" />
+
+        </LinearLayout>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -172,20 +207,6 @@
             android:contentDescription="Update directions" />
     </LinearLayout>
 
-    <!-- Summary Text -->
-    <TextView
-        android:id="@+id/summary_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#663399"
-        android:textSize="15sp"
-        android:fontFamily="@font/montserrat_bold"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:visibility="gone" />
-
-    <!-- Fixed Height ScrollView for Directions -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -201,5 +222,35 @@
             android:orientation="vertical"
             android:background="@android:color/transparent" />
     </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp"
+        android:padding="16dp"
+        android:background="@drawable/route_details_bg"
+        android:visibility="gone"
+        android:id="@+id/summary_container">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_time"
+            android:tint="#663399"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:id="@+id/summary_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#663399"
+            android:textSize="18sp"
+            android:fontFamily="@font/montserrat_bold"
+            android:gravity="center_vertical" />
+
+    </LinearLayout>
 
 </LinearLayout> 

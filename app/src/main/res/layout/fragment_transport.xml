@@ -75,15 +75,46 @@
 
             <ImageButton
                 android:id="@+id/button_directions"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="12dp"
                 android:background="@drawable/modern_button_bg"
                 android:contentDescription="Get Directions"
-                android:padding="19dp"
+                android:padding="12dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_enter"
+                android:src="@drawable/ic_go"
                 android:tint="#663399" />
+        </LinearLayout>
+
+        <!-- Choose on Map Card -->
+        <LinearLayout
+            android:id="@+id/choose_on_map_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@drawable/modern_button_bg"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_mapsearching"
+                android:tint="#663399"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose on Map"
+                android:textColor="#663399"
+                android:textSize="16sp"
+                android:fontFamily="@font/montserrat_semibold" />
+
         </LinearLayout>
     </LinearLayout>
 

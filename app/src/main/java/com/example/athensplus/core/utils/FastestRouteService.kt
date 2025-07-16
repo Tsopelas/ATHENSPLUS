@@ -92,6 +92,11 @@ class FastestRouteService(
             }
             
             val leg = legs.getJSONObject(0)
+            val totalDuration = leg.getJSONObject("duration").getString("text")
+            val totalDistance = leg.getJSONObject("distance").getString("text")
+            
+            Log.d("FastestRouteService", "Total route: $totalDuration, $totalDistance")
+            
             val stepsArray = leg.getJSONArray("steps")
             
             for (i in 0 until stepsArray.length()) {
@@ -110,6 +115,18 @@ class FastestRouteService(
                 val arrivalStop = transitDetails?.optJSONObject("arrival_stop")?.optString("name") ?: ""
                 val vehicleType = transitDetails?.optJSONObject("line")?.optJSONObject("vehicle")?.optString("type")
                 
+                // Get departure time for wait time calculation
+                val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
+                val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
+                
+                // Log departure time information for debugging
+                if (travelMode == "TRANSIT") {
+                    Log.d("FastestRouteService", "Transit step: $line")
+                    Log.d("FastestRouteService", "Departure time: $departureTime")
+                    Log.d("FastestRouteService", "Departure time value: $departureTimeValue")
+                    Log.d("FastestRouteService", "Current time: ${System.currentTimeMillis() / 1000}")
+                }
+
                 steps.add(
                     TransitStep(
                         mode = travelMode,
@@ -119,7 +136,11 @@ class FastestRouteService(
                         departureStop = departureStop,
                         arrivalStop = arrivalStop,
                         walkingDistance = distance,
-                        vehicleType = vehicleType
+                        vehicleType = vehicleType,
+                        totalRouteDuration = totalDuration,
+                        totalRouteDistance = totalDistance,
+                        departureTime = departureTime,
+                        departureTimeValue = departureTimeValue
                     )
                 )
             }
@@ -175,6 +196,11 @@ class FastestRouteService(
             }
             
             val leg = legs.getJSONObject(0)
+            val totalDuration = leg.getJSONObject("duration").getString("text")
+            val totalDistance = leg.getJSONObject("distance").getString("text")
+            
+            Log.d("FastestRouteService", "Test: Total route: $totalDuration, $totalDistance")
+            
             val stepsArray = leg.getJSONArray("steps")
             
             for (i in 0 until stepsArray.length()) {
@@ -190,6 +216,10 @@ class FastestRouteService(
                 val arrivalStop = transitDetails?.optJSONObject("arrival_stop")?.optString("name") ?: ""
                 val vehicleType = transitDetails?.optJSONObject("line")?.optJSONObject("vehicle")?.optString("type")
                 
+                // Get departure time for wait time calculation
+                val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
+                val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
+                
                 steps.add(
                     TransitStep(
                         mode = travelMode,
@@ -199,7 +229,11 @@ class FastestRouteService(
                         departureStop = departureStop,
                         arrivalStop = arrivalStop,
                         walkingDistance = distance,
-                        vehicleType = vehicleType
+                        vehicleType = vehicleType,
+                        totalRouteDuration = totalDuration,
+                        totalRouteDistance = totalDistance,
+                        departureTime = departureTime,
+                        departureTimeValue = departureTimeValue
                     )
                 )
             }
