@@ -15,7 +15,17 @@ data class TransitStep(
     val totalRouteDuration: String? = null,
     val totalRouteDistance: String? = null,
     val departureTime: String? = null,
-    val departureTimeValue: Long = 0L
+    val departureTimeValue: Long = 0L,
+    // Enhanced bus times fields
+    val waitTime: String? = null,
+    val waitTimeMinutes: Int = 0,
+    val alternativeLines: List<String> = emptyList(),
+    val frequency: String? = null,
+    val reliability: String? = null,
+    val crowdLevel: String? = null,
+    val price: String? = null,
+    val accessibility: Boolean = false,
+    val realTimeUpdates: Boolean = false
 )
 
 data class MetroStation(
@@ -55,4 +65,35 @@ data class DirectionsResult(
     val steps: List<TransitStep>,
     val totalDuration: String,
     val totalDistance: String
+)
+
+// New data classes for enhanced bus times
+data class BusRouteAlternative(
+    val routeId: String,
+    val steps: List<TransitStep>,
+    val totalDuration: String,
+    val totalDistance: String,
+    val departureTime: Long,
+    val arrivalTime: Long,
+    val waitTime: Long,
+    val busLines: List<String>,
+    val reliability: String,
+    val price: String?,
+    val accessibility: Boolean,
+    val realTimeUpdates: Boolean
+)
+
+data class BusDepartureInfo(
+    val line: String,
+    val destination: String,
+    val departureTime: Long,
+    val waitMinutes: Int,
+    val stopName: String,
+    val vehicleType: String?,
+    val frequency: String?,
+    val reliability: String?,
+    val crowdLevel: String?,
+    val price: String?,
+    val accessibility: Boolean,
+    val realTimeUpdates: Boolean
 ) 

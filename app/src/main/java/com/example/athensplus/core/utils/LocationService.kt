@@ -62,6 +62,9 @@ class LocationService(private val fragment: Fragment) {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        // Suppress unused parameter warning
+        @Suppress("UNUSED_PARAMETER")
+        val _permissions = permissions
         locationPermissionGranted = false
         when (requestCode) {
             LOCATION_PERMISSION_REQUEST_CODE -> {
@@ -79,18 +82,27 @@ class LocationService(private val fragment: Fragment) {
     suspend fun getCurrentLocation(): LatLng? {
         return if (locationPermissionGranted && fusedLocationClient != null) {
             try {
-                suspendCancellableCoroutine { continuation ->
-                    fusedLocationClient!!.lastLocation
-                        .addOnSuccessListener { location ->
-                            if (location != null) {
-                                continuation.resume(LatLng(location.latitude, location.longitude))
-                            } else {
+                // Check permission before accessing location
+                if (ContextCompat.checkSelfPermission(
+                        fragment.requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    suspendCancellableCoroutine { continuation ->
+                        fusedLocationClient!!.lastLocation
+                            .addOnSuccessListener { location ->
+                                if (location != null) {
+                                    continuation.resume(LatLng(location.latitude, location.longitude))
+                                } else {
+                                    continuation.resume(null)
+                                }
+                            }
+                            .addOnFailureListener {
                                 continuation.resume(null)
                             }
-                        }
-                        .addOnFailureListener {
-                            continuation.resume(null)
-                        }
+                    }
+                } else {
+                    null
                 }
             } catch (e: Exception) {
                 null

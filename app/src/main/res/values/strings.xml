@@ -36,4 +36,6 @@
     <string name="piraeus_gate_map">Piraeus Gate Map</string>
     <string name="enter_starting_address">Enter starting address...</string>
     <string name="google_maps_key">AIzaSyAbCaNy9okak33ITCpb1MWR_Idu6wqQq14</string>
+    <string name="search_address_hint">Search for an address...</string>
+    <string name="no_address_suggestions">No address suggestions found</string>
 </resources>

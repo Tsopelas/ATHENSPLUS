@@ -3,6 +3,7 @@ package com.example.athensplus.core.utils
 import android.content.Context
 import android.util.Log
 import com.example.athensplus.domain.model.TransitStep
+import com.example.athensplus.domain.model.BusRouteAlternative
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -15,10 +16,36 @@ class FastestRouteService(
     private val locationService: LocationService? = null
 ) {
     
+    private val enhancedBusTimesService = EnhancedBusTimesService(context, apiKey, locationService)
+    
     suspend fun getFastestRoute(
         from: String,
         to: String
     ): List<TransitStep> = withContext(Dispatchers.IO) {
+        try {
+            // Use enhanced bus times service for better alternatives
+            val alternatives = enhancedBusTimesService.getEnhancedBusRoutes(from, to, 3)
+            
+            if (alternatives.isNotEmpty()) {
+                // Return the best alternative (lowest wait time + travel time)
+                val bestAlternative = alternatives.minByOrNull { 
+                    it.waitTime + (it.totalDuration.replace(" min", "").toIntOrNull() ?: 0) * 60 
+                } ?: alternatives.first()
+                
+                Log.d("FastestRouteService", "Selected best route with ${bestAlternative.waitTime}s wait time")
+                return@withContext bestAlternative.steps
+            }
+            
+            // Fallback to original implementation if enhanced service fails
+            return@withContext getFallbackRoute(from, to)
+            
+        } catch (e: Exception) {
+            Log.e("FastestRouteService", "Error getting enhanced route, falling back", e)
+            return@withContext getFallbackRoute(from, to)
+        }
+    }
+    
+    private suspend fun getFallbackRoute(from: String, to: String): List<TransitStep> = withContext(Dispatchers.IO) {
         try {
             // Handle current location case
             val origin = if (from.contains("Current Location", ignoreCase = true)) {
@@ -119,12 +146,19 @@ class FastestRouteService(
                 val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
                 val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
                 
+                // Calculate wait time
+                val currentTime = System.currentTimeMillis() / 1000
+                val waitTime = if (departureTimeValue > currentTime) {
+                    (departureTimeValue - currentTime) / 60 // Convert to minutes
+                } else 0
+                
                 // Log departure time information for debugging
                 if (travelMode == "TRANSIT") {
                     Log.d("FastestRouteService", "Transit step: $line")
                     Log.d("FastestRouteService", "Departure time: $departureTime")
                     Log.d("FastestRouteService", "Departure time value: $departureTimeValue")
-                    Log.d("FastestRouteService", "Current time: ${System.currentTimeMillis() / 1000}")
+                    Log.d("FastestRouteService", "Wait time: ${waitTime} minutes")
+                    Log.d("FastestRouteService", "Current time: $currentTime")
                 }
 
                 steps.add(
@@ -140,7 +174,9 @@ class FastestRouteService(
                         totalRouteDuration = totalDuration,
                         totalRouteDistance = totalDistance,
                         departureTime = departureTime,
-                        departureTimeValue = departureTimeValue
+                        departureTimeValue = departureTimeValue,
+                        waitTime = if (waitTime > 0) "${waitTime} min" else null,
+                        waitTimeMinutes = waitTime.toInt()
                     )
                 )
             }
@@ -151,6 +187,67 @@ class FastestRouteService(
         } catch (e: Exception) {
             Log.e("FastestRouteService", "Error getting directions", e)
             emptyList()
+        }
+    }
+    
+    suspend fun getRouteAlternatives(
+        from: String,
+        to: String,
+        maxAlternatives: Int = 5
+    ): List<BusRouteAlternative> = withContext(Dispatchers.IO) {
+        try {
+            val alternatives = enhancedBusTimesService.getEnhancedBusRoutes(from, to, maxAlternatives)
+            
+            alternatives.map { alternative ->
+                BusRouteAlternative(
+                    routeId = "route_${System.currentTimeMillis()}",
+                    steps = alternative.steps,
+                    totalDuration = alternative.totalDuration,
+                    totalDistance = alternative.totalDistance,
+                    departureTime = alternative.departureTime,
+                    arrivalTime = alternative.arrivalTime,
+                    waitTime = alternative.waitTime,
+                    busLines = alternative.busLines,
+                    reliability = calculateReliability(alternative),
+                    price = calculatePrice(alternative),
+                    accessibility = checkAccessibility(alternative),
+                    realTimeUpdates = true
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("FastestRouteService", "Error getting route alternatives", e)
+            emptyList()
+        }
+    }
+    
+    private fun calculateReliability(alternative: EnhancedBusTimesService.RouteAlternative): String {
+        // Simple reliability calculation based on number of transfers and wait time
+        val transferCount = alternative.steps.count { it.mode == "TRANSIT" }
+        val avgWaitTime = alternative.waitTime / 60 // Convert to minutes
+        
+        return when {
+            transferCount <= 1 && avgWaitTime <= 5 -> "High"
+            transferCount <= 2 && avgWaitTime <= 10 -> "Medium"
+            else -> "Low"
+        }
+    }
+    
+    private fun calculatePrice(alternative: EnhancedBusTimesService.RouteAlternative): String? {
+        // Simple price calculation based on number of transit steps
+        val transitSteps = alternative.steps.count { it.mode == "TRANSIT" }
+        return when (transitSteps) {
+            0 -> "Free"
+            1 -> "€1.20"
+            2 -> "€1.20"
+            else -> "€1.20"
+        }
+    }
+    
+    private fun checkAccessibility(alternative: EnhancedBusTimesService.RouteAlternative): Boolean {
+        // Check if route has accessible options
+        return alternative.steps.any { step ->
+            step.vehicleType?.contains("ACCESSIBLE", ignoreCase = true) == true ||
+            step.line?.contains("ACCESSIBLE", ignoreCase = true) == true
         }
     }
     

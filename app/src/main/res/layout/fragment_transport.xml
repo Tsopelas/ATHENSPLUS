@@ -40,15 +40,15 @@
 
     <!-- Search Section -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
-        android:elevation="8dp"
         android:orientation="vertical"
         android:padding="16dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
@@ -58,6 +58,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/modern_button_bg"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="#663399"
@@ -70,8 +71,12 @@
                 android:textColorHint="#B39DDB"
                 android:maxLines="1"
                 android:inputType="text"
-                android:ellipsize="end"
-                android:gravity="center_vertical|start" />
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal"
+                android:gravity="center_vertical|start"
+                android:elevation="0dp"
+                android:singleLine="true"
+                android:ellipsize="none" />
 
             <ImageButton
                 android:id="@+id/button_directions"
@@ -83,7 +88,8 @@
                 android:padding="12dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_go"
-                android:tint="#663399" />
+                android:tint="#663399"
+                android:elevation="0dp" />
         </LinearLayout>
 
         <!-- Choose on Map Card -->
