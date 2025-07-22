@@ -319,6 +319,7 @@ class MapManager(private val context: Context) {
         return false
     }
 
+    // i thought i would never need demoninator pointers fron uni hahaha
     private fun isLinesIntersecting(p1: PointF, p2: PointF, p3: PointF, p4: PointF): Boolean {
         val denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y)
         if (denominator == 0f) return false

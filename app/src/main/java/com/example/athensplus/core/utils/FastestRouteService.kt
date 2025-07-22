@@ -23,11 +23,9 @@ class FastestRouteService(
         to: String
     ): List<TransitStep> = withContext(Dispatchers.IO) {
         try {
-            // Use enhanced bus times service for better alternatives
             val alternatives = enhancedBusTimesService.getEnhancedBusRoutes(from, to, 3)
             
             if (alternatives.isNotEmpty()) {
-                // Return the best alternative (lowest wait time + travel time)
                 val bestAlternative = alternatives.minByOrNull { 
                     it.waitTime + (it.totalDuration.replace(" min", "").toIntOrNull() ?: 0) * 60 
                 } ?: alternatives.first()
@@ -35,8 +33,7 @@ class FastestRouteService(
                 Log.d("FastestRouteService", "Selected best route with ${bestAlternative.waitTime}s wait time")
                 return@withContext bestAlternative.steps
             }
-            
-            // Fallback to original implementation if enhanced service fails
+
             return@withContext getFallbackRoute(from, to)
             
         } catch (e: Exception) {
@@ -47,24 +44,21 @@ class FastestRouteService(
     
     private suspend fun getFallbackRoute(from: String, to: String): List<TransitStep> = withContext(Dispatchers.IO) {
         try {
-            // Handle current location case
             val origin = if (from.contains("Current Location", ignoreCase = true)) {
-                // Get actual current location
                 val currentLocation = locationService?.getCurrentLocation()
                 if (currentLocation != null) {
                     Log.d("FastestRouteService", "Using actual location: ${currentLocation.latitude}, ${currentLocation.longitude}")
                     "${currentLocation.latitude},${currentLocation.longitude}"
                 } else {
                     Log.w("FastestRouteService", "Could not get current location, using fallback")
-                    "37.9838,23.7275" // Athens center coordinates as fallback
+                    "37.9838,23.7275"
                 }
             } else {
                 URLEncoder.encode(from, "UTF-8")
             }
             
             val destination = URLEncoder.encode(to, "UTF-8")
-            
-            // Try transit first
+
             var url = "https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=transit&departure_time=now&key=$apiKey"
             
             Log.d("FastestRouteService", "Requesting transit directions from: $from to: $to")
@@ -75,8 +69,7 @@ class FastestRouteService(
             
             var json = JSONObject(response)
             var status = json.getString("status")
-            
-            // If transit fails, try walking
+
             if (status != "OK" || json.getJSONArray("routes").length() == 0) {
                 Log.w("FastestRouteService", "Transit failed, trying walking directions")
                 url = "https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=walking&key=$apiKey"
@@ -131,25 +124,21 @@ class FastestRouteService(
                 val travelMode = step.getString("travel_mode")
                 val instruction = step.getString("html_instructions")
                 val duration = step.getJSONObject("duration").getString("text")
-                
-                // Get distance if available
+
                 val distance = step.optJSONObject("distance")?.getString("text")
-                
-                // Get transit details if this is a transit step
+
                 val transitDetails = step.optJSONObject("transit_details")
                 val line = transitDetails?.optJSONObject("line")?.optString("short_name") ?: ""
                 val departureStop = transitDetails?.optJSONObject("departure_stop")?.optString("name") ?: ""
                 val arrivalStop = transitDetails?.optJSONObject("arrival_stop")?.optString("name") ?: ""
                 val vehicleType = transitDetails?.optJSONObject("line")?.optJSONObject("vehicle")?.optString("type")
-                
-                // Get departure time for wait time calculation
+
                 val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
                 val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
-                
-                // Calculate wait time
+
                 val currentTime = System.currentTimeMillis() / 1000
                 val waitTime = if (departureTimeValue > currentTime) {
-                    (departureTimeValue - currentTime) / 60 // Convert to minutes
+                    (departureTimeValue - currentTime) / 60
                 } else 0
                 
                 // Log departure time information for debugging
@@ -231,9 +220,9 @@ class FastestRouteService(
             else -> "Low"
         }
     }
-    
+
+    // i have to improve this by fetching prices depending on the route but idk how
     private fun calculatePrice(alternative: EnhancedBusTimesService.RouteAlternative): String? {
-        // Simple price calculation based on number of transit steps
         val transitSteps = alternative.steps.count { it.mode == "TRANSIT" }
         return when (transitSteps) {
             0 -> "Free"
@@ -244,20 +233,17 @@ class FastestRouteService(
     }
     
     private fun checkAccessibility(alternative: EnhancedBusTimesService.RouteAlternative): Boolean {
-        // Check if route has accessible options
         return alternative.steps.any { step ->
             step.vehicleType?.contains("ACCESSIBLE", ignoreCase = true) == true ||
             step.line?.contains("ACCESSIBLE", ignoreCase = true) == true
         }
     }
-    
-    // Test function to verify API is working
+
     suspend fun testDirections(): List<TransitStep> = withContext(Dispatchers.IO) {
         try {
-            // Use actual current location for testing
             val testOrigin = locationService?.getCurrentLocation()?.let { 
                 "${it.latitude},${it.longitude}" 
-            } ?: "37.9838,23.7275" // Athens center as fallback
+            } ?: "37.9838,23.7275"
             val testDestination = "Acropolis Museum, Athens"
             val encodedDestination = URLEncoder.encode(testDestination, "UTF-8")
             
@@ -275,8 +261,7 @@ class FastestRouteService(
                 Log.e("FastestRouteService", "Test API Error: $status")
                 return@withContext emptyList()
             }
-            
-            // Parse the same way as main function
+
             val routes = json.getJSONArray("routes")
             if (routes.length() == 0) {
                 Log.w("FastestRouteService", "Test: No routes found")
@@ -312,8 +297,7 @@ class FastestRouteService(
                 val departureStop = transitDetails?.optJSONObject("departure_stop")?.optString("name") ?: ""
                 val arrivalStop = transitDetails?.optJSONObject("arrival_stop")?.optString("name") ?: ""
                 val vehicleType = transitDetails?.optJSONObject("line")?.optJSONObject("vehicle")?.optString("type")
-                
-                // Get departure time for wait time calculation
+
                 val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
                 val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
                 

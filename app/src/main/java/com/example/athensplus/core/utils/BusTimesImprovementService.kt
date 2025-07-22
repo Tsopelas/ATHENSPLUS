@@ -47,18 +47,15 @@ class BusTimesImprovementService(
         maxAlternatives: Int = 5
     ): List<ImprovedRouteAlternative> = withContext(Dispatchers.IO) {
         try {
-            // Get multiple route alternatives with enhanced bus times
             val alternatives = enhancedBusTimesService.getEnhancedBusRoutes(from, to, maxAlternatives)
             
             val improvedAlternatives = mutableListOf<ImprovedRouteAlternative>()
             
             for (alternative in alternatives) {
-                // Enhance each alternative with additional information
                 val improvedAlternative = enhanceRouteAlternative(alternative)
                 improvedAlternatives.add(improvedAlternative)
             }
-            
-            // Sort by multiple criteria: wait time, reliability, and total duration
+
             improvedAlternatives.sortWith(compareBy<ImprovedRouteAlternative> { it.waitTime }
                 .thenBy { getReliabilityScore(it.reliability) }
                 .thenBy { it.totalDuration.replace(" min", "").toIntOrNull() ?: 0 })
@@ -75,7 +72,6 @@ class BusTimesImprovementService(
     private suspend fun enhanceRouteAlternative(
         alternative: EnhancedBusTimesService.RouteAlternative
     ): ImprovedRouteAlternative = withContext(Dispatchers.IO) {
-        // Calculate additional metrics
         val crowdLevel = calculateCrowdLevel(alternative)
         val frequency = calculateFrequency(alternative)
         val alternativeOptions = findAlternativeOptions(alternative)
@@ -126,12 +122,13 @@ class BusTimesImprovementService(
         val isRushHour = (currentHour in 7..9) || (currentHour in 17..19)
         
         return when {
-            isRushHour && alternative.waitTime < 300 -> "High" // Less than 5 min wait during rush hour
-            alternative.waitTime < 180 -> "Medium" // Less than 3 min wait
+            isRushHour && alternative.waitTime < 300 -> "High"
+            alternative.waitTime < 180 -> "Medium"
             else -> "Low"
         }
     }
-    
+
+    // note: i should probably remove this and passthrough to api for the info
     private fun calculateFrequency(alternative: EnhancedBusTimesService.RouteAlternative): String {
         val busLines = alternative.busLines
         val highFrequencyLines = listOf("E14", "E15", "E16", "E17", "E18", "E19", "E20")
@@ -148,8 +145,7 @@ class BusTimesImprovementService(
     
     private fun findAlternativeOptions(alternative: EnhancedBusTimesService.RouteAlternative): List<String> {
         val alternatives = mutableListOf<String>()
-        
-        // Find alternative bus lines that serve similar routes
+
         for (line in alternative.busLines) {
             when (line) {
                 "E14" -> alternatives.addAll(listOf("E15", "E16"))
@@ -314,14 +310,12 @@ class BusTimesImprovementService(
             if (alternatives.isEmpty()) {
                 return@withContext null
             }
-            
-            // If specific departure time is requested, find the closest match
+
             if (departureTime != null) {
                 alternatives.minByOrNull { alternative -> 
                     kotlin.math.abs(alternative.departureTime - departureTime) 
                 }
             } else {
-                // Otherwise, return the best overall option
                 alternatives.first()
             }
             

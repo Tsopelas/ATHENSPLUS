@@ -21,23 +21,19 @@ class AddressAutocompleteService(
             if (query.length < 2) return@withContext emptyList()
             
             val suggestions = mutableListOf<AddressSuggestion>()
-            
-            // Use single, precise query with proper parameters for maximum accuracy
+
             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            
-            // Build URL with industry-standard parameters
+
             val urlBuilder = StringBuilder("https://maps.googleapis.com/maps/api/place/autocomplete/json?")
             urlBuilder.append("input=$encodedQuery&")
-            urlBuilder.append("types=geocode|establishment&") // Simplified types for better compatibility
-            urlBuilder.append("components=country:gr&") // Greece only
-            urlBuilder.append("language=en&") // Prefer English results
+            urlBuilder.append("types=geocode|establishment&")
+            urlBuilder.append("components=country:gr&")
+            urlBuilder.append("language=en&")
             urlBuilder.append("key=$apiKey")
-            
-            // Add location bias if user location is available (less restrictive)
+
             if (userLocation != null) {
                 urlBuilder.append("&location=${userLocation.latitude},${userLocation.longitude}&")
-                urlBuilder.append("radius=100000&") // Increased radius to 100km
-                // Removed strictbounds to be less restrictive
+                urlBuilder.append("radius=100000&")
             }
             
             val url = urlBuilder.toString()
@@ -61,11 +57,9 @@ class AddressAutocompleteService(
                         val description = prediction.getString("description")
                         
                         Log.d("AddressAutocomplete", "Prediction $i: $description")
-                        
-                        // Parse the description to extract information
+
                         val parsedInfo = parseDescription(description)
-                        
-                        // Only add if not a duplicate
+
                         if (!isDuplicateSuggestion(suggestions, parsedInfo)) {
                             suggestions.add(
                                 AddressSuggestion(
@@ -73,7 +67,7 @@ class AddressAutocompleteService(
                                     address = parsedInfo.cleanAddress,
                                     description = description,
                                     placeId = placeId,
-                                    latLng = null, // We'll get this later if needed
+                                    latLng = null,
                                     area = parsedInfo.area,
                                     streetName = parsedInfo.streetName,
                                     streetNumber = parsedInfo.streetNumber,
@@ -89,8 +83,7 @@ class AddressAutocompleteService(
                     if (jsonResponse.has("error_message")) {
                         Log.w("AddressAutocomplete", "Error message: ${jsonResponse.getString("error_message")}")
                     }
-                    
-                    // If first attempt failed and we had location bias, try without it
+
                     if (userLocation != null && suggestions.isEmpty()) {
                         Log.d("AddressAutocomplete", "Trying fallback without location bias")
                         val fallbackUrl = "https://maps.googleapis.com/maps/api/place/autocomplete/json?" +
@@ -146,8 +139,7 @@ class AddressAutocompleteService(
             } catch (e: Exception) {
                 Log.e("AddressAutocomplete", "Error getting address suggestions", e)
             }
-            
-            // Sort by relevance and distance
+
             val sortedSuggestions = suggestions.sortedWith(compareBy<AddressSuggestion> { suggestion ->
                 val queryLower = query.lowercase()
                 val streetNameLower = suggestion.streetName?.lowercase() ?: ""
@@ -155,26 +147,17 @@ class AddressAutocompleteService(
                 val establishmentNameLower = suggestion.establishmentName?.lowercase() ?: ""
                 
                 when {
-                    // Exact establishment name match (highest priority for places)
                     establishmentNameLower == queryLower -> 0
-                    // Establishment name starts with query
                     establishmentNameLower.startsWith(queryLower) -> 1
-                    // Exact street name match
                     streetNameLower == queryLower -> 2
-                    // Street name starts with query
                     streetNameLower.startsWith(queryLower) -> 3
-                    // Address starts with query
                     addressLower.startsWith(queryLower) -> 4
-                    // Establishment name contains query
                     establishmentNameLower.contains(queryLower) -> 5
-                    // Street name contains query
                     streetNameLower.contains(queryLower) -> 6
-                    // Address contains query
                     addressLower.contains(queryLower) -> 7
                     else -> 8
                 }
             }.thenBy { suggestion ->
-                // Secondary: prefer addresses with numbers if query has numbers
                 val queryHasNumber = query.contains(Regex("\\d+"))
                 val suggestionHasNumber = suggestion.streetNumber != null
                 when {
@@ -185,7 +168,7 @@ class AddressAutocompleteService(
             })
             
             Log.d("AddressAutocomplete", "Found ${sortedSuggestions.size} unique suggestions")
-            sortedSuggestions.take(5) // Limit to top 5 for better UX
+            sortedSuggestions.take(5)
         } catch (e: Exception) {
             Log.e("AddressAutocomplete", "Error getting address suggestions", e)
             emptyList()
@@ -204,27 +187,22 @@ class AddressAutocompleteService(
         var postalCode: String? = null
         var establishmentName: String? = null
         var establishmentType: String? = null
-        
-        // Remove ", Greece" suffix
+
         if (cleanAddress.endsWith(", Greece")) {
             cleanAddress = cleanAddress.removeSuffix(", Greece")
         }
-        
-        // Remove postal codes from the end
+
         cleanAddress = cleanAddress.replace(Regex(", ?\\d{5}(?=,|$)"), "")
-        
-        // Split by commas to analyze parts
+
         val parts = cleanAddress.split(",").map { it.trim() }
         
         if (parts.isNotEmpty()) {
             val firstPart = parts[0]
-            
-            // Check if first part looks like an establishment (contains common establishment keywords)
+
             if (isLikelyEstablishment(firstPart)) {
                 establishmentName = firstPart
                 establishmentType = determineEstablishmentType(firstPart)
-                
-                // Look for street information in subsequent parts
+
                 for (i in 1 until parts.size) {
                     val part = parts[i]
                     if (part.contains(Regex("\\d+")) && streetName == null) {
@@ -239,7 +217,6 @@ class AddressAutocompleteService(
                     }
                 }
             } else {
-                // This looks like a regular address
                 val streetMatch = Regex("(.+?)\\s+(\\d+)").find(firstPart)
                 if (streetMatch != null) {
                     streetName = streetMatch.groupValues[1].trim()
@@ -247,8 +224,7 @@ class AddressAutocompleteService(
                 } else {
                     streetName = firstPart
                 }
-                
-                // Look for area in subsequent parts
+
                 for (i in 1 until parts.size) {
                     val part = parts[i]
                     if (area == null && !part.contains(Regex("\\d+"))) {
@@ -323,18 +299,15 @@ class AddressAutocompleteService(
     
     private fun isDuplicateSuggestion(existingSuggestions: List<AddressSuggestion>, newInfo: ParsedInfo): Boolean {
         return existingSuggestions.any { existing ->
-            // For establishments, check if same establishment name and area
             if (newInfo.establishmentName != null && existing.establishmentName != null) {
                 existing.establishmentName.equals(newInfo.establishmentName, ignoreCase = true) &&
                 existing.area == newInfo.area
             }
-            // For addresses, check same street name and number
             else if (newInfo.streetName != null && existing.streetName != null) {
                 existing.streetName == newInfo.streetName &&
                 existing.streetNumber == newInfo.streetNumber &&
                 existing.area == newInfo.area
             }
-            // Fallback: exact address match
             else {
                 existing.address.equals(newInfo.cleanAddress, ignoreCase = true)
             }

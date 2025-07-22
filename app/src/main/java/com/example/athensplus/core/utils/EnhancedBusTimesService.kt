@@ -38,7 +38,7 @@ class EnhancedBusTimesService(
                 if (currentLocation != null) {
                     "${currentLocation.latitude},${currentLocation.longitude}"
                 } else {
-                    "37.9838,23.7275" // Athens center fallback
+                    "37.9838,23.7275"
                 }
             } else {
                 URLEncoder.encode(from, "UTF-8")
@@ -66,8 +66,7 @@ class EnhancedBusTimesService(
             
             val routes = json.getJSONArray("routes")
             val alternatives = mutableListOf<RouteAlternative>()
-            
-            // Process each route alternative
+
             for (i in 0 until minOf(routes.length(), maxAlternatives)) {
                 val route = routes.getJSONObject(i)
                 val legs = route.getJSONArray("legs")
@@ -78,11 +77,9 @@ class EnhancedBusTimesService(
                     val totalDistance = leg.getJSONObject("distance").getString("text")
                     
                     val steps = parseRouteSteps(leg, totalDuration, totalDistance)
-                    
-                    // Calculate timing information
+
                     val timingInfo = calculateTimingInfo(steps, currentTime)
-                    
-                    // Extract bus lines used
+
                     val busLines = steps.filter { it.mode == "TRANSIT" && it.line != null }
                         .map { it.line!! }
                         .distinct()
@@ -98,8 +95,7 @@ class EnhancedBusTimesService(
                     ))
                 }
             }
-            
-            // Sort by actual departure time (earliest first)
+
             alternatives.sortBy { it.departureTime }
             
             Log.d("EnhancedBusTimesService", "Found ${alternatives.size} route alternatives")
@@ -163,8 +159,7 @@ class EnhancedBusTimesService(
                     firstDepartureTime = step.departureTimeValue
                 }
                 lastArrivalTime = step.departureTimeValue + (step.duration.replace(" min", "").toIntOrNull() ?: 0) * 60
-                
-                // Calculate wait time for this transit step
+
                 val waitTime = step.departureTimeValue - currentTime
                 if (waitTime > 0) {
                     totalWaitTime += waitTime
@@ -218,14 +213,12 @@ class EnhancedBusTimesService(
                 for (i in 0 until results.length()) {
                     val place = results.getJSONObject(i)
                     val placeName = place.getString("name")
-                    
-                    // Get transit details for this stop
+
                     val stopDepartures = getTransitDepartures(placeName, lat, lng)
                     departures.addAll(stopDepartures)
                 }
             }
-            
-            // Sort by departure time and limit results
+
             departures.sortBy { it.departureTime }
             departures.take(maxResults)
             

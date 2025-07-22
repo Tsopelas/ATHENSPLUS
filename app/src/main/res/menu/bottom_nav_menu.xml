@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/navigation_transport"
-        android:icon="@drawable/ic_transport"
+        android:icon="@drawable/bottombar_transport"
         android:title="Transport" />
     <item
         android:id="@+id/navigation_explore"
-        android:icon="@drawable/ic_explore"
+        android:icon="@drawable/bottombar_explore"
         android:title="Explore" />
     <item
         android:id="@+id/navigation_info"
-        android:icon="@drawable/ic_info"
+        android:icon="@drawable/bottombar_info"
         android:title="Info" />
 </menu> 

@@ -7,48 +7,35 @@
     android:fitsSystemWindows="true"
     android:background="#FFFFFF">
 
-    <!-- Header with menu button and logo -->
-    <RelativeLayout
+    <!-- Header with logo -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp">
-
-        <ImageButton
-            android:id="@+id/button_menu"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Menu"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_menu" />
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center">
 
         <ImageView
             android:id="@+id/image_athensplus"
-            android:layout_width="200dp"
-            android:layout_height="40dp"
-            android:layout_centerInParent="true"
+            android:layout_width="260dp"
+            android:layout_height="50dp"
             android:adjustViewBounds="true"
             android:contentDescription="Athens Plus Logo"
             android:scaleType="fitCenter"
             android:src="@drawable/athensplus" />
-    </RelativeLayout>
+    </LinearLayout>
 
     <!-- Search Section -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
@@ -58,7 +45,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="12dp"
                 android:background="@drawable/modern_button_bg"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="#663399"
@@ -82,7 +69,6 @@
                 android:id="@+id/button_directions"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_marginStart="12dp"
                 android:background="@drawable/modern_button_bg"
                 android:contentDescription="Get Directions"
                 android:padding="12dp"
@@ -92,15 +78,14 @@
                 android:elevation="0dp" />
         </LinearLayout>
 
-        <!-- Choose on Map Card -->
         <LinearLayout
             android:id="@+id/choose_on_map_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="12dp"
+            android:padding="16dp"
             android:background="@drawable/modern_button_bg"
             android:clickable="true"
             android:focusable="true">
@@ -111,7 +96,7 @@
                 android:src="@drawable/ic_mapsearching"
                 android:tint="#663399"
                 android:scaleType="centerInside"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="12dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -255,7 +240,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_marginHorizontal="16dp"
-                    android:padding="12dp"
+                    android:padding="16dp"
                     android:background="@drawable/map_rounded_corners"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
@@ -366,8 +351,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:orientation="horizontal"
         android:gravity="center">
 
@@ -375,7 +360,7 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="12dp"
             android:clipChildren="false"
             android:clipToPadding="false">
             <androidx.cardview.widget.CardView
@@ -404,7 +389,7 @@
                         android:id="@+id/mode_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="12dp"
                         android:text="Metro"
                         android:textColor="#663399"
                         android:textSize="16sp"
@@ -417,7 +402,7 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:clipChildren="false"
             android:clipToPadding="false">
             <androidx.cardview.widget.CardView

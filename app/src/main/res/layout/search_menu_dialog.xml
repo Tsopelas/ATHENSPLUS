@@ -140,6 +140,14 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp" />
 
+    <!-- Menu Container -->
+    <LinearLayout
+        android:id="@+id/menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/transparent" />
+
     <!-- Suggestions List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_suggestions_list"

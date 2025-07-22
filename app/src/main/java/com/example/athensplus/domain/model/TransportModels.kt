@@ -16,7 +16,6 @@ data class TransitStep(
     val totalRouteDistance: String? = null,
     val departureTime: String? = null,
     val departureTimeValue: Long = 0L,
-    // Enhanced bus times fields
     val waitTime: String? = null,
     val waitTimeMinutes: Int = 0,
     val alternativeLines: List<String> = emptyList(),
@@ -67,7 +66,6 @@ data class DirectionsResult(
     val totalDistance: String
 )
 
-// New data classes for enhanced bus times
 data class BusRouteAlternative(
     val routeId: String,
     val steps: List<TransitStep>,

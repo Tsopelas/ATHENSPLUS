@@ -39,8 +39,7 @@ class RouteSelectionService(
             if (allAlternatives.isEmpty()) {
                 return@withContext RouteSelectionResult.Error("No routes found")
             }
-            
-            // Calculate route metrics for all alternatives
+
             val routesWithMetrics = allAlternatives.map { alternative ->
                 RouteMetrics(
                     route = alternative,
@@ -49,11 +48,9 @@ class RouteSelectionService(
                     totalWalkingDistance = calculateTotalWalkingDistance(alternative)
                 )
             }
-            
-            // Remove duplicate routes
+
             val uniqueRoutes = removeDuplicateRoutes(routesWithMetrics)
-            
-            // Filter out unrealistic routes (less than 5 minutes total time)
+
             val realisticRoutes = uniqueRoutes.filter { metrics ->
                 val isValid = metrics.totalTime >= 5
                 if (!isValid) {
@@ -64,7 +61,6 @@ class RouteSelectionService(
             
             if (realisticRoutes.isEmpty()) {
                 Log.w("RouteSelectionService", "No realistic routes found, using all routes")
-                // If no realistic routes, use all routes but log the issue
                 routesWithMetrics.forEach { metrics ->
                     Log.w("RouteSelectionService", "Unrealistic route: ${metrics.totalTime}min, ${metrics.transportChanges} changes, ${metrics.totalWalkingDistance}m walking")
                 }
@@ -75,8 +71,7 @@ class RouteSelectionService(
             when (mode) {
                 RouteSelectionMode.FASTEST -> {
                     val fastestRoute = routesToUse.minByOrNull { it.totalTime }
-                    
-                    // Debug logging to verify fastest route selection
+
                     Log.d("RouteSelectionService", "=== FASTEST ROUTE ANALYSIS ===")
                     routesToUse.forEach { metrics ->
                         Log.d("RouteSelectionService", "Route: ${metrics.totalTime}min, ${metrics.transportChanges} changes, ${metrics.totalWalkingDistance}m walking")
@@ -96,8 +91,7 @@ class RouteSelectionService(
                 
                 RouteSelectionMode.EASIEST -> {
                     val easiestRoute = findEasiestRoute(routesToUse)
-                    
-                    // Debug logging to verify easiest route selection
+
                     Log.d("RouteSelectionService", "=== EASIEST ROUTE ANALYSIS ===")
                     routesToUse.forEach { metrics ->
                         Log.d("RouteSelectionService", "Route: ${metrics.totalTime}min, ${metrics.transportChanges} changes, ${metrics.totalWalkingDistance}m walking")
@@ -137,8 +131,7 @@ class RouteSelectionService(
         }
         val waitTimeMinutes = (alternative.waitTime / 60).toInt()
         val totalTime = totalStepDuration + waitTimeMinutes
-        
-        // Debug logging for time calculation
+
         Log.d("RouteSelectionService", "=== TIME CALCULATION DEBUG ===")
         Log.d("RouteSelectionService", "Route steps:")
         alternative.steps.forEachIndexed { index, step ->
@@ -215,18 +208,14 @@ class RouteSelectionService(
      */
     private fun findEasiestRoute(routesWithMetrics: List<RouteMetrics>): RouteMetrics? {
         if (routesWithMetrics.isEmpty()) return null
-        
-        // Find the minimum number of transport changes
+
         val minTransportChanges = routesWithMetrics.minOf { it.transportChanges }
-        
-        // Filter routes with minimum transport changes
+
         val routesWithMinChanges = routesWithMetrics.filter { it.transportChanges == minTransportChanges }
-        
-        // Among routes with minimum changes, find the one with least walking
+
         val minWalkingDistance = routesWithMinChanges.minOf { it.totalWalkingDistance }
         val routesWithMinWalking = routesWithMinChanges.filter { it.totalWalkingDistance == minWalkingDistance }
-        
-        // If multiple routes have same transport changes and walking distance, pick the fastest
+
         return routesWithMinWalking.minByOrNull { it.totalTime }
     }
 
@@ -236,19 +225,41 @@ class RouteSelectionService(
      */
     private fun removeDuplicateRoutes(routes: List<RouteMetrics>): List<RouteMetrics> {
         val uniqueRoutes = mutableListOf<RouteMetrics>()
-        val seenRouteSignatures = mutableSetOf<String>()
+        val seenRouteSignatures = mutableMapOf<String, RouteMetrics>()
 
         for (route in routes) {
             val routeSignature = createRouteSignature(route)
-            if (seenRouteSignatures.add(routeSignature)) {
+            
+            val existingRoute = seenRouteSignatures[routeSignature]
+            if (existingRoute == null) {
+                seenRouteSignatures[routeSignature] = route
                 uniqueRoutes.add(route)
+                Log.d("RouteSelectionService", "Added unique route: ${route.totalTime}min, ${route.transportChanges} changes")
             } else {
-                Log.d("RouteSelectionService", "Removing duplicate route: ${route.totalTime}min, ${route.transportChanges} changes")
+                val betterRoute = selectBetterRoute(existingRoute, route)
+                if (betterRoute != existingRoute) {
+                    seenRouteSignatures[routeSignature] = betterRoute
+                    val index = uniqueRoutes.indexOf(existingRoute)
+                    if (index >= 0) {
+                        uniqueRoutes[index] = betterRoute
+                    }
+                    Log.d("RouteSelectionService", "Replaced route with better option: ${betterRoute.totalTime}min vs ${existingRoute.totalTime}min")
+                } else {
+                    Log.d("RouteSelectionService", "Removing duplicate route: ${route.totalTime}min, ${route.transportChanges} changes")
+                }
             }
         }
         
-        Log.d("RouteSelectionService", "Removed ${routes.size - uniqueRoutes.size} duplicate routes")
+        Log.d("RouteSelectionService", "Removed ${routes.size - uniqueRoutes.size} duplicate routes (${uniqueRoutes.size} unique)")
         return uniqueRoutes
+    }
+    
+    private fun selectBetterRoute(route1: RouteMetrics, route2: RouteMetrics): RouteMetrics {
+        return when {
+            route1.totalTime != route2.totalTime -> if (route1.totalTime < route2.totalTime) route1 else route2
+            route1.totalWalkingDistance != route2.totalWalkingDistance -> if (route1.totalWalkingDistance < route2.totalWalkingDistance) route1 else route2
+            else -> route1
+        }
     }
     
     /**
@@ -256,9 +267,29 @@ class RouteSelectionService(
      */
     private fun createRouteSignature(route: RouteMetrics): String {
         val stepsSignature = route.route.steps.joinToString("|") { step ->
-            "${step.mode}-${step.duration}-${step.line ?: ""}-${step.vehicleType ?: ""}"
+            when (step.mode) {
+                "TRANSIT" -> {
+                    val line = step.line ?: ""
+                    val vehicleType = step.vehicleType ?: ""
+                    val departureStop = step.departureStop ?: ""
+                    val arrivalStop = step.arrivalStop ?: ""
+                    "TRANSIT-$line-$vehicleType-$departureStop-$arrivalStop"
+                }
+                "WALKING" -> {
+                    val walkingDistance = step.walkingDistance?.let { distance ->
+                        distance.replace(" m", "").replace(" km", "000")
+                            .replace(",", "").toIntOrNull()?.let { 
+                                (it / 50) * 50
+                            }
+                    } ?: 0
+                    "WALKING-${walkingDistance}m"
+                }
+                else -> {
+                    "${step.mode}-${step.line ?: ""}-${step.vehicleType ?: ""}"
+                }
+            }
         }
-        return "$stepsSignature-${route.totalTime}-${route.transportChanges}"
+        return "$stepsSignature-${route.transportChanges}"
     }
 }
 

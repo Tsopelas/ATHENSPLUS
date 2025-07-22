@@ -62,7 +62,6 @@ class LocationService(private val fragment: Fragment) {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        // Suppress unused parameter warning
         @Suppress("UNUSED_PARAMETER")
         val _permissions = permissions
         locationPermissionGranted = false
@@ -82,7 +81,6 @@ class LocationService(private val fragment: Fragment) {
     suspend fun getCurrentLocation(): LatLng? {
         return if (locationPermissionGranted && fusedLocationClient != null) {
             try {
-                // Check permission before accessing location
                 if (ContextCompat.checkSelfPermission(
                         fragment.requireContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION
