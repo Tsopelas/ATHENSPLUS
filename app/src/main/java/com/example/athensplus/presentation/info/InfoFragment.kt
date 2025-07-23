@@ -1,7 +1,6 @@
 package com.example.athensplus.presentation.info
 
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -14,15 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import com.example.athensplus.R
 import com.example.athensplus.core.utils.*
 import com.example.athensplus.databinding.FragmentInfoBinding
-import com.example.athensplus.domain.model.*
 import kotlinx.coroutines.launch
-import java.util.*
 
 class InfoFragment : Fragment() {
     private var _binding: FragmentInfoBinding? = null
     private val binding get() = _binding!!
     
-    private lateinit var tripPlanningService: TripPlanningService
     private lateinit var settingsService: SettingsService
 
     override fun onCreateView(
@@ -173,25 +169,7 @@ class InfoFragment : Fragment() {
     
 
     
-    private fun createSectionTitle(title: String): TextView {
-        return TextView(requireContext()).apply {
-            text = title
-            textSize = 18f
-            setTextColor(Color.parseColor("#663399"))
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-            setPadding(24, 16, 24, 8)
-        }
-    }
-    
-    private fun createInfoText(text: String, color: String): TextView {
-        return TextView(requireContext()).apply {
-            this.text = text
-            textSize = 16f
-            setTextColor(Color.parseColor(color))
-            setPadding(24, 16, 24, 16)
-            gravity = android.view.Gravity.CENTER
-        }
-    }
+
     
 
     

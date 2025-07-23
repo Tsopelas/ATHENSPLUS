@@ -13,12 +13,12 @@ enum class RouteSelectionMode {
 }
 
 class RouteSelectionService(
-    private val context: Context,
-    private val apiKey: String,
-    private val locationService: LocationService
+    @Suppress("UNUSED_PARAMETER") context: Context,
+    apiKey: String,
+    locationService: LocationService
 ) {
     
-    private val busTimesImprovementService = BusTimesImprovementService(context, apiKey, locationService)
+    private val busTimesImprovementService = BusTimesImprovementService(apiKey, locationService)
 
     /**
      * Get routes based on the specified mode
@@ -59,14 +59,13 @@ class RouteSelectionService(
                 isValid
             }
             
-            if (realisticRoutes.isEmpty()) {
+            val routesToUse = realisticRoutes.ifEmpty {
                 Log.w("RouteSelectionService", "No realistic routes found, using all routes")
                 routesWithMetrics.forEach { metrics ->
                     Log.w("RouteSelectionService", "Unrealistic route: ${metrics.totalTime}min, ${metrics.transportChanges} changes, ${metrics.totalWalkingDistance}m walking")
                 }
+                routesWithMetrics
             }
-            
-            val routesToUse = if (realisticRoutes.isNotEmpty()) realisticRoutes else routesWithMetrics
             
             when (mode) {
                 RouteSelectionMode.FASTEST -> {

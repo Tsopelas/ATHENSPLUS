@@ -1,25 +1,19 @@
 package com.example.athensplus.core.utils
 
-import android.content.Context
 import android.util.Log
-import com.example.athensplus.domain.model.BusRouteAlternative
 import com.example.athensplus.domain.model.TransitStep
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.URL
-import java.net.URLEncoder
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import kotlin.random.Random
+
 
 class BusTimesImprovementService(
-    private val context: Context,
-    private val apiKey: String,
-    private val locationService: LocationService? = null
+    apiKey: String,
+    locationService: LocationService? = null
 ) {
     
-    private val enhancedBusTimesService = EnhancedBusTimesService(context, apiKey, locationService)
-    private val realTimeBusService = RealTimeBusService(context, apiKey)
+    private val enhancedBusTimesService = EnhancedBusTimesService(apiKey, locationService)
     
     data class ImprovedRouteAlternative(
         val routeId: String,
@@ -79,7 +73,7 @@ class BusTimesImprovementService(
         val environmentalImpact = calculateEnvironmentalImpact(alternative)
         
         ImprovedRouteAlternative(
-            routeId = "route_${System.currentTimeMillis()}_${Random().nextInt(1000)}",
+            routeId = "route_${System.currentTimeMillis()}_${Random.nextInt(1000)}",
             steps = enhanceTransitSteps(alternative.steps),
             totalDuration = alternative.totalDuration,
             totalDistance = alternative.totalDistance,
@@ -161,7 +155,7 @@ class BusTimesImprovementService(
         return alternatives.distinct()
     }
     
-    private fun estimateCrowding(alternative: EnhancedBusTimesService.RouteAlternative): String {
+    private fun estimateCrowding(@Suppress("UNUSED_PARAMETER") alternative: EnhancedBusTimesService.RouteAlternative): String {
         val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val isRushHour = (currentHour in 7..9) || (currentHour in 17..19)
         val isWeekend = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) in listOf(Calendar.SATURDAY, Calendar.SUNDAY)
@@ -200,7 +194,7 @@ class BusTimesImprovementService(
         }
     }
     
-    private fun calculateEnhancedPrice(alternative: EnhancedBusTimesService.RouteAlternative): String? {
+    private fun calculateEnhancedPrice(alternative: EnhancedBusTimesService.RouteAlternative): String {
         val transitSteps = alternative.steps.count { it.mode == "TRANSIT" }
         val hasMetro = alternative.steps.any { 
             it.vehicleType?.contains("SUBWAY", ignoreCase = true) == true ||
@@ -245,7 +239,7 @@ class BusTimesImprovementService(
         }
     }
     
-    private fun estimateStepCrowding(step: TransitStep): String? {
+    private fun estimateStepCrowding(@Suppress("UNUSED_PARAMETER") step: TransitStep): String {
         val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val isRushHour = (currentHour in 7..9) || (currentHour in 17..19)
         
@@ -292,36 +286,6 @@ class BusTimesImprovementService(
             "Medium" -> 2
             "Low" -> 3
             else -> 4
-        }
-    }
-    
-    suspend fun getBusStopRealTimeInfo(stopName: String): List<RealTimeBusService.RealTimeDeparture> {
-        return realTimeBusService.getRealTimeDepartures(stopName, 10)
-    }
-    
-    suspend fun getOptimalRouteForTime(
-        from: String,
-        to: String,
-        departureTime: Long? = null
-    ): ImprovedRouteAlternative? = withContext(Dispatchers.IO) {
-        try {
-            val alternatives = getIndustryStandardRoutes(from, to, 10)
-            
-            if (alternatives.isEmpty()) {
-                return@withContext null
-            }
-
-            if (departureTime != null) {
-                alternatives.minByOrNull { alternative -> 
-                    kotlin.math.abs(alternative.departureTime - departureTime) 
-                }
-            } else {
-                alternatives.first()
-            }
-            
-        } catch (e: Exception) {
-            Log.e("BusTimesImprovementService", "Error getting optimal route", e)
-            null
         }
     }
 } 

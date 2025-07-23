@@ -2,17 +2,16 @@ package com.example.athensplus.core.utils
 
 import android.content.Context
 import android.util.Log
-import com.example.athensplus.domain.model.BusDepartureInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 import java.net.URLEncoder
-import java.text.SimpleDateFormat
-import java.util.*
+import kotlin.random.Random
 
+@Suppress("UNUSED")
 class RealTimeBusService(
-    private val context: Context,
+    @Suppress("UNUSED_PARAMETER") context: Context,
     private val apiKey: String
 ) {
     
@@ -35,6 +34,7 @@ class RealTimeBusService(
         val realTimeUpdates: Boolean
     )
     
+    @Suppress("UNUSED")
     suspend fun getRealTimeDepartures(
         stopName: String,
         maxResults: Int = 15
@@ -150,7 +150,7 @@ class RealTimeBusService(
             val currentTime = System.currentTimeMillis() / 1000
 
             for (line in stopInfo.lines.take(maxResults)) {
-                val departureTime = currentTime + (Random().nextInt(30) + 1) * 60
+                val departureTime = currentTime + (Random.nextInt(30) + 1) * 60
                 val waitMinutes = ((departureTime - currentTime) / 60).toInt()
                 
                 val reliability = when {
@@ -160,8 +160,8 @@ class RealTimeBusService(
                 }
                 
                 val crowdLevel = when {
-                    Random().nextInt(100) < 30 -> "Low"
-                    Random().nextInt(100) < 70 -> "Medium"
+                    Random.nextInt(100) < 30 -> "Low"
+                    Random.nextInt(100) < 70 -> "Medium"
                     else -> "High"
                 }
                 
@@ -173,7 +173,7 @@ class RealTimeBusService(
                     reliability = reliability,
                     crowdLevel = crowdLevel,
                     vehicleType = "BUS",
-                    accessibility = Random().nextBoolean(),
+                    accessibility = Random.nextBoolean(),
                     realTimeUpdates = true
                 ))
             }
@@ -181,7 +181,7 @@ class RealTimeBusService(
             val commonLines = listOf("E14", "E15", "E16", "E17", "E18", "E19", "E20")
             for (line in commonLines.take(maxResults - departures.size)) {
                 if (!departures.any { it.line == line }) {
-                    val departureTime = currentTime + (Random().nextInt(30) + 1) * 60
+                    val departureTime = currentTime + (Random.nextInt(30) + 1) * 60
                     val waitMinutes = ((departureTime - currentTime) / 60).toInt()
                     
                     departures.add(RealTimeDeparture(

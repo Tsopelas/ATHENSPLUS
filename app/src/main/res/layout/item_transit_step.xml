@@ -122,7 +122,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_walking"
-                android:tint="#666666"
+                app:tint="#666666"
                 android:layout_marginEnd="12dp" />
 
             <TextView

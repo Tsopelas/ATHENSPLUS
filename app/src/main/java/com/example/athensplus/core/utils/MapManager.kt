@@ -168,7 +168,7 @@ class MapManager(private val context: Context) {
                     .geodesic(false)
                     .jointType(JointType.ROUND)
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -195,8 +195,6 @@ class MapManager(private val context: Context) {
     fun addMarker(marker: Marker) {
         currentMarkers.add(marker)
     }
-
-    fun getCurrentMarkers(): List<Marker> = currentMarkers.toList()
 
     fun findTextPosition(
         originalPosition: LatLng,
@@ -319,7 +317,7 @@ class MapManager(private val context: Context) {
         return false
     }
 
-    // i thought i would never need demoninator pointers fron uni hahaha
+    // this is so uni for real i grabbed it straight from data structures
     private fun isLinesIntersecting(p1: PointF, p2: PointF, p3: PointF, p4: PointF): Boolean {
         val denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y)
         if (denominator == 0f) return false

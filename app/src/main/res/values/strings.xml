@@ -1,16 +1,36 @@
 <resources>
     <string name="app_name">ATHENS+</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
-    <string name="please_enter_destination">Please enter a destination</string>
+    
+    <!-- Bottom Navigation -->
+    <string name="nav_transport">Transport</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_info">Info</string>
+    
+    <!-- Directions Dialog -->
+    <string name="directions">Directions</string>
+    <string name="close">Close</string>
+    <string name="current_location">Current Location</string>
+    <string name="to_where">To Where?</string>
+    <string name="add_stop">Add stop</string>
+    <string name="update_directions">Update directions</string>
+    <string name="choose_on_map">Choose on Map</string>
+    <string name="fastest">Fastest</string>
+
+    <string name="easiest">Easiest</string>
+    <string name="all">All</string>
+    
+    <!-- Accessibility Content Descriptions -->
+
+    <string name="location">Location</string>
+
+    
+    <!-- Transport UI -->
+    <string name="directions_button">Directions</string>
+    <string name="estimated_wait_time">Estimated Wait Time (%1$s)</string>
+    <string name="route_header">Route %1$d (%2$s)</string>
+    
+    <!-- Existing strings -->
     <string name="error_opening_directions_dialog">Error opening directions dialog: %1$s</string>
     <string name="from_my_current_location">Current Location</string>
     <string name="select_from_map">Select from Map</string>
@@ -38,4 +58,140 @@
     <string name="google_maps_key">AIzaSyAbCaNy9okak33ITCpb1MWR_Idu6wqQq14</string>
     <string name="search_address_hint">Search for an address...</string>
     <string name="no_address_suggestions">No address suggestions found</string>
+
+    <!-- Common UI Text -->
+    <string name="athens_plus">Athens+</string>
+    
+    <!-- Transport Fragment - API Testing -->
+    <string name="test_api">Test API</string>
+    <string name="testing_api">Testing API...</string>
+    <string name="api_test_successful">✅ API Test Successful! Found %1$d steps.</string>
+    <string name="api_test_failed">❌ API Test Failed - No directions returned</string>
+    
+    <!-- Transport Fragment - User Messages -->
+    <string name="please_enter_destination">Please enter a destination.</string>
+    <string name="finding_fastest_route">Finding fastest route...</string>
+    <string name="no_directions_found">No directions found. Please try different locations.</string>
+    <string name="error_finding_directions">Error finding directions: %1$s</string>
+    <string name="choose_destination">Choose Destination</string>
+    
+    <!-- Transport Fragment - Transit Info -->
+    <string name="wait_time_format">Wait: %1$s</string>
+    <string name="next_departure_format">Next: %1$s</string>
+    <string name="reliability_wait_format">%1$s Wait: %2$s</string>
+    <string name="bus_departed">Bus departed</string>
+    <string name="wait_time_check_schedule">Wait time: Check schedule</string>
+    <string name="navigate_with_ease">Navigate with ease</string>
+    <string name="login">Login</string>
+    <string name="my_account">My Account</string>
+    <string name="my_routes">My Routes</string>
+    <string name="saved_places">Saved Places</string>
+    <string name="recent_routes">Recent Routes</string>
+    <string name="personal_info">Personal Info</string>
+    <string name="subscription">Subscription</string>
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="notifications">Notifications</string>
+    <string name="log_out">Log Out</string>
+    
+    <!-- Transport Fragment -->
+
+    
+    <!-- Explore Fragment -->
+
+    
+    <!-- Error and Loading States -->
+
+    
+    <!-- Map Dialog -->
+    <string name="choose_location_on_map">Choose Location on Map</string>
+    <string name="move_map_instruction">Move the map to position the pin on your desired location</string>
+    <string name="confirm_location">Confirm Location</string>
+    
+    <!-- Search Menu -->
+
+    <string name="choose_on_map_menu">Choose on map</string>
+    <string name="show_all">Show all</string>
+    <string name="current_location_menu">Current location</string>
+    
+    <!-- Error Messages -->
+    <string name="api_test_error">❌ API Test Error: %1$s</string>
+    <string name="wait_time_not_available">Wait time not available</string>
+    <string name="error_loading_wait_time">Error loading wait time</string>
+    <string name="updating_directions">Updating directions...</string>
+    <string name="no_routes_found_destination">No routes found to destination</string>
+    
+    <!-- Station Names -->
+    <string name="piraeus_greek">Πειραιάς</string>
+    <string name="piraeus_english">Piraeus</string>
+    
+    <!-- Frequency format -->
+    <string name="departure_with_frequency">%1$s • %2$s</string>
+    
+    <!-- Route Selection UI -->
+    <string name="finding_route_format">Finding %1$s route...</string>
+    <string name="route_mode_fastest">fastest</string>
+    <string name="route_mode_easiest">easiest</string>
+    <string name="route_mode_all_routes">all routes</string>
+    <string name="error_fetching_routes">Error fetching routes: %1$s</string>
+    
+    <!-- No Buses Available -->
+    <string name="no_buses_available">No buses available</string>
+    <string name="try_checking_back">Try checking back in a few minutes</string>
+    <string name="no_buses_icon_description">No buses available icon</string>
+    
+    <!-- Error Loading -->
+    <string name="error_loading_buses">Error loading buses</string>
+    <string name="please_try_again_later">Please try again later</string>
+    <string name="retry">Retry</string>
+    <string name="error_icon_description">Error icon</string>
+    
+    <!-- Address Suggestion -->
+    <string name="location_icon_description">Location</string>
+    
+    <!-- Transit Step Modern -->
+    <string name="transit_step_icon_description">Transit step icon</string>
+    <string name="loading_wait_time">Loading wait time...</string>
+    
+    <!-- Info Fragment Icon Descriptions -->
+    <string name="app_logo_description">Athens+ app logo</string>
+    <string name="my_routes_icon_description">My routes icon</string>
+    <string name="saved_places_icon_description">Saved places icon</string>
+    <string name="recent_routes_icon_description">Recent routes icon</string>
+    <string name="personal_info_icon_description">Personal info icon</string>
+    <string name="subscription_icon_description">Subscription icon</string>
+    <string name="theme_icon_description">Theme icon</string>
+    <string name="language_icon_description">Language icon</string>
+    <string name="notifications_icon_description">Notifications icon</string>
+    <string name="logout_icon_description">Logout icon</string>
+    
+    <!-- Transport Fragment -->
+    <string name="athens_plus_logo_description">Athens Plus Logo</string>
+    <string name="where_do_you_want_to_go">Where do you want to go?</string>
+    <string name="get_directions_description">Get Directions</string>
+    <string name="reset_map">Reset Map</string>
+    <string name="peiraias_gate_map">Peiraias Gate Map</string>
+    <string name="airport_metro_timetable">Airport Metro Timetable</string>
+    <string name="interchange_label">interchange</string>
+    <string name="enter_button_description">Enter button</string>
+    <string name="metro_label">Metro</string>
+    <string name="all_lines_label">All Lines</string>
+    <string name="map_search_icon_description">Map search icon</string>
+    <string name="reset_icon_description">Reset icon</string>
+    <string name="airport_icon_description">Airport icon</string>
+    <string name="metro_timetable_icon_description">Metro timetable icon</string>
+    <string name="station_icon_description">Station icon</string>
+    <string name="interchange_icon_description">Interchange icon</string>
+    <string name="transport_mode_icon_description">Transport mode icon</string>
+    <string name="dropdown_icon_description">Dropdown icon</string>
+    
+    <!-- Directions Dialog -->
+    <string name="directions_icon_description">Directions icon</string>
+    <string name="location_marker_start_description">Start location marker</string>
+    <string name="location_marker_end_description">End location marker</string>
+    <string name="map_search_directions_description">Choose location on map</string>
+    <string name="time_icon_description">Travel time icon</string>
+    <string name="autofill_from_location">fromLocation</string>
+    <string name="autofill_to_location">toLocation</string>
 </resources>

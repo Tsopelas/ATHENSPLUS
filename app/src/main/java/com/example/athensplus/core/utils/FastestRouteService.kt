@@ -11,13 +11,14 @@ import java.net.URLEncoder
 import java.net.URL
 
 class FastestRouteService(
-    private val context: Context, 
+    @Suppress("UNUSED_PARAMETER") context: Context, 
     private val apiKey: String,
     private val locationService: LocationService? = null
 ) {
     
-    private val enhancedBusTimesService = EnhancedBusTimesService(context, apiKey, locationService)
+    private val enhancedBusTimesService = EnhancedBusTimesService(apiKey, locationService)
     
+    @Suppress("UNUSED")
     suspend fun getFastestRoute(
         from: String,
         to: String
@@ -146,7 +147,7 @@ class FastestRouteService(
                     Log.d("FastestRouteService", "Transit step: $line")
                     Log.d("FastestRouteService", "Departure time: $departureTime")
                     Log.d("FastestRouteService", "Departure time value: $departureTimeValue")
-                    Log.d("FastestRouteService", "Wait time: ${waitTime} minutes")
+                    Log.d("FastestRouteService", "Wait time: $waitTime minutes")
                     Log.d("FastestRouteService", "Current time: $currentTime")
                 }
 
@@ -164,7 +165,7 @@ class FastestRouteService(
                         totalRouteDistance = totalDistance,
                         departureTime = departureTime,
                         departureTimeValue = departureTimeValue,
-                        waitTime = if (waitTime > 0) "${waitTime} min" else null,
+                        waitTime = if (waitTime > 0) "$waitTime min" else null,
                         waitTimeMinutes = waitTime.toInt()
                     )
                 )
@@ -179,6 +180,7 @@ class FastestRouteService(
         }
     }
     
+    @Suppress("UNUSED")
     suspend fun getRouteAlternatives(
         from: String,
         to: String,
@@ -222,7 +224,7 @@ class FastestRouteService(
     }
 
     // i have to improve this by fetching prices depending on the route but idk how
-    private fun calculatePrice(alternative: EnhancedBusTimesService.RouteAlternative): String? {
+    private fun calculatePrice(alternative: EnhancedBusTimesService.RouteAlternative): String {
         val transitSteps = alternative.steps.count { it.mode == "TRANSIT" }
         return when (transitSteps) {
             0 -> "Free"

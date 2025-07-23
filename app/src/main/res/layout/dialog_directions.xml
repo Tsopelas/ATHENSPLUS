@@ -27,13 +27,14 @@
                 android:layout_height="24dp"
                 android:layout_marginEnd="12dp"
                 android:src="@drawable/ic_go"
-                android:tint="#663399"
+                android:contentDescription="@string/directions_icon_description"
+                app:tint="#663399"
                 android:scaleType="centerInside" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Directions"
+                android:text="@string/directions"
                 android:textColor="#663399"
                 android:textSize="20sp"
                 android:fontFamily="@font/montserrat_bold" />
@@ -45,9 +46,9 @@
             android:layout_height="32dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
-            android:tint="#663399"
+            app:tint="#663399"
             android:scaleType="centerInside"
-            android:contentDescription="Close" />
+            android:contentDescription="@string/close" />
     </LinearLayout>
 
     <LinearLayout
@@ -74,6 +75,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/circle_purple_outline"
+                    android:contentDescription="@string/location_marker_start_description"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp" />
                 <EditText
@@ -84,7 +86,8 @@
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
                     android:textColor="#663399"
-                    android:hint="Current Location"
+                    android:hint="@string/current_location"
+                    android:autofillHints="@string/autofill_from_location"
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp"
                     android:textSize="16sp"
@@ -105,10 +108,10 @@
             android:layout_marginStart="8dp"
             android:background="@drawable/modern_button_bg"
             android:src="@drawable/ic_addstop"
-            android:tint="#663399"
+            app:tint="#663399"
             android:scaleType="centerInside"
             android:padding="2dp"
-            android:contentDescription="Add stop" />
+            android:contentDescription="@string/add_stop" />
     </LinearLayout>
 
     <LinearLayout
@@ -135,6 +138,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/circle_purple_filled"
+                    android:contentDescription="@string/location_marker_end_description"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp" />
                 <EditText
@@ -145,7 +149,8 @@
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
                     android:textColor="#663399"
-                    android:hint="To Where?"
+                    android:hint="@string/to_where"
+                    android:autofillHints="@string/autofill_to_location"
                     android:paddingStart="4dp"
                     android:paddingEnd="4dp"
                     android:textSize="16sp"
@@ -163,48 +168,42 @@
             android:layout_marginStart="8dp"
             android:background="@drawable/modern_button_bg"
             android:src="@drawable/ic_enter"
-            android:tint="#663399"
+            app:tint="#663399"
             android:scaleType="centerInside"
             android:padding="12dp"
-            android:contentDescription="Update directions" />
+            android:contentDescription="@string/update_directions" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/button_choose_on_map_to"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/modern_button_bg"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:clickable="true"
+        android:focusable="true">
 
-        <LinearLayout
-            android:id="@+id/button_choose_on_map_to"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/modern_button_bg"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:clickable="true"
-            android:focusable="true">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_mapsearching"
+            android:contentDescription="@string/map_search_directions_description"
+            app:tint="#663399"
+            android:scaleType="centerInside"
+            android:layout_marginEnd="8dp" />
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_mapsearching"
-                android:tint="#663399"
-                android:scaleType="centerInside"
-                android:layout_marginEnd="8dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_on_map"
+            android:textColor="#663399"
+            android:textSize="16sp"
+            android:fontFamily="@font/montserrat_semibold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose on Map"
-                android:textColor="#663399"
-                android:textSize="16sp"
-                android:fontFamily="@font/montserrat_semibold" />
-
-        </LinearLayout>
     </LinearLayout>
 
     <!-- Route Selection Buttons -->
@@ -212,6 +211,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:baselineAligned="false"
         android:gravity="center"
         android:layout_marginBottom="16dp"
         android:paddingHorizontal="8dp">
@@ -233,7 +233,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fastest"
+                android:text="@string/fastest"
                 android:textSize="14sp"
                 android:textColor="#663399"
                 android:fontFamily="@font/montserrat_semibold"
@@ -258,7 +258,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Easiest"
+                android:text="@string/easiest"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:fontFamily="@font/montserrat_semibold"
@@ -283,7 +283,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All"
+                android:text="@string/all"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:fontFamily="@font/montserrat_semibold"
@@ -324,7 +324,8 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_time"
-            android:tint="#663399"
+            android:contentDescription="@string/time_icon_description"
+            app:tint="#663399"
             android:layout_marginEnd="12dp" />
 
         <TextView

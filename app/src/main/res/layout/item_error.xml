@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -10,12 +11,13 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:src="@drawable/ic_error"
-        android:tint="#FF5252" />
+        android:contentDescription="@string/error_icon_description"
+        app:tint="#FF5252" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Error loading buses"
+        android:text="@string/error_loading_buses"
         android:textSize="18sp"
         android:textColor="#2D3550"
         android:textStyle="bold"
@@ -24,7 +26,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please try again later"
+        android:text="@string/please_try_again_later"
         android:textSize="16sp"
         android:textColor="#666666"
         android:layout_marginTop="8dp" />
@@ -33,7 +35,7 @@
         android:id="@+id/button_retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Retry"
+        android:text="@string/retry"
         android:layout_marginTop="16dp"
         android:backgroundTint="#6200EE"
         android:textColor="#FFFFFF"

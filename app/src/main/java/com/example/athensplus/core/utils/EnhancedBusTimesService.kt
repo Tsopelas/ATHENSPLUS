@@ -1,6 +1,5 @@
 package com.example.athensplus.core.utils
 
-import android.content.Context
 import android.util.Log
 import com.example.athensplus.domain.model.TransitStep
 import kotlinx.coroutines.Dispatchers
@@ -8,11 +7,9 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URLEncoder
 import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 class EnhancedBusTimesService(
-    private val context: Context,
     private val apiKey: String,
     private val locationService: LocationService? = null
 ) {
@@ -169,133 +166,4 @@ class EnhancedBusTimesService(
         
         return Triple(firstDepartureTime, lastArrivalTime, totalWaitTime)
     }
-    
-    suspend fun getBusStopDepartures(
-        stopName: String,
-        maxResults: Int = 10
-    ): List<BusDeparture> = withContext(Dispatchers.IO) {
-        try {
-            // Use Google Places API to find the bus stop
-            val encodedStop = URLEncoder.encode("$stopName bus stop, Athens, Greece", "UTF-8")
-            val placesUrl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?" +
-                    "input=$encodedStop&inputtype=textquery&fields=place_id,geometry&key=$apiKey"
-            
-            val placesResponse = URL(placesUrl).readText()
-            val placesJson = JSONObject(placesResponse)
-            
-            if (placesJson.getString("status") != "OK") {
-                return@withContext emptyList()
-            }
-            
-            val candidates = placesJson.getJSONArray("candidates")
-            if (candidates.length() == 0) {
-                return@withContext emptyList()
-            }
-            
-            val placeId = candidates.getJSONObject(0).getString("place_id")
-            
-            // Get nearby transit stops using Places API
-            val location = candidates.getJSONObject(0).getJSONObject("geometry").getJSONObject("location")
-            val lat = location.getDouble("lat")
-            val lng = location.getDouble("lng")
-            
-            val nearbyUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
-                    "location=$lat,$lng&radius=500&type=transit_station&key=$apiKey"
-            
-            val nearbyResponse = URL(nearbyUrl).readText()
-            val nearbyJson = JSONObject(nearbyResponse)
-            
-            val departures = mutableListOf<BusDeparture>()
-            
-            if (nearbyJson.getString("status") == "OK") {
-                val results = nearbyJson.getJSONArray("results")
-                
-                for (i in 0 until results.length()) {
-                    val place = results.getJSONObject(i)
-                    val placeName = place.getString("name")
-
-                    val stopDepartures = getTransitDepartures(placeName, lat, lng)
-                    departures.addAll(stopDepartures)
-                }
-            }
-
-            departures.sortBy { it.departureTime }
-            departures.take(maxResults)
-            
-        } catch (e: Exception) {
-            Log.e("EnhancedBusTimesService", "Error getting bus stop departures", e)
-            emptyList()
-        }
-    }
-    
-    private suspend fun getTransitDepartures(
-        stopName: String,
-        lat: Double,
-        lng: Double
-    ): List<BusDeparture> = withContext(Dispatchers.IO) {
-        try {
-            val currentTime = System.currentTimeMillis() / 1000
-            val url = "https://maps.googleapis.com/maps/api/directions/json?" +
-                    "origin=$lat,$lng&destination=$lat,$lng&mode=transit&" +
-                    "departure_time=now&key=$apiKey"
-            
-            val response = URL(url).readText()
-            val json = JSONObject(response)
-            
-            if (json.getString("status") != "OK") {
-                return@withContext emptyList()
-            }
-            
-            val departures = mutableListOf<BusDeparture>()
-            val routes = json.getJSONArray("routes")
-            
-            for (i in 0 until routes.length()) {
-                val route = routes.getJSONObject(i)
-                val legs = route.getJSONArray("legs")
-                
-                if (legs.length() > 0) {
-                    val leg = legs.getJSONObject(0)
-                    val steps = leg.getJSONArray("steps")
-                    
-                    for (j in 0 until steps.length()) {
-                        val step = steps.getJSONObject(j)
-                        val transitDetails = step.optJSONObject("transit_details")
-                        
-                        if (transitDetails != null) {
-                            val line = transitDetails.optJSONObject("line")?.optString("short_name") ?: ""
-                            val destination = transitDetails.optJSONObject("arrival_stop")?.optString("name") ?: ""
-                            val departureTime = transitDetails.optJSONObject("departure_time")?.optLong("value") ?: 0L
-                            
-                            if (departureTime > currentTime) {
-                                val waitTime = departureTime - currentTime
-                                val waitMinutes = (waitTime / 60).toInt()
-                                
-                                departures.add(BusDeparture(
-                                    line = line,
-                                    destination = destination,
-                                    departureTime = departureTime,
-                                    waitMinutes = waitMinutes,
-                                    stopName = stopName
-                                ))
-                            }
-                        }
-                    }
-                }
-            }
-            
-            departures
-            
-        } catch (e: Exception) {
-            Log.e("EnhancedBusTimesService", "Error getting transit departures", e)
-            emptyList()
-        }
-    }
-    
-    data class BusDeparture(
-        val line: String,
-        val destination: String,
-        val departureTime: Long,
-        val waitMinutes: Int,
-        val stopName: String
-    )
 } 

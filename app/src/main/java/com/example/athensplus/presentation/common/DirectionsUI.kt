@@ -7,11 +7,9 @@ import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import com.example.athensplus.R
 import com.example.athensplus.domain.model.DirectionsResult
 import com.example.athensplus.domain.model.TransitStep
@@ -41,7 +39,7 @@ class DirectionsUI(private val context: Context) {
 
         stepsContainer.removeAllViews()
         directionsResult.steps.forEach { step ->
-            val stepView = createStepView(step)
+            val stepView = createStepView(step, stepsContainer)
             stepsContainer.addView(stepView)
         }
 
@@ -63,8 +61,8 @@ class DirectionsUI(private val context: Context) {
         onRouteDrawn(directionsResult.routePoints)
     }
 
-    private fun createStepView(step: TransitStep): View {
-        val stepView = LayoutInflater.from(context).inflate(R.layout.item_direction_step, null)
+    private fun createStepView(step: TransitStep, parent: ViewGroup): View {
+        val stepView = LayoutInflater.from(context).inflate(R.layout.item_direction_step, parent, false)
         
         val modeIcon = stepView.findViewById<ImageView>(R.id.mode_icon)
         val instructionText = stepView.findViewById<TextView>(R.id.instruction_text)
@@ -107,7 +105,7 @@ class DirectionsUI(private val context: Context) {
 
     fun drawRouteOnMap(
         routePoints: List<LatLng>,
-        mapManager: com.example.athensplus.core.utils.MapManager
+        @Suppress("UNUSED_PARAMETER") mapManager: com.example.athensplus.core.utils.MapManager
     ): PolylineOptions {
         return PolylineOptions()
             .addAll(routePoints)

@@ -1,6 +1,8 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.athensplus.core.utils
 
-import android.content.Context
+import android.location.Location
 import android.util.Log
 import com.example.athensplus.domain.model.AddressSuggestion
 import com.google.android.gms.maps.model.LatLng
@@ -12,11 +14,10 @@ import java.net.URLEncoder
 import java.util.UUID
 
 class AddressAutocompleteService(
-    private val context: Context,
     private val apiKey: String
 ) {
     
-    suspend fun getAddressSuggestions(query: String, userLocation: com.google.android.gms.maps.model.LatLng? = null): List<AddressSuggestion> = withContext(Dispatchers.IO) {
+    suspend fun getAddressSuggestions(query: String, userLocation: LatLng? = null): List<AddressSuggestion> = withContext(Dispatchers.IO) {
         try {
             if (query.length < 2) return@withContext emptyList()
             
@@ -84,7 +85,7 @@ class AddressAutocompleteService(
                         Log.w("AddressAutocomplete", "Error message: ${jsonResponse.getString("error_message")}")
                     }
 
-                    if (userLocation != null && suggestions.isEmpty()) {
+                    if (userLocation != null) {
                         Log.d("AddressAutocomplete", "Trying fallback without location bias")
                         val fallbackUrl = "https://maps.googleapis.com/maps/api/place/autocomplete/json?" +
                                 "input=$encodedQuery&" +
@@ -175,10 +176,6 @@ class AddressAutocompleteService(
         }
     }
     
-
-    
-
-    
     private fun parseDescription(description: String): ParsedInfo {
         var cleanAddress = description
         var streetName: String? = null
@@ -192,6 +189,12 @@ class AddressAutocompleteService(
             cleanAddress = cleanAddress.removeSuffix(", Greece")
         }
 
+        // Extract postal code before removing it
+        val postalCodeMatch = Regex(", ?(\\d{5})(?=,|$)").find(cleanAddress)
+        if (postalCodeMatch != null) {
+            postalCode = postalCodeMatch.groupValues[1]
+        }
+        
         cleanAddress = cleanAddress.replace(Regex(", ?\\d{5}(?=,|$)"), "")
 
         val parts = cleanAddress.split(",").map { it.trim() }
@@ -260,8 +263,6 @@ class AddressAutocompleteService(
         return establishmentKeywords.any { keyword -> textLower.contains(keyword) }
     }
     
-
-    
     private fun determineEstablishmentType(establishmentName: String?): String? {
         if (establishmentName == null) return null
         
@@ -295,8 +296,6 @@ class AddressAutocompleteService(
         }
     }
     
-
-    
     private fun isDuplicateSuggestion(existingSuggestions: List<AddressSuggestion>, newInfo: ParsedInfo): Boolean {
         return existingSuggestions.any { existing ->
             if (newInfo.establishmentName != null && existing.establishmentName != null) {
@@ -314,17 +313,16 @@ class AddressAutocompleteService(
         }
     }
     
-    private fun calculateDistance(point1: com.google.android.gms.maps.model.LatLng, point2: com.google.android.gms.maps.model.LatLng): Double {
+    @Suppress("UNUSED")
+    private fun calculateDistance(point1: LatLng, point2: LatLng): Double {
         val results = FloatArray(1)
-        android.location.Location.distanceBetween(
+        Location.distanceBetween(
             point1.latitude, point1.longitude,
             point2.latitude, point2.longitude,
             results
         )
         return results[0].toDouble()
     }
-    
-
     
     private data class ParsedInfo(
         val cleanAddress: String,

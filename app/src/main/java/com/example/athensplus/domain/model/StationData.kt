@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.athensplus.domain.model
 
 import com.google.android.gms.maps.model.LatLng
@@ -264,7 +266,7 @@ object StationData {
     )
 
     val piraeusPortCenter = LatLng(37.9469, 23.6405) 
-    val piraeusPortZoom = 15.0f 
+    const val PIRAEUS_PORT_ZOOM = 15.0f 
 
     val piraeusGates = listOf(
         Triple("E1", LatLng(37.9461, 23.6377), "To Crete"),

@@ -28,7 +28,7 @@
                 android:layout_height="24dp"
                 android:layout_marginStart="16dp"
                 android:src="@drawable/ic_location"
-                android:tint="#663399" />
+                app:tint="#663399" />
 
             <EditText
                 android:id="@+id/search_edit_text"
@@ -50,7 +50,7 @@
                 android:layout_height="32dp"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_clear"
-                android:tint="#663399"
+                app:tint="#663399"
                 android:contentDescription="Clear" />
 
             <ImageButton
@@ -59,7 +59,7 @@
                 android:layout_height="32dp"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_enter"
-                android:tint="#663399"
+                app:tint="#663399"
                 android:contentDescription="Enter" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -100,7 +100,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_menu"
-            android:tint="#663399"
+            app:tint="#663399"
             android:layout_marginEnd="8dp" />
         <TextView
             android:id="@+id/menu_choose_on_map"

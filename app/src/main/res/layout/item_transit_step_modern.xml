@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -22,7 +23,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginEnd="16dp"
-            android:tint="#663399"
+            android:contentDescription="@string/transit_step_icon_description"
+            app:tint="#663399"
             android:src="@drawable/ic_walking" />
 
         <LinearLayout
@@ -67,43 +69,39 @@
         android:id="@+id/wait_time_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:padding="12dp"
         android:background="@drawable/route_details_bg"
         android:visibility="gone">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_time"
+            android:contentDescription="@string/time_icon_description"
+            app:tint="#663399"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/wait_time_text"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:text="@string/loading_wait_time"
+            android:textColor="#663399"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat_medium" />
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_time"
-                android:tint="#663399"
-                android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/next_departure_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#B39DDB"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_medium" />
 
-            <TextView
-                android:id="@+id/wait_time_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Loading wait time..."
-                android:textColor="#663399"
-                android:textSize="14sp"
-                android:fontFamily="@font/montserrat_medium" />
-
-            <TextView
-                android:id="@+id/next_departure_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textColor="#B39DDB"
-                android:textSize="12sp"
-                android:fontFamily="@font/montserrat_medium" />
-        </LinearLayout>
     </LinearLayout>
 
     <!-- Purple Connecting Line (except for last item) -->

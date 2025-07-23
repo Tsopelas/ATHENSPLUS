@@ -35,7 +35,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Close"
             android:padding="8dp"
-            android:tint="#663399" />
+            app:tint="#663399" />
 
     </LinearLayout>
 
@@ -67,7 +67,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_location"
-            android:tint="#663399"
+            app:tint="#663399"
             android:scaleType="centerInside" />
 
         <!-- Instructions and Most Accurate Address in one rectangle -->

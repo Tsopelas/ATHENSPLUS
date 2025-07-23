@@ -1,7 +1,6 @@
 package com.example.athensplus.presentation.common
 
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
@@ -16,15 +15,14 @@ import android.widget.PopupWindow
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import com.example.athensplus.R
+import com.example.athensplus.core.utils.StationManager
 import com.example.athensplus.domain.model.MetroStation
 import com.example.athensplus.domain.model.TimetableTable
-import com.example.athensplus.core.utils.StationManager
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
@@ -71,7 +69,7 @@ class TransportUI(
         )
 
         menuItems.forEach { (title, dotRes, color) ->
-            val itemView = inflater.inflate(R.layout.item_line_dropdown, null)
+            val itemView = inflater.inflate(R.layout.item_line_dropdown, popupView, false)
             val dot = itemView.findViewById<View>(R.id.line_dot)
             val text = itemView.findViewById<TextView>(R.id.line_text)
 
@@ -139,7 +137,7 @@ class TransportUI(
         )
 
         menuItems.forEach { (title, iconRes, color) ->
-            val itemView = inflater.inflate(R.layout.popup_menu_item, null).apply {
+            val itemView = inflater.inflate(R.layout.popup_menu_item, popupView, false).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -284,7 +282,7 @@ class TransportUI(
             val title = waitTimeView.findViewById<TextView>(R.id.direction_title)
             val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
             val time = sdf.format(Date())
-            title.text = "Estimated Wait Time ($time)"
+            title.text = dialog.context.getString(R.string.estimated_wait_time, time)
             title.setTextColor(lineColor)
 
             val tableLayout = waitTimeView.findViewById<TableLayout>(R.id.timetable_table_layout)
@@ -328,12 +326,13 @@ class TransportUI(
         dialog.show()
     }
 
+    @Suppress("UNUSED")
     fun showDirectionsButton(
         binding: com.example.athensplus.databinding.FragmentTransportBinding,
         onDirectionsClick: () -> Unit
     ): Button {
         val directionsButton = Button(fragment.requireContext()).apply {
-            text = "Directions"
+            text = fragment.requireContext().getString(R.string.directions_button)
             setBackgroundResource(R.drawable.rounded_directions_button)
             setTextColor(Color.WHITE)
             setPadding(32, 16, 32, 16)
@@ -363,6 +362,7 @@ class TransportUI(
         return directionsButton
     }
 
+    @Suppress("UNUSED")
     fun drawRouteLine(
         googleMap: GoogleMap?,
         routePoints: List<LatLng>,

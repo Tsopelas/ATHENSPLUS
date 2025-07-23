@@ -27,7 +27,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_search"
-                android:tint="#888888"
+                app:tint="#888888"
                 android:contentDescription="Search" />
 
             <EditText

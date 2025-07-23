@@ -1,9 +1,7 @@
 package com.example.athensplus.core.utils
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -26,7 +24,7 @@ class LocationService(private val fragment: Fragment) {
         checkLocationPermission()
     }
 
-    fun checkLocationPermission() {
+    private fun checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 fragment.requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -34,6 +32,7 @@ class LocationService(private val fragment: Fragment) {
         ) {
             locationPermissionGranted = true
         } else {
+            @Suppress("DEPRECATION")
             fragment.requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
@@ -53,17 +52,15 @@ class LocationService(private val fragment: Fragment) {
                 googleMap.isMyLocationEnabled = false
                 googleMap.uiSettings.isMyLocationButtonEnabled = false
             }
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
         }
     }
 
     fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<String>,
+        @Suppress("UNUSED_PARAMETER") permissions: Array<String>,
         grantResults: IntArray
     ) {
-        @Suppress("UNUSED_PARAMETER")
-        val _permissions = permissions
         locationPermissionGranted = false
         when (requestCode) {
             LOCATION_PERMISSION_REQUEST_CODE -> {

@@ -1,14 +1,13 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.athensplus.core.utils
 
 import android.content.Context
 import com.example.athensplus.R
 import com.example.athensplus.domain.model.MetroStation
 import com.example.athensplus.domain.model.TimetableTable
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 class TimetableService(private val context: Context) {
@@ -117,11 +116,7 @@ class TimetableService(private val context: Context) {
             parts.size > 1 && parts[1].trim().equals(station.nameEnglish, ignoreCase = true)
         }
 
-        return if (stationLine != null) {
-            stationLine.split(";").drop(2).map { it.trim() }
-        } else {
-            emptyList()
-        }
+        return stationLine?.split(";")?.drop(2)?.map { it.trim() } ?: emptyList()
     }
 
     fun parseWaitTime(): String {

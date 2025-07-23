@@ -3,13 +3,13 @@
     <item
         android:id="@+id/navigation_transport"
         android:icon="@drawable/bottombar_transport"
-        android:title="Transport" />
+        android:title="@string/nav_transport" />
     <item
         android:id="@+id/navigation_explore"
         android:icon="@drawable/bottombar_explore"
-        android:title="Explore" />
+        android:title="@string/nav_explore" />
     <item
         android:id="@+id/navigation_info"
         android:icon="@drawable/bottombar_info"
-        android:title="Info" />
+        android:title="@string/nav_info" />
 </menu> 

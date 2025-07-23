@@ -34,11 +34,6 @@ data class MetroStation(
     val isInterchange: Boolean = false
 )
 
-data class TramStation(
-    val name: String,
-    val coords: LatLng
-)
-
 data class BusStop(
     val name: String,
     val coords: LatLng
@@ -48,13 +43,6 @@ data class TimetableTable(
     val direction: String,
     val headers: List<String>,
     val rows: List<List<String>>
-)
-
-data class BusInfo(
-    val number: String,
-    val destination: String,
-    val arrivalTime: String,
-    val status: String 
 )
 
 data class DirectionsResult(
@@ -80,18 +68,3 @@ data class BusRouteAlternative(
     val accessibility: Boolean,
     val realTimeUpdates: Boolean
 )
-
-data class BusDepartureInfo(
-    val line: String,
-    val destination: String,
-    val departureTime: Long,
-    val waitMinutes: Int,
-    val stopName: String,
-    val vehicleType: String?,
-    val frequency: String?,
-    val reliability: String?,
-    val crowdLevel: String?,
-    val price: String?,
-    val accessibility: Boolean,
-    val realTimeUpdates: Boolean
-) 

@@ -21,7 +21,7 @@
             android:layout_width="260dp"
             android:layout_height="50dp"
             android:adjustViewBounds="true"
-            android:contentDescription="Athens Plus Logo"
+            android:contentDescription="@string/athens_plus_logo_description"
             android:scaleType="fitCenter"
             android:src="@drawable/athensplus" />
     </LinearLayout>
@@ -49,7 +49,7 @@
                 android:background="@drawable/modern_button_bg"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="#663399"
-                android:hint="Where do you want to go?"
+                android:hint="@string/where_do_you_want_to_go"
                 android:paddingTop="0dp"
                 android:paddingBottom="0dp"
                 android:paddingStart="16dp"
@@ -70,11 +70,11 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:background="@drawable/modern_button_bg"
-                android:contentDescription="Get Directions"
+                android:contentDescription="@string/get_directions_description"
                 android:padding="12dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_go"
-                android:tint="#663399"
+                app:tint="#663399"
                 android:elevation="0dp" />
         </LinearLayout>
 
@@ -94,14 +94,15 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_mapsearching"
-                android:tint="#663399"
+                android:contentDescription="@string/map_search_icon_description"
+                app:tint="#663399"
                 android:scaleType="centerInside"
                 android:layout_marginEnd="12dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Choose on Map"
+                android:text="@string/choose_on_map"
                 android:textColor="#663399"
                 android:textSize="16sp"
                 android:fontFamily="@font/montserrat_semibold" />
@@ -150,7 +151,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reset Map"
+                        android:text="@string/reset_map"
                         android:textColor="#663399"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold"
@@ -160,7 +161,8 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_clear"
-                        android:tint="#663399"
+                        android:contentDescription="@string/reset_icon_description"
+                        app:tint="#663399"
                         android:scaleType="centerInside" />
 
                 </LinearLayout>
@@ -185,14 +187,15 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_harbor"
-                        android:tint="@android:color/white"
+                        android:contentDescription="@string/airport_icon_description"
+                        app:tint="@android:color/white"
                         android:scaleType="centerInside"
                         android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Peiraias Gate Map"
+                        android:text="@string/peiraias_gate_map"
                         android:textColor="@android:color/white"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold" />
@@ -219,14 +222,15 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_airport"
-                        android:tint="@android:color/white"
+                        android:contentDescription="@string/metro_timetable_icon_description"
+                        app:tint="@android:color/white"
                         android:scaleType="centerInside"
                         android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Airport Metro Timetable"
+                        android:text="@string/airport_metro_timetable"
                         android:textColor="@android:color/white"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold" />
@@ -257,7 +261,7 @@
                             android:id="@+id/start_station_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Select Station"
+                            android:text="@string/select_station"
                             android:textSize="14sp"
                             android:fontFamily="@font/montserrat_medium"
                             android:textColor="#663399"/>
@@ -270,7 +274,8 @@
                         android:layout_height="24dp"
                         android:layout_weight="1"
                         android:src="@drawable/ic_arrow"
-                        android:tint="#663399"
+                        android:contentDescription="@string/station_icon_description"
+                        app:tint="#663399"
                         android:padding="2dp"
                         android:clickable="true"
                         android:focusable="true"
@@ -293,8 +298,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="interchange"
-                            android:textSize="10sp"
+                            android:text="@string/interchange_label"
+                                                          android:textSize="11sp"
                             android:textColor="#000000"
                             android:fontFamily="@font/montserrat_regular"/>
                     </LinearLayout>
@@ -305,7 +310,8 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_arrow"
-                        android:tint="#663399"
+                        android:contentDescription="@string/interchange_icon_description"
+                        app:tint="#663399"
                         android:padding="2dp"
                         android:visibility="gone"/>
 
@@ -320,7 +326,7 @@
                             android:id="@+id/end_station_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Select Station"
+                            android:text="@string/select_station"
                             android:textSize="14sp"
                             android:fontFamily="@font/montserrat_medium"
                             android:textColor="#663399"/>
@@ -336,8 +342,8 @@
                         android:background="@drawable/rounded_button_bg"
                         android:scaleType="centerInside"
                         android:padding="6dp"
-                        android:tint="@android:color/white"
-                        android:contentDescription="Enter button"/>
+                        app:tint="@android:color/white"
+                        android:contentDescription="@string/enter_button_description"/>
 
                 </LinearLayout>
 
@@ -354,6 +360,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:orientation="horizontal"
+        android:baselineAligned="false"
         android:gravity="center">
 
         <FrameLayout
@@ -384,13 +391,14 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_metro"
-                        android:tint="#663399" />
+                        android:contentDescription="@string/transport_mode_icon_description"
+                        app:tint="#663399" />
                     <TextView
                         android:id="@+id/mode_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
-                        android:text="Metro"
+                        android:text="@string/metro_label"
                         android:textColor="#663399"
                         android:textSize="16sp"
                         android:fontFamily="@font/montserrat_bold" />
@@ -434,7 +442,7 @@
                         android:id="@+id/line_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="All Lines"
+                        android:text="@string/all_lines_label"
                         android:textColor="#663399"
                         android:textSize="16sp"
                         android:fontFamily="@font/montserrat_bold" />
@@ -444,7 +452,8 @@
                         android:layout_height="24dp"
                         android:layout_marginStart="8dp"
                         android:src="@drawable/ic_arrow_drop_down"
-                        android:tint="#663399" />
+                        android:contentDescription="@string/dropdown_icon_description"
+                        app:tint="#663399" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </FrameLayout>

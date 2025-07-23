@@ -2,7 +2,6 @@ package com.example.athensplus.core.utils
 
 import android.content.Context
 import android.location.Geocoder
-import android.location.Location
 import com.example.athensplus.domain.model.DirectionsResult
 import com.example.athensplus.domain.model.MetroStation
 import com.example.athensplus.domain.model.StationData
@@ -12,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
-class DirectionsService(private val context: Context) {
+class DirectionsService(context: Context) {
     private val geocoder = Geocoder(context, Locale.getDefault())
     private val stationManager = StationManager()
 
@@ -38,6 +37,7 @@ class DirectionsService(private val context: Context) {
 
     private suspend fun geocodeLocation(query: String): LatLng? = withContext(Dispatchers.IO) {
         try {
+            @Suppress("DEPRECATION")
             val addresses = geocoder.getFromLocationName(query, 1)
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
@@ -54,7 +54,7 @@ class DirectionsService(private val context: Context) {
         return LatLng(37.9838, 23.7275) // Athens center
     }
 
-    private suspend fun findMetroRoute(start: LatLng, end: LatLng): DirectionsResult {
+    private fun findMetroRoute(start: LatLng, end: LatLng): DirectionsResult {
         val nearestStartStation = findNearestMetroStation(start)
         val nearestEndStation = findNearestMetroStation(end)
         
@@ -71,7 +71,7 @@ class DirectionsService(private val context: Context) {
         )
     }
 
-    private suspend fun findTramRoute(start: LatLng, end: LatLng): DirectionsResult {
+    private fun findTramRoute(start: LatLng, end: LatLng): DirectionsResult {
         val nearestStartStation = findNearestTramStation(start)
         val nearestEndStation = findNearestTramStation(end)
         
@@ -88,7 +88,7 @@ class DirectionsService(private val context: Context) {
         )
     }
 
-    private suspend fun findBusRoute(start: LatLng, end: LatLng): DirectionsResult {
+    private fun findBusRoute(start: LatLng, end: LatLng): DirectionsResult {
         val nearestStartStop = findNearestBusStop(start)
         val nearestEndStop = findNearestBusStop(end)
         
@@ -316,10 +316,10 @@ class DirectionsService(private val context: Context) {
         val totalMinutes = steps.sumOf { step ->
             step.duration.replace(" min", "").toIntOrNull() ?: 0
         }
-        return "${totalMinutes} min"
+        return "$totalMinutes min"
     }
 
-    private fun calculateTotalDistance(start: LatLng, end: LatLng, steps: List<TransitStep>): String {
+    private fun calculateTotalDistance(start: LatLng, end: LatLng, @Suppress("UNUSED_PARAMETER") steps: List<TransitStep>): String {
         val totalDistance = stationManager.getDistance(start, end) * 1000
         return "${totalDistance.toInt()}m"
     }

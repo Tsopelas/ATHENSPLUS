@@ -2,16 +2,13 @@ package com.example.athensplus.presentation.common
 
 import android.content.Context
 import android.graphics.Color
-import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import com.example.athensplus.R
+import com.example.athensplus.core.utils.BusTimesImprovementService.ImprovedRouteAlternative
 import com.example.athensplus.core.utils.RouteSelectionMode
 import com.example.athensplus.core.utils.RouteSelectionResult
 import com.example.athensplus.core.utils.RouteSelectionService
-import com.example.athensplus.core.utils.BusTimesImprovementService.ImprovedRouteAlternative
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -131,14 +128,11 @@ class RouteSelectionUI(
         onRouteSelected: (List<ImprovedRouteAlternative>, RouteSelectionMode) -> Unit
     ) {
         // Show loading state
-        showLoadingState(stepsContainer)
+        showLoadingState(stepsContainer, mode)
         
         scope.launch {
             try {
-                
-                val result = routeSelectionService.getRoutes(fromText, toText, mode)
-                
-                when (result) {
+                when (val result = routeSelectionService.getRoutes(fromText, toText, mode)) {
                     is RouteSelectionResult.Success -> {
                         showRoutes(stepsContainer, result, mode, onRouteSelected)
                     }
@@ -147,16 +141,22 @@ class RouteSelectionUI(
                     }
                 }
             } catch (e: Exception) {
-                showErrorState(stepsContainer, "Error fetching routes: ${e.message}")
+                showErrorState(stepsContainer, context.getString(R.string.error_fetching_routes, e.message))
             }
         }
     }
     
-    private fun showLoadingState(stepsContainer: LinearLayout) {
+    private fun showLoadingState(stepsContainer: LinearLayout, mode: RouteSelectionMode) {
         stepsContainer.removeAllViews()
         
+        val modeText = when (mode) {
+            RouteSelectionMode.FASTEST -> context.getString(R.string.route_mode_fastest)
+            RouteSelectionMode.EASIEST -> context.getString(R.string.route_mode_easiest)
+            RouteSelectionMode.ALL_ROUTES -> context.getString(R.string.route_mode_all_routes)
+        }
+        
         val loadingText = TextView(context).apply {
-            text = "Finding ${currentMode.name.lowercase().replaceFirstChar { it.uppercase() }} route..."
+            text = context.getString(R.string.finding_route_format, modeText)
             setTextColor(Color.parseColor("#663399"))
             textSize = 16f
             setPadding(24, 32, 24, 32)
@@ -173,8 +173,7 @@ class RouteSelectionUI(
         onRouteSelected: (List<ImprovedRouteAlternative>, RouteSelectionMode) -> Unit
     ) {
         stepsContainer.removeAllViews()
-        
-        // Add header
+
         val headerText = TextView(context).apply {
             text = result.title
             setTextColor(Color.parseColor("#663399"))
@@ -183,8 +182,7 @@ class RouteSelectionUI(
             gravity = android.view.Gravity.CENTER
         }
         stepsContainer.addView(headerText)
-        
-        // Add description
+
         val descriptionText = TextView(context).apply {
             text = result.description
             setTextColor(Color.parseColor("#666666"))
@@ -193,8 +191,7 @@ class RouteSelectionUI(
             gravity = android.view.Gravity.CENTER
         }
         stepsContainer.addView(descriptionText)
-        
-        // Call the callback with the routes and mode
+
         onRouteSelected(result.routes, mode)
     }
     
