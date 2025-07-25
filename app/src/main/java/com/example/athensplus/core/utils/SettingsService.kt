@@ -1,3 +1,5 @@
+@file:Suppress("unused", "RedundantSuppression", "RedundantSuppression")
+
 package com.example.athensplus.core.utils
 
 import android.content.Context
@@ -5,8 +7,6 @@ import android.content.SharedPreferences
 import com.example.athensplus.domain.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 class SettingsService(context: Context) {
@@ -16,8 +16,6 @@ class SettingsService(context: Context) {
     )
     
     private val _settingsFlow = MutableStateFlow(loadSettings())
-    @Suppress("UNUSED")
-    val settingsFlow: StateFlow<AppSettings> = _settingsFlow.asStateFlow()
     
     suspend fun updateTheme(theme: AppTheme) = withContext(Dispatchers.IO) {
         preferences.edit().putString(KEY_THEME, theme.name).apply()
@@ -95,23 +93,6 @@ class SettingsService(context: Context) {
         )
     }
     
-    @Suppress("UNUSED")
-    private fun getDefaultSettings(): AppSettings {
-        return AppSettings(
-            theme = AppTheme.LIGHT,
-            language = Language.ENGLISH,
-            notificationSettings = NotificationSettings(
-                serviceAlertsEnabled = true,
-                tripRemindersEnabled = true,
-                arrivalNotificationsEnabled = false,
-                emergencyAlertsEnabled = true,
-                quietHoursEnabled = false,
-                quietHoursStart = "22:00",
-                quietHoursEnd = "07:00"
-            )
-        )
-    }
-    
     fun getThemeDisplayName(theme: AppTheme): String {
         return when (theme) {
             AppTheme.LIGHT -> "Light Theme"
@@ -130,7 +111,7 @@ class SettingsService(context: Context) {
     fun getAllThemes(): List<AppTheme> = AppTheme.entries.toList()
     
     fun getAllLanguages(): List<Language> = Language.entries.toList()
-    
+
     companion object {
         private const val KEY_THEME = "app_theme"
         private const val KEY_LANGUAGE = "app_language"

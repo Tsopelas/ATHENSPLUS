@@ -85,39 +85,7 @@ object StationData {
         MetroStation("Αεροδρόμιο", "Airport", LatLng(37.936942775310406, 23.944783037869243))
     )
 
-    val tramStations = listOf(
-        MetroStation("Σύνταγμα", "Syntagma", LatLng(37.9755, 23.7348)),
-        MetroStation("Ζάππειο", "Zappeio", LatLng(37.9700, 23.7350)),
-        MetroStation("Καλλιμάρμαρο", "Kallimarmaro", LatLng(37.9650, 23.7350)),
-        MetroStation("Μουσεία", "Museia", LatLng(37.9600, 23.7350)),
-        MetroStation("Τζιτζιφιές", "Tzitzifies", LatLng(37.9550, 23.7350)),
-        MetroStation("Νέο Φάληρο", "Neo Faliro", LatLng(37.9500, 23.7350)),
-        MetroStation("Παλαιό Φάληρο", "Palaio Faliro", LatLng(37.9450, 23.7350)),
-        MetroStation("Αλ. Παναγούλη", "Al. Panagouli", LatLng(37.9400, 23.7350)),
-        MetroStation("Ελληνικό", "Elliniko", LatLng(37.9350, 23.7350)),
-        MetroStation("Αργυρούπολη", "Argyroupoli", LatLng(37.9300, 23.7350)),
-        MetroStation("Άλιμος", "Alimos", LatLng(37.9250, 23.7350)),
-        MetroStation("Ηλιούπολη", "Ilioupoli", LatLng(37.9200, 23.7350)),
-        MetroStation("Άγιος Δημήτριος", "Agios Dimitrios", LatLng(37.9150, 23.7350)),
-        MetroStation("Δάφνη", "Dafni", LatLng(37.9100, 23.7350)),
-        MetroStation("Άγιος Ιωάννης", "Agios Ioannis", LatLng(37.9050, 23.7350)),
-        MetroStation("Νέος Κόσμος", "Neos Kosmos", LatLng(37.9000, 23.7350)),
-        MetroStation("Συγγρού-Φιξ", "Syngrou-Fix", LatLng(37.8950, 23.7350)),
-        MetroStation("Ακρόπολη", "Acropolis", LatLng(37.8900, 23.7350))
-    )
 
-    val busStops = listOf(
-        BusStop("Syntagma", LatLng(37.9755, 23.7348)),
-        BusStop("Omonia", LatLng(37.9833, 23.7283)),
-        BusStop("Monastiraki", LatLng(37.9767, 23.7250)),
-        BusStop("Thissio", LatLng(37.9767, 23.7217)),
-        BusStop("Kerameikos", LatLng(37.9767, 23.7183)),
-        BusStop("Gazi", LatLng(37.9767, 23.7150)),
-        BusStop("Kallithea", LatLng(37.9550, 23.7000)),
-        BusStop("Nea Smyrni", LatLng(37.9450, 23.7100)),
-        BusStop("Palaio Faliro", LatLng(37.9350, 23.7000)),
-        BusStop("Glyfada", LatLng(37.8650, 23.7500))
-    )
 
     val line3CurvedPoints = listOf(
         LatLng(37.942987138386535, 23.64761813894496), 

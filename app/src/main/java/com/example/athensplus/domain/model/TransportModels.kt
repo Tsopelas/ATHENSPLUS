@@ -1,3 +1,5 @@
+
+
 package com.example.athensplus.domain.model
 
 import com.google.android.gms.maps.model.LatLng
@@ -34,10 +36,7 @@ data class MetroStation(
     val isInterchange: Boolean = false
 )
 
-data class BusStop(
-    val name: String,
-    val coords: LatLng
-)
+
 
 data class TimetableTable(
     val direction: String,
@@ -45,6 +44,7 @@ data class TimetableTable(
     val rows: List<List<String>>
 )
 
+@Suppress("unused")
 data class DirectionsResult(
     val startLocation: LatLng,
     val endLocation: LatLng,
@@ -52,19 +52,4 @@ data class DirectionsResult(
     val steps: List<TransitStep>,
     val totalDuration: String,
     val totalDistance: String
-)
-
-data class BusRouteAlternative(
-    val routeId: String,
-    val steps: List<TransitStep>,
-    val totalDuration: String,
-    val totalDistance: String,
-    val departureTime: Long,
-    val arrivalTime: Long,
-    val waitTime: Long,
-    val busLines: List<String>,
-    val reliability: String,
-    val price: String?,
-    val accessibility: Boolean,
-    val realTimeUpdates: Boolean
 )

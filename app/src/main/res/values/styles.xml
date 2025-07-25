@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="CustomPopupMenu" parent="Widget.MaterialComponents.PopupMenu">
-        <item name="android:popupBackground">@drawable/popup_background</item>
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <style name="CustomPopupMenuOverlay" parent="ThemeOverlay.MaterialComponents.Light">
-        <item name="android:colorBackground">#FFFFFF</item>
-        <item name="android:textColor">#2D3550</item>
-    </style>
-
-    <style name="BottomNavigationStyle" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="android:fontFamily">@font/montserrat_medium</item>
-    </style>
+    <!-- Styles can be added here when needed -->
 </resources>

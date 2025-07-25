@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:orientation="vertical">
 
     <!-- Header -->
     <LinearLayout
@@ -21,7 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Choose Location on Map"
+            android:text="@string/choose_location_on_map"
             android:textSize="18sp"
             android:textColor="#663399"
             android:fontFamily="@font/montserrat_bold"
@@ -33,7 +32,7 @@
             android:layout_height="40dp"
             android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Close"
+            android:contentDescription="@string/close"
             android:padding="8dp"
             app:tint="#663399" />
 
@@ -68,7 +67,8 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_location"
             app:tint="#663399"
-            android:scaleType="centerInside" />
+            android:scaleType="centerInside"
+            android:contentDescription="@string/location_pin" />
 
         <!-- Instructions and Most Accurate Address in one rectangle -->
         <LinearLayout
@@ -86,7 +86,7 @@
                 android:id="@+id/instructions_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Move the map to position the pin on your desired location"
+                android:text="@string/move_map_instruction"
                 android:textSize="14sp"
                 android:textColor="#663399"
                 android:fontFamily="@font/montserrat_medium"
@@ -133,7 +133,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Confirm Location"
+                android:text="@string/confirm_location"
                 android:textSize="16sp"
                 android:textColor="@android:color/white"
                 android:fontFamily="@font/montserrat_bold" />

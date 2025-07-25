@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
     android:fillViewport="true">
 
     <LinearLayout
@@ -16,70 +15,64 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/white"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:padding="24dp"
             android:layout_marginBottom="16dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/circle_purple_filled">
 
-                <FrameLayout
+                <ImageView
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:background="@drawable/circle_purple_filled">
+                    android:layout_gravity="center"
+                    android:src="@drawable/athens_isolated2"
+                    android:contentDescription="@string/app_logo_description"
+                    android:scaleType="fitCenter" />
+            </FrameLayout>
 
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/athens_isolated2"
-                        android:contentDescription="@string/app_logo_description"
-                        android:scaleType="fitCenter" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/athens_plus"
-                        android:textColor="#1A1A1A"
-                        android:textSize="20sp"
-                        android:fontFamily="@font/montserrat_bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/navigate_with_ease"
-                        android:textColor="#6B7280"
-                        android:textSize="14sp"
-                        android:fontFamily="@font/montserrat_regular"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
 
                 <TextView
-                    android:id="@+id/login_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/login"
-                    android:textColor="#663399"
+                    android:text="@string/athens_plus"
+                    android:textColor="#1A1A1A"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/montserrat_bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/navigate_with_ease"
+                    android:textColor="#6B7280"
                     android:textSize="14sp"
-                    android:fontFamily="@font/montserrat_semibold"
-                    android:background="@drawable/rounded_button_bg_gray"
-                    android:paddingHorizontal="24dp"
-                    android:paddingVertical="8dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground" />
+                    android:fontFamily="@font/montserrat_regular"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/login_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login"
+                android:textColor="#663399"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_semibold"
+                android:background="@drawable/rounded_button_bg_gray"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground" />
         </LinearLayout>
 
         <!-- My Account Section -->
@@ -165,7 +158,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/saved_places"
+                    android:text="@string/saved_places"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -203,7 +196,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/recent_routes"
+                    android:text="@string/recent_routes"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -241,7 +234,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/personal_info"
+                    android:text="@string/personal_info"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -279,15 +272,12 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/subscription"
+                    android:text="@string/subscription"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
             </LinearLayout>
         </LinearLayout>
-
-
-
 
         <!-- Settings Section -->
         <LinearLayout
@@ -300,7 +290,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                                     android:text="@string/settings"
+                android:text="@string/settings"
                 android:textColor="#6B7280"
                 android:textSize="14sp"
                 android:fontFamily="@font/montserrat_medium"
@@ -334,7 +324,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/theme"
+                    android:text="@string/theme"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -372,7 +362,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/language"
+                    android:text="@string/language"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -410,7 +400,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/notifications"
+                    android:text="@string/notifications"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />
@@ -448,7 +438,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                                         android:text="@string/log_out"
+                    android:text="@string/log_out"
                     android:textColor="#1A1A1A"
                     android:textSize="16sp"
                     android:fontFamily="@font/montserrat_medium" />

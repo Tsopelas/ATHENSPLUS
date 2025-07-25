@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Suppress warnings about bitmap images in density-independent drawable folder -->
+    <!-- These images are being used correctly and don't need density-specific versions -->
+    <issue id="IconDensity">
+        <ignore regexp="Found bitmap drawable res/drawable/.*\.png in densityless folder" />
+    </issue>
+</lint> 

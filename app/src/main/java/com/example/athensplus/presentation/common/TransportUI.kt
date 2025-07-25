@@ -7,8 +7,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
@@ -23,9 +21,6 @@ import com.example.athensplus.R
 import com.example.athensplus.core.utils.StationManager
 import com.example.athensplus.domain.model.MetroStation
 import com.example.athensplus.domain.model.TimetableTable
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PolylineOptions
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -324,76 +319,5 @@ class TransportUI(
         }
 
         dialog.show()
-    }
-
-    @Suppress("UNUSED")
-    fun showDirectionsButton(
-        binding: com.example.athensplus.databinding.FragmentTransportBinding,
-        onDirectionsClick: () -> Unit
-    ): Button {
-        val directionsButton = Button(fragment.requireContext()).apply {
-            text = fragment.requireContext().getString(R.string.directions_button)
-            setBackgroundResource(R.drawable.rounded_directions_button)
-            setTextColor(Color.WHITE)
-            setPadding(32, 16, 32, 16)
-            textSize = 16f
-            elevation = 8f
-            setOnClickListener { onDirectionsClick() }
-        }
-
-        val mapContainer = binding.mapView.parent as ViewGroup
-
-        val layoutParams = ViewGroup.MarginLayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 0, 0, 32)
-        }
-
-        if (mapContainer is FrameLayout) {
-            val frameParams = FrameLayout.LayoutParams(layoutParams)
-            frameParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            directionsButton.layoutParams = frameParams
-        } else {
-            directionsButton.layoutParams = layoutParams
-        }
-
-        mapContainer.addView(directionsButton)
-        return directionsButton
-    }
-
-    @Suppress("UNUSED")
-    fun drawRouteLine(
-        googleMap: GoogleMap?,
-        routePoints: List<LatLng>,
-        steps: List<com.example.athensplus.domain.model.TransitStep>
-    ) {
-        if (routePoints.size < 2) return
-
-        var currentStepIndex = 0
-
-        for (i in 0 until routePoints.size - 1) {
-            val currentStep = if (currentStepIndex < steps.size) steps[currentStepIndex] else steps.lastOrNull()
-
-            val color = when (currentStep?.mode) {
-                "WALKING" -> Color.GREEN
-                "METRO" -> Color.BLUE
-                "BUS" -> Color.rgb(255, 165, 0)
-                "TRAM" -> Color.MAGENTA
-                else -> Color.GRAY
-            }
-
-            val polylineOptions = PolylineOptions()
-                .add(routePoints[i])
-                .add(routePoints[i + 1])
-                .width(6f)
-                .color(color)
-
-            googleMap?.addPolyline(polylineOptions)
-
-            if (i > 0 && currentStepIndex < steps.size - 1) {
-                currentStepIndex++
-            }
-        }
     }
 } 

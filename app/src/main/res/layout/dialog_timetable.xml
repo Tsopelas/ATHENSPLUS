@@ -26,7 +26,7 @@
                 android:id="@+id/station_name_greek"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ΜΕΓΑΡΟ ΜΟΥΣΙΚΗΣ"
+                android:text="@string/station_name_megaro_greek"
                 android:textColor="#663399"
                 android:textSize="18sp"
                 android:fontFamily="@font/montserrat_bold"/>
@@ -35,7 +35,7 @@
                 android:id="@+id/station_name_english"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Megaro Mousikis"
+                android:text="@string/station_name_megaro_english"
                 android:textColor="#663399"
                 android:textSize="12sp"
                 android:fontFamily="@font/montserrat_medium"/>
@@ -44,7 +44,7 @@
                 android:id="@+id/interchange_info_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Interchange info"
+                android:text="@string/interchange_info"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
                 android:fontFamily="@font/montserrat_regular"
@@ -63,7 +63,8 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="4dp"
-            app:tint="#663399"/>
+            app:tint="#663399"
+            android:contentDescription="@string/close_dialog" />
     </LinearLayout>
 
     <!-- Timetable content -->

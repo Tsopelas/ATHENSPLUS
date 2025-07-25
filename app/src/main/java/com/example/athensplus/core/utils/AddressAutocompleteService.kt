@@ -2,7 +2,6 @@
 
 package com.example.athensplus.core.utils
 
-import android.location.Location
 import android.util.Log
 import com.example.athensplus.domain.model.AddressSuggestion
 import com.google.android.gms.maps.model.LatLng
@@ -311,17 +310,6 @@ class AddressAutocompleteService(
                 existing.address.equals(newInfo.cleanAddress, ignoreCase = true)
             }
         }
-    }
-    
-    @Suppress("UNUSED")
-    private fun calculateDistance(point1: LatLng, point2: LatLng): Double {
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            point1.latitude, point1.longitude,
-            point2.latitude, point2.longitude,
-            results
-        )
-        return results[0].toDouble()
     }
     
     private data class ParsedInfo(

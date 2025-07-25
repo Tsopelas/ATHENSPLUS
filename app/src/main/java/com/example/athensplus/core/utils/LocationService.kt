@@ -1,3 +1,5 @@
+@file:Suppress("unused", "RedundantSuppression", "RedundantSuppression", "RedundantSuppression")
+
 package com.example.athensplus.core.utils
 
 import android.Manifest

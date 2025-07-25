@@ -69,7 +69,6 @@ class BusTimesImprovementService(
         val crowdLevel = calculateCrowdLevel(alternative)
         val frequency = calculateFrequency(alternative)
         val alternativeOptions = findAlternativeOptions(alternative)
-        val estimatedCrowding = estimateCrowding(alternative)
         val environmentalImpact = calculateEnvironmentalImpact(alternative)
         
         ImprovedRouteAlternative(
@@ -88,7 +87,7 @@ class BusTimesImprovementService(
             crowdLevel = crowdLevel,
             frequency = frequency,
             alternativeOptions = alternativeOptions,
-            estimatedCrowding = estimatedCrowding,
+            estimatedCrowding = null,
             environmentalImpact = environmentalImpact
         )
     }
@@ -99,7 +98,7 @@ class BusTimesImprovementService(
                 step.copy(
                     frequency = calculateStepFrequency(step),
                     reliability = calculateStepReliability(step),
-                    crowdLevel = estimateStepCrowding(step),
+                    crowdLevel = null,
                     price = calculateStepPrice(step),
                     accessibility = checkStepAccessibility(step),
                     realTimeUpdates = true,
@@ -139,32 +138,20 @@ class BusTimesImprovementService(
     
     private fun findAlternativeOptions(alternative: EnhancedBusTimesService.RouteAlternative): List<String> {
         val alternatives = mutableListOf<String>()
-
+        
         for (line in alternative.busLines) {
             when (line) {
                 "E14" -> alternatives.addAll(listOf("E15", "E16"))
-                "E15" -> alternatives.addAll(listOf("E14", "E17"))
-                "E16" -> alternatives.addAll(listOf("E14", "E18"))
-                "E17" -> alternatives.addAll(listOf("E15", "E19"))
-                "E18" -> alternatives.addAll(listOf("E16", "E20"))
+                "E15" -> alternatives.addAll(listOf("E14", "E16"))
+                "E16" -> alternatives.addAll(listOf("E14", "E15"))
+                "E17" -> alternatives.addAll(listOf("E18", "E19"))
+                "E18" -> alternatives.addAll(listOf("E17", "E20"))
                 "E19" -> alternatives.addAll(listOf("E17", "E20"))
                 "E20" -> alternatives.addAll(listOf("E18", "E19"))
             }
         }
         
         return alternatives.distinct()
-    }
-    
-    private fun estimateCrowding(@Suppress("UNUSED_PARAMETER") alternative: EnhancedBusTimesService.RouteAlternative): String {
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val isRushHour = (currentHour in 7..9) || (currentHour in 17..19)
-        val isWeekend = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) in listOf(Calendar.SATURDAY, Calendar.SUNDAY)
-        
-        return when {
-            isRushHour && !isWeekend -> "High crowding expected"
-            isWeekend -> "Low crowding expected"
-            else -> "Moderate crowding expected"
-        }
     }
     
     private fun calculateEnvironmentalImpact(alternative: EnhancedBusTimesService.RouteAlternative): String {
@@ -235,16 +222,6 @@ class BusTimesImprovementService(
             line in listOf("E14", "E15", "E16", "E17", "E18", "E19", "E20") && waitMinutes <= 5 -> "Very High"
             waitMinutes <= 5 -> "High"
             waitMinutes <= 10 -> "Medium"
-            else -> "Low"
-        }
-    }
-    
-    private fun estimateStepCrowding(@Suppress("UNUSED_PARAMETER") step: TransitStep): String {
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val isRushHour = (currentHour in 7..9) || (currentHour in 17..19)
-        
-        return when {
-            isRushHour -> "High"
             else -> "Low"
         }
     }

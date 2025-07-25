@@ -17,7 +17,7 @@
             android:id="@+id/station_name_greek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ΜΕΓΑΡΟ ΜΟΥΣΙΚΗΣ"
+            android:text="@string/station_name_megaro_greek_menu"
             android:textColor="#663399"
             android:textSize="14sp"
             android:fontFamily="@font/montserrat_bold"/>
@@ -26,7 +26,7 @@
             android:id="@+id/station_name_english"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Megaro Mousikis"
+            android:text="@string/station_name_megaro_english_menu"
             android:textColor="#663399"
             android:textSize="12sp"
             android:fontFamily="@font/montserrat_medium"/>
@@ -62,7 +62,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     app:srcCompat="@drawable/ic_checks"
-                    app:tint="@android:color/white" />
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/check_mark_icon" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -88,7 +89,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     app:srcCompat="@drawable/ic_time"
-                    app:tint="@android:color/white" />
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/time_icon" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -114,7 +116,8 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     app:srcCompat="@drawable/ic_airport"
-                    app:tint="@android:color/white" />
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/airport_icon" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -140,7 +143,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     app:srcCompat="@drawable/ic_harbor"
-                    app:tint="@android:color/white" />
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/harbor_icon" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </LinearLayout>

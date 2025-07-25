@@ -1,11 +1,11 @@
-<table width="100%">
+<table style="width: 100%;">
 <tr>
   <td>
     <h1>ATHENS+</h1>
     <p><em>Navigate Athens with ease</em></p>
   </td>
-  <td align="right">
-    <img width="512" height="512" alt="athensplus" src="https://github.com/user-attachments/assets/f8b483ba-7cfe-4b03-860a-cdc25674c015" />
+  <td style="text-align: right;">
+    <img style="width: 512px; height: 512px;" alt="athensplus" src="https://github.com/user-attachments/assets/f8b483ba-7cfe-4b03-860a-cdc25674c015" />
   </td>
 </tr>
 </table>
@@ -18,10 +18,10 @@
 
 ## Table of Contents
 
-- [Introduction to the app](#introduction)
+- [Introduction to the app](#introduction-to-the-app)
 - [Features](#features)
 - [Screenshots](#screenshots)
-- [What I use](#technology)
+- [What I use](#what-i-use)
 - [Setup](#setup)
 - [Future Development](#future-development)
 - [License](#license)
@@ -48,11 +48,11 @@
 
 ## Screenshots
 
-<p align="center">
-  <img width="220" alt="home" src="https://github.com/user-attachments/assets/595320fc-f369-4e60-8fec-50995667d0ec" />
-  <img width="220" alt="navigation" src="https://github.com/user-attachments/assets/fc26debf-7f6f-4db7-ade3-716ce96d5fdc" />
-  <img width="220" alt="station_clicked" src="https://github.com/user-attachments/assets/6d8f2068-56db-41fc-8c85-6b6aabaa5ba6" />
-  <img width="220" alt="navigation2" src="https://github.com/user-attachments/assets/69c47e28-c54b-4554-b46a-44ec74c12c94" />
+<p style="text-align: center;">
+  <img style="width: 220px;" alt="home" src="https://github.com/user-attachments/assets/595320fc-f369-4e60-8fec-50995667d0ec" />
+  <img style="width: 220px;" alt="navigation" src="https://github.com/user-attachments/assets/fc26debf-7f6f-4db7-ade3-716ce96d5fdc" />
+  <img style="width: 220px;" alt="station_clicked" src="https://github.com/user-attachments/assets/6d8f2068-56db-41fc-8c85-6b6aabaa5ba6" />
+  <img style="width: 220px;" alt="navigation2" src="https://github.com/user-attachments/assets/69c47e28-c54b-4554-b46a-44ec74c12c94" />
 </p>
 
 
