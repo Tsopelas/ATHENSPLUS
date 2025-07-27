@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/navigation_transport"
-        android:icon="@drawable/bottombar_transport"
+        android:icon="@drawable/ic_transport"
         android:title="@string/nav_transport" />
     <item
         android:id="@+id/navigation_explore"

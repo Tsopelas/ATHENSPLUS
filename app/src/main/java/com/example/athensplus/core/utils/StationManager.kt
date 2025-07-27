@@ -17,7 +17,7 @@ class StationManager {
             .flatten()
             .filter { it.isInterchange }
 
-        return interchangeStations.find { interchange ->
+        val validInterchanges = interchangeStations.filter { interchange ->
             val isOnStartLine = StationData.metroLine1.contains(start) && StationData.metroLine1.contains(interchange) ||
                                StationData.metroLine2.contains(start) && StationData.metroLine2.contains(interchange) ||
                                StationData.metroLine3.contains(start) && StationData.metroLine3.contains(interchange)
@@ -25,6 +25,34 @@ class StationManager {
                              StationData.metroLine2.contains(end) && StationData.metroLine2.contains(interchange) ||
                              StationData.metroLine3.contains(end) && StationData.metroLine3.contains(interchange)
             isOnStartLine && isOnEndLine
+        }
+
+        if (validInterchanges.isEmpty()) return null
+
+        return validInterchanges.minByOrNull { interchange ->
+            val startLine = when {
+                StationData.metroLine1.contains(start) -> StationData.metroLine1
+                StationData.metroLine2.contains(start) -> StationData.metroLine2
+                StationData.metroLine3.contains(start) -> StationData.metroLine3
+                else -> return@minByOrNull Int.MAX_VALUE
+            }
+            
+            val endLine = when {
+                StationData.metroLine1.contains(end) -> StationData.metroLine1
+                StationData.metroLine2.contains(end) -> StationData.metroLine2
+                StationData.metroLine3.contains(end) -> StationData.metroLine3
+                else -> return@minByOrNull Int.MAX_VALUE
+            }
+
+            val startIndex = startLine.indexOf(start)
+            val endIndex = endLine.indexOf(end)
+            val interchangeStartIndex = startLine.indexOf(interchange)
+            val interchangeEndIndex = endLine.indexOf(interchange)
+
+            val distanceToInterchange = kotlin.math.abs(startIndex - interchangeStartIndex)
+            val distanceFromInterchange = kotlin.math.abs(endIndex - interchangeEndIndex)
+
+            distanceToInterchange + distanceFromInterchange
         }
     }
 

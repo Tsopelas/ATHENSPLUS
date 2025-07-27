@@ -34,7 +34,25 @@ data class MetroStation(
     val nameEnglish: String,
     val coords: LatLng,
     val isInterchange: Boolean = false
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MetroStation
+
+        if (nameGreek != other.nameGreek) return false
+        if (nameEnglish != other.nameEnglish) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = nameGreek.hashCode()
+        result = 31 * result + nameEnglish.hashCode()
+        return result
+    }
+}
 
 
 

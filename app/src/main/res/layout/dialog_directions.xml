@@ -72,6 +72,7 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="8dp">
                 <ImageView
+                    android:id="@+id/start_location_bullet"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/circle_purple_outline"
@@ -135,6 +136,7 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="8dp">
                 <ImageView
+                    android:id="@+id/end_location_bullet"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/circle_purple_filled"
@@ -293,21 +295,40 @@
 
     </LinearLayout>
 
-    <ScrollView
+    <!-- Metro Journey and Steps (Scrollable) -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:overScrollMode="never"
         android:fillViewport="true"
         android:background="@android:color/transparent">
-        
+
         <LinearLayout
-            android:id="@+id/steps_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@android:color/transparent" />
-    </ScrollView>
+            android:orientation="horizontal"
+            android:gravity="start"
+            android:layout_marginStart="6dp">
+
+            <com.example.athensplus.presentation.common.MetroLineJourneyColumnView
+                android:id="@+id/continuous_journey_column_view"
+                android:layout_width="56dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="0dp" />
+
+            <LinearLayout
+                android:id="@+id/steps_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="-36dp"
+                android:background="@android:color/transparent" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
 
     <LinearLayout
         android:layout_width="match_parent"
