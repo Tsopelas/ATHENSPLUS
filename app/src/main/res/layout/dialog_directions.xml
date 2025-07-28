@@ -361,4 +361,16 @@
 
     </LinearLayout>
 
+    <!-- Test Button for API Testing -->
+    <Button
+        android:id="@+id/test_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/test_api"
+        android:textColor="#663399"
+        android:background="@drawable/modern_button_bg"
+        android:fontFamily="@font/montserrat_semibold"
+        android:visibility="gone" />
+
 </LinearLayout> 

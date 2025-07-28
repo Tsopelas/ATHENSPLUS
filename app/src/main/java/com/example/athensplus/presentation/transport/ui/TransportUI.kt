@@ -1,4 +1,4 @@
-package com.example.athensplus.presentation.common
+package com.example.athensplus.presentation.transport.ui
 
 import android.app.Dialog
 import android.graphics.Color

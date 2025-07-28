@@ -36,10 +36,12 @@
 
             <!-- Station Names (Greek and English) -->
             <LinearLayout
+                android:id="@+id/station_name_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/station_name_greek"
@@ -54,7 +56,7 @@
 
             <!-- Direction Instruction -->
             <TextView
-                android:id="@+id/direction_instruction"
+                android:id="@+id/step_instruction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
@@ -63,15 +65,34 @@
                 android:textColor="#2D3550"
                 android:lineSpacingExtra="2dp" />
 
-            <!-- Additional Info (duration, transfer info, etc.) -->
+            <!-- Step Duration -->
             <TextView
-                android:id="@+id/additional_info"
+                android:id="@+id/step_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
                 android:textSize="12sp"
                 android:fontFamily="@font/montserrat_medium"
                 android:textColor="#B39DDB" />
+
+            <!-- Step Line -->
+            <TextView
+                android:id="@+id/step_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:textSize="12sp"
+                android:fontFamily="@font/montserrat_medium"
+                android:textColor="#B39DDB"
+                android:visibility="gone" />
+
+            <!-- Step Icon -->
+            <ImageView
+                android:id="@+id/step_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
 
         </LinearLayout>
     </LinearLayout>

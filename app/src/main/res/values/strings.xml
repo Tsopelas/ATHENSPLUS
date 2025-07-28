@@ -38,7 +38,7 @@
     <string name="no_direct_route_airport">No direct route to Airport Line found.</string>
     <string name="take_metro_to_airport">Take Metro to %1$s for Airport Line (Directions shown on map)</string>
     <string name="piraeus_gate_map">Piraeus Gate Map</string>
-    <string name="google_maps_key" tools:ignore="Typos">AIzaSyAbCaNy9okak33ITCpb1MWR_Idu6wqQq14</string>
+
 
     <!-- Common UI Text -->
     <string name="athens_plus">Athens+</string>
