@@ -75,6 +75,7 @@ To run the app on your own device, clone inside Android Studio:
 git clone https://github.com/Tsopelas/ATHENSPLUS.git
 ```
 And manually build APK onto your own device/emulation system. Prefer newer devices with latest Android since testing has not been done on older devices since the app is still in development.
+*Important: in order to run the App with all the correct features, you need to input your own API key in your local.properties in the format of GOOGLE_MAPS_API_KEY=:"your key"
 
 ## Future Development
 
