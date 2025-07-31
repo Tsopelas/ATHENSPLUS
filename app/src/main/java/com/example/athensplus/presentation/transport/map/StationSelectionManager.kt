@@ -50,16 +50,12 @@ class StationSelectionManager(
                 } else null
 
                 if (selectedStartStation != null && selectedEndStation != null) {
-                    // Check if this station is on the route
                     val isOnRoute = if (interchangeStation != null) {
-                        // For routes with interchange, use the new method
                         isStationOnRouteWithInterchange(station, selectedStartStation!!, selectedEndStation!!, interchangeStation)
                     } else {
-                        // For direct routes, check if station is between start and end
                         stationManager.isStationOnRoute(station, selectedStartStation!!, selectedEndStation!!)
                     }
-                    
-                    // Only show stations that are on the route, or are the selected stations, or are the interchange station
+
                     if (!isOnRoute && station != selectedStartStation && station != selectedEndStation && station != interchangeStation) {
                         return@forEachIndexed
                     }
@@ -164,37 +160,29 @@ class StationSelectionManager(
             popupWindow
         )
 
-        // Position popup near the marker
         val markerPosition = marker.position
         val screenLocation = googleMap.projection.toScreenLocation(markerPosition)
-        
-        // Measure the popup view to get its dimensions
+
         popupView.measure(
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
         )
-        
-        // Calculate popup position to appear above the marker
-        val popupX = screenLocation.x - (popupView.measuredWidth / 2)
-        val popupY = screenLocation.y - popupView.measuredHeight - 50 // 50px above marker
 
-        // Get the map view from the fragment
+        val popupX = screenLocation.x - (popupView.measuredWidth / 2)
+        val popupY = screenLocation.y - popupView.measuredHeight - 50
+
         val mapView = fragment.view?.findViewById<com.google.android.gms.maps.MapView>(com.example.athensplus.R.id.mapView)
         
         if (mapView != null) {
-            // Get the map view's position relative to the fragment root
             val mapViewLocation = IntArray(2)
             mapView.getLocationInWindow(mapViewLocation)
-            
-            // Adjust coordinates to account for map view's position
+
             val adjustedX = popupX + mapViewLocation[0]
             val adjustedY = popupY + mapViewLocation[1]
-            
-            // Position relative to the fragment root with adjusted coordinates
+
             popupWindow.showAtLocation(fragment.view, Gravity.NO_GRAVITY, adjustedX, adjustedY)
         } else {
-            // Fallback to fragment root if map view not found
-            popupWindow.showAtLocation(fragment.view, Gravity.NO_GRAVITY, popupX, popupY)
+        popupWindow.showAtLocation(fragment.view, Gravity.NO_GRAVITY, popupX, popupY)
         }
     }
     
@@ -215,16 +203,8 @@ class StationSelectionManager(
         val airportButton = popupView.findViewById<CardView>(R.id.airport_button)
         val harborButton = popupView.findViewById<CardView>(R.id.harbor_button)
 
-        // Debug: Check if buttons are found
-        android.util.Log.d("StationSelectionManager", "Start button: ${startButton != null}")
-        android.util.Log.d("StationSelectionManager", "Timetable button: ${timetableButton != null}")
-        android.util.Log.d("StationSelectionManager", "Airport button: ${airportButton != null}")
-        android.util.Log.d("StationSelectionManager", "Harbor button: ${harborButton != null}")
-
-        // Get line color for this station
         val lineColor = getStationLineColor(station)
 
-        // Set button background colors to match the line
         startButton?.getChildAt(0)?.let { (it as LinearLayout).setBackgroundColor(lineColor) }
         timetableButton?.getChildAt(0)?.let { (it as LinearLayout).setBackgroundColor(lineColor) }
         airportButton?.getChildAt(0)?.let { (it as LinearLayout).setBackgroundColor(lineColor) }
@@ -254,7 +234,6 @@ class StationSelectionManager(
             popupWindow.dismiss()
         }
 
-        // Also set click listeners on the inner LinearLayouts to ensure touch events are captured
         startButton?.getChildAt(0)?.setOnClickListener {
             android.util.Log.d("StationSelectionManager", "Start button inner clicked")
             onStationSelected(station)
@@ -290,7 +269,7 @@ class StationSelectionManager(
             StationData.metroLine1.contains(station) -> Color.parseColor("#009640") // Green for Line 1
             StationData.metroLine2.contains(station) -> Color.parseColor("#e30613") // Red for Line 2
             StationData.metroLine3.contains(station) -> Color.parseColor("#0057a8") // Blue for Line 3
-            else -> Color.parseColor("#663399") // Default purple
+            else -> Color.parseColor("#009640") // Default green
         }
     }
     

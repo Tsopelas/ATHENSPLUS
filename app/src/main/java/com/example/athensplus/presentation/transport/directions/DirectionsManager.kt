@@ -46,7 +46,8 @@ class DirectionsManager(
     private val stationManager: StationManager,
     private val timetableService: TimetableService,
     private val routeDisplayManager: RouteDisplayManager,
-    private val addressAutocompleteManager: AddressAutocompleteManager
+    private val addressAutocompleteManager: AddressAutocompleteManager,
+    private val dialogManager: com.example.athensplus.presentation.transport.dialogs.TransportDialogManager
 ) {
     
     fun findRoute(destination: String) {
@@ -66,6 +67,7 @@ class DirectionsManager(
         try {
             val dialog = createDirectionsDialog()
             val stepsContainer = dialog.findViewById<LinearLayout>(R.id.steps_container)
+            val closeButton = dialog.findViewById<ImageButton?>(R.id.close_button)
             val editFromLocation = dialog.findViewById<EditText>(R.id.edit_from_location)
             val editToLocation = dialog.findViewById<EditText>(R.id.edit_to_location)
             val summaryText = dialog.findViewById<TextView>(R.id.summary_text)
@@ -75,6 +77,36 @@ class DirectionsManager(
             val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
             val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
             val allRoutesButton = dialog.findViewById<LinearLayout>(R.id.button_all_routes)
+
+            closeButton?.let { button ->
+                val parent = button.parent as? ViewGroup
+                if (parent != null) {
+                    val textView = TextView(dialog.context).apply {
+                        text = "✕"
+                        textSize = 20f
+                        setTextColor(android.graphics.Color.parseColor("#663399"))
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(12, 12, 12, 12)
+                        isClickable = true
+                        isFocusable = true
+                        layoutParams = button.layoutParams?.apply {
+                            // Move closer to the edge by reducing margins
+                            if (this is ViewGroup.MarginLayoutParams) {
+                                marginEnd = 8
+                                marginStart = 8
+                            }
+                        }
+                        setOnClickListener {
+                            android.util.Log.d("DirectionsManager", "TextView close button clicked!")
+                            dialog.dismiss()
+                        }
+                    }
+                    
+                    val index = parent.indexOfChild(button)
+                    parent.removeView(button)
+                    parent.addView(textView, index)
+                }
+            }
             
             setupDialogContent(editFromLocation, editToLocation, destination)
             setupDialogAutocomplete(editFromLocation, editToLocation)
@@ -100,17 +132,15 @@ class DirectionsManager(
                     }
                 }
             }
-            
-            // Initial route selection
+
             refreshRouteSelection()
-            
-            // Setup button listeners
+
             updateButton?.setOnClickListener {
                 refreshRouteSelection()
             }
             
             chooseOnMapButton?.setOnClickListener {
-                // Handle choose on map
+                dialogManager.showMapSelectionDialogForEditText(editToLocation)
             }
             
             dialog.show()
@@ -132,6 +162,14 @@ class DirectionsManager(
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             dialogHeight
+        )
+
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
+
+        dialog.window?.setFlags(
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
         )
         
         return dialog
@@ -158,8 +196,6 @@ class DirectionsManager(
     }
     
     private fun showStationDirectionsDialog(startStation: MetroStation, endStation: MetroStation) {
-        // This would be implemented to show station-specific directions
-        // For now, we'll use a simplified approach
         Toast.makeText(fragment.context, "Directions from ${startStation.nameEnglish} to ${endStation.nameEnglish}", Toast.LENGTH_SHORT).show()
     }
 } 

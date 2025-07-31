@@ -42,13 +42,16 @@
 
         <ImageButton
             android:id="@+id/close_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/modern_button_bg"
             android:src="@drawable/ic_close"
             app:tint="#663399"
             android:scaleType="centerInside"
-            android:contentDescription="@string/close" />
+            android:contentDescription="@string/close"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -86,7 +89,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="#663399"
+                    android:textColor="#2D3550"
                     android:hint="@string/current_location"
                     android:autofillHints="@string/autofill_from_location"
                     android:paddingStart="4dp"
@@ -99,7 +102,7 @@
                     android:gravity="center_vertical|start"
                     android:clickable="true"
                     android:focusable="true"
-                    android:focusableInTouchMode="false" />
+                    android:focusableInTouchMode="true" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
         <ImageButton
@@ -150,7 +153,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="#663399"
+                    android:textColor="#2D3550"
                     android:hint="@string/to_where"
                     android:autofillHints="@string/autofill_to_location"
                     android:paddingStart="4dp"

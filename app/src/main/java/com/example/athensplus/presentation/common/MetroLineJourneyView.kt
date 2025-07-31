@@ -38,33 +38,27 @@ class MetroLineJourneyView @JvmOverloads constructor(
         val width = width.toFloat()
         val height = height.toFloat()
         val centerX = width / 2
-        
-        // Draw one continuous line from top to bottom
+
         paint.strokeWidth = 6f
         paint.strokeCap = Paint.Cap.ROUND
-        
-        // Draw the main continuous line in the first step's color
+
         paint.color = journeySteps.first().lineColor
         canvas.drawLine(centerX, 0f, centerX, height, paint)
-        
-        // Draw colored segments on top if there are color changes
+
         for (i in 0 until journeySteps.size - 1) {
             val currentStep = journeySteps[i]
             val nextStep = journeySteps[i + 1]
-            
-            // Only draw colored segment if there's a color change
+
             if (currentStep.lineColor != nextStep.lineColor) {
                 val segmentHeight = height / (journeySteps.size - 1)
                 val startY = i * segmentHeight
                 val endY = (i + 1) * segmentHeight
-                
-                // Draw colored segment
+
                 paint.color = currentStep.lineColor
                 canvas.drawLine(centerX, startY, centerX, endY, paint)
             }
         }
-        
-        // Draw station markers evenly distributed
+
         for (i in journeySteps.indices) {
             val step = journeySteps[i]
             val y = if (journeySteps.size == 1) {
@@ -74,11 +68,9 @@ class MetroLineJourneyView @JvmOverloads constructor(
             }
             
             if (step.isInterchange) {
-                // Draw interchange station (larger, split color)
                 stationPaint.color = step.lineColor
                 canvas.drawCircle(centerX, y, 12f, stationPaint)
-                
-                // Draw border in previous line color
+
                 if (i > 0) {
                     val prevColor = journeySteps[i - 1].lineColor
                     stationPaint.color = prevColor
@@ -88,12 +80,10 @@ class MetroLineJourneyView @JvmOverloads constructor(
                     stationPaint.style = Paint.Style.FILL
                 }
             } else {
-                // Draw regular station
                 stationPaint.color = step.lineColor
                 canvas.drawCircle(centerX, y, 8f, stationPaint)
             }
-            
-            // Draw direction arrow
+
             if (step.direction != null && i < journeySteps.size - 1) {
                 val nextY = if (journeySteps.size == 1) {
                     height / 2

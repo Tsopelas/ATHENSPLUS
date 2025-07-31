@@ -51,6 +51,23 @@
                 android:textSize="13sp"
                 android:fontFamily="@font/montserrat_medium"
                 android:layout_marginTop="4dp" />
+
+            <!-- Greek station name container for directions -->
+            <LinearLayout
+                android:id="@+id/station_name_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+                <TextView
+                    android:id="@+id/station_name_greek"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#663399"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:visibility="visible" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView

@@ -38,6 +38,7 @@ class AddressAutocompleteService(
             
             val url = urlBuilder.toString()
             Log.d("AddressAutocomplete", "Requesting suggestions for: '$query'")
+            Log.d("AddressAutocomplete", "API Key being used: ${apiKey.take(10)}...")
             Log.d("AddressAutocomplete", "URL: $url")
             
             try {
@@ -188,7 +189,6 @@ class AddressAutocompleteService(
             cleanAddress = cleanAddress.removeSuffix(", Greece")
         }
 
-        // Extract postal code before removing it
         val postalCodeMatch = Regex(", ?(\\d{5})(?=,|$)").find(cleanAddress)
         if (postalCodeMatch != null) {
             postalCode = postalCodeMatch.groupValues[1]

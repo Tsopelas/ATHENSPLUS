@@ -24,7 +24,9 @@ class StationManager {
             val isOnEndLine = StationData.metroLine1.contains(end) && StationData.metroLine1.contains(interchange) ||
                              StationData.metroLine2.contains(end) && StationData.metroLine2.contains(interchange) ||
                              StationData.metroLine3.contains(end) && StationData.metroLine3.contains(interchange)
-            isOnStartLine && isOnEndLine
+            val isValid = isOnStartLine && isOnEndLine
+            android.util.Log.d("StationManager", "Interchange ${interchange.nameEnglish}: isOnStartLine=$isOnStartLine, isOnEndLine=$isOnEndLine, isValid=$isValid")
+            isValid
         }
 
         if (validInterchanges.isEmpty()) return null
@@ -92,12 +94,14 @@ class StationManager {
     }
 
     fun getStationColor(station: MetroStation): Int {
-        return when {
+        val color = when {
             StationData.metroLine1.contains(station) -> android.graphics.Color.parseColor("#009640")
             StationData.metroLine2.contains(station) -> android.graphics.Color.parseColor("#e30613")
             StationData.metroLine3.contains(station) -> android.graphics.Color.parseColor("#0057a8")
-            else -> android.graphics.Color.parseColor("#663399")
+            else -> android.graphics.Color.parseColor("#009640")
         }
+        android.util.Log.d("StationManager", "getStationColor for ${station.nameEnglish}: ${String.format("#%06X", color and 0xFFFFFF)}")
+        return color
     }
 
     fun getDistance(point1: com.google.android.gms.maps.model.LatLng, point2: com.google.android.gms.maps.model.LatLng): Double {

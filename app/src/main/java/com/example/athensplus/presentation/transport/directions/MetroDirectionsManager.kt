@@ -14,11 +14,12 @@ class MetroDirectionsManager(
         val instruction: String,
         val duration: String,
         val line: String? = null,
-        val lineColor: Int = Color.parseColor("#663399"),
+        val lineColor: Int = Color.parseColor("#009640"),
         val iconResource: Int = com.example.athensplus.R.drawable.ic_walking
     )
     
     fun generateMetroDirections(startStation: MetroStation, endStation: MetroStation): List<MetroStep> {
+
         val steps = mutableListOf<MetroStep>()
         
         val startLine = getStationLine(startStation)
@@ -46,6 +47,10 @@ class MetroDirectionsManager(
             ))
         } else {
             val interchangeStation = findInterchangeStation(startStation, endStation)
+            
+            android.util.Log.d("MetroDirections", "Start: ${startStation.nameEnglish} (${startLine})")
+            android.util.Log.d("MetroDirections", "End: ${endStation.nameEnglish} (${endLine})")
+            android.util.Log.d("MetroDirections", "Interchange: ${interchangeStation?.nameEnglish}")
             
             if (interchangeStation != null) {
                 val direction1 = getDirection(startStation, interchangeStation, startLine)
@@ -101,6 +106,7 @@ class MetroDirectionsManager(
             iconResource = com.example.athensplus.R.drawable.ic_metro
         ))
         
+
         return steps
     }
     
@@ -118,7 +124,7 @@ class MetroDirectionsManager(
             StationData.metroLine1.contains(station) -> Color.parseColor("#009640")
             StationData.metroLine2.contains(station) -> Color.parseColor("#e30613")
             StationData.metroLine3.contains(station) -> Color.parseColor("#0057a8")
-            else -> Color.parseColor("#663399")
+            else -> Color.parseColor("#009640")
         }
     }
     
@@ -155,24 +161,7 @@ class MetroDirectionsManager(
     }
     
     private fun findInterchangeStation(startStation: MetroStation, endStation: MetroStation): MetroStation? {
-        val startLine = getStationLine(startStation)
-        val endLine = getStationLine(endStation)
-        
-        if (startLine == endLine) return null
-        
-        val interchangeStations = when {
-            (startLine == "Line 1" && endLine == "Line 2") || (startLine == "Line 2" && endLine == "Line 1") -> {
-                StationData.metroLine1.filter { it.isInterchange && StationData.metroLine2.contains(it) }
-            }
-            (startLine == "Line 1" && endLine == "Line 3") || (startLine == "Line 3" && endLine == "Line 1") -> {
-                StationData.metroLine1.filter { it.isInterchange && StationData.metroLine3.contains(it) }
-            }
-            (startLine == "Line 2" && endLine == "Line 3") || (startLine == "Line 3" && endLine == "Line 2") -> {
-                StationData.metroLine2.filter { it.isInterchange && StationData.metroLine3.contains(it) }
-            }
-            else -> emptyList()
-        }
-        
-        return interchangeStations.firstOrNull()
+        val stationManager = com.example.athensplus.core.utils.StationManager()
+        return stationManager.findInterchangeStation(startStation, endStation)
     }
 } 

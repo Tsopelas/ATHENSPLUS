@@ -60,7 +60,7 @@ class MapSetupManager(
     }
     
     private fun setupMapListeners(googleMap: GoogleMap) {
-        // Map listeners will be set up by the calling fragment
+        // todo
     }
     
     private fun setupLocationUI(googleMap: GoogleMap) {

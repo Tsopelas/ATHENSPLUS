@@ -64,7 +64,7 @@ class ControlSetupManager(
     
     private fun setupAirportTimetableButton(onAirportTimetableClicked: (MetroStation?) -> Unit) {
         binding.airportTimetableButton.setOnClickListener {
-            onAirportTimetableClicked(null) // Will be handled by the fragment
+            onAirportTimetableClicked(null)
         }
     }
     
@@ -96,7 +96,7 @@ class ControlSetupManager(
             "Line 1" -> Color.parseColor("#2ECC40")
             "Line 2" -> Color.parseColor("#FF4136")
             "Line 3" -> Color.parseColor("#0074D9")
-            else -> Color.parseColor("#663399")
+            else -> Color.parseColor("#2ECC40")
         })
         
         val buttonDot = binding.buttonLinePicker.findViewById<View>(R.id.line_dot)

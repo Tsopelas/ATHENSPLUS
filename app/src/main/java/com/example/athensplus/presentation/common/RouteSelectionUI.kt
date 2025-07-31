@@ -33,11 +33,9 @@ class RouteSelectionUI(
     ) {
         currentFromText = fromText
         currentToText = toText
-        
-        // Set initial state
+
         updateButtonStates(fastestButton, easiestButton, allRoutesButton, RouteSelectionMode.FASTEST)
-        
-        // Set click listeners
+
         fastestButton.setOnClickListener {
             currentMode = RouteSelectionMode.FASTEST
             updateButtonStates(fastestButton, easiestButton, allRoutesButton, currentMode)
@@ -55,8 +53,7 @@ class RouteSelectionUI(
             updateButtonStates(fastestButton, easiestButton, allRoutesButton, currentMode)
             fetchRoutesForMode(stepsContainer, currentMode, currentFromText, currentToText, onRouteSelected)
         }
-        
-        // Automatically fetch and display fastest route on initialization
+
         fetchRoutesForMode(stepsContainer, RouteSelectionMode.FASTEST, currentFromText, currentToText, onRouteSelected)
     }
     
@@ -66,7 +63,6 @@ class RouteSelectionUI(
         allRoutesButton: LinearLayout,
         selectedMode: RouteSelectionMode
     ) {
-        // Reset all buttons to unselected state
         fastestButton.apply {
             setBackgroundResource(R.drawable.modern_button_bg)
             getChildAt(0)?.let { child ->

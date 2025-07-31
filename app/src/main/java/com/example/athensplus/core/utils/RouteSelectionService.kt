@@ -20,14 +20,6 @@ class RouteSelectionService(
     
     private val busTimesImprovementService = BusTimesImprovementService(apiKey, locationService)
 
-    /**
-     * Get routes based on the specified mode
-     * 
-     * @param fromText Origin location
-     * @param toText Destination location  
-     * @param mode Route selection mode (FASTEST, EASIEST, ALL_ROUTES)
-     * @return RouteSelectionResult with the selected routes
-     */
     suspend fun getRoutes(
         fromText: String,
         toText: String,
@@ -120,10 +112,7 @@ class RouteSelectionService(
             RouteSelectionResult.Error("Error finding routes: ${e.message}")
         }
     }
-    
-    /**
-     * Calculate total time for a route (step duration + wait time)
-     */
+
     private fun calculateTotalTime(alternative: ImprovedRouteAlternative): Int {
         val totalStepDuration = alternative.steps.sumOf { step ->
             parseDurationToMinutes(step.duration)
@@ -143,11 +132,7 @@ class RouteSelectionService(
         
         return totalTime
     }
-    
-    /**
-     * Parse duration string to minutes
-     * Handles formats like "5 min", "5min", "5 minutes", "5min", etc.
-     */
+
     private fun parseDurationToMinutes(duration: String): Int {
         return try {
             // Remove common time suffixes and extract the number
@@ -164,11 +149,7 @@ class RouteSelectionService(
             0
         }
     }
-    
-    /**
-     * Calculate number of transport changes in a route
-     * A change occurs when switching between different transport modes (walking, bus, metro, etc.)
-     */
+
     private fun calculateTransportChanges(alternative: ImprovedRouteAlternative): Int {
         if (alternative.steps.size <= 1) return 0
         
@@ -187,10 +168,7 @@ class RouteSelectionService(
         
         return changes
     }
-    
-    /**
-     * Calculate total walking distance in meters
-     */
+
     private fun calculateTotalWalkingDistance(alternative: ImprovedRouteAlternative): Int {
         return alternative.steps
             .filter { it.mode == "WALKING" }
@@ -198,13 +176,7 @@ class RouteSelectionService(
                 step.walkingDistance?.replace(" m", "")?.toIntOrNull() ?: 0
             }
     }
-    
-    /**
-     * Find the easiest route based on criteria:
-     * 1. Least amount of transport changes (highest priority)
-     * 2. Least amount of walking (second priority)
-     * 3. If walking and transport changes are the same, pick the fastest route
-     */
+
     private fun findEasiestRoute(routesWithMetrics: List<RouteMetrics>): RouteMetrics? {
         if (routesWithMetrics.isEmpty()) return null
 
@@ -218,10 +190,6 @@ class RouteSelectionService(
         return routesWithMinWalking.minByOrNull { it.totalTime }
     }
 
-    /**
-     * Remove duplicate routes based on their key characteristics.
-     * Routes are considered duplicates if they have the same steps, total time, and transport changes.
-     */
     private fun removeDuplicateRoutes(routes: List<RouteMetrics>): List<RouteMetrics> {
         val uniqueRoutes = mutableListOf<RouteMetrics>()
         val seenRouteSignatures = mutableMapOf<String, RouteMetrics>()
@@ -260,10 +228,7 @@ class RouteSelectionService(
             else -> route1
         }
     }
-    
-    /**
-     * Create a unique signature for a route based on its characteristics
-     */
+
     private fun createRouteSignature(route: RouteMetrics): String {
         val stepsSignature = route.route.steps.joinToString("|") { step ->
             when (step.mode) {
@@ -292,9 +257,6 @@ class RouteSelectionService(
     }
 }
 
-/**
- * Data class to hold route metrics for analysis
- */
 private data class RouteMetrics(
     val route: ImprovedRouteAlternative,
     val totalTime: Int,

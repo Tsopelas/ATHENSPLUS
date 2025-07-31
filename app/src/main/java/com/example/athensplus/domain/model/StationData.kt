@@ -4,6 +4,8 @@ package com.example.athensplus.domain.model
 
 import com.google.android.gms.maps.model.LatLng
 
+// WILL BE MOVED TO BACKEND LATER ON
+
 object StationData {
     val metroLine1 = listOf(
         MetroStation("Πειραιάς", "Piraeus", LatLng(37.948263, 23.643233), isInterchange = true),
@@ -84,8 +86,6 @@ object StationData {
         MetroStation("Πειραιάς", "Piraeus", LatLng(37.948263, 23.643233), isInterchange = true),
         MetroStation("Δημοτικό Θέατρο", "Dimotiko Theatro", LatLng(37.942987138386535, 23.64761813894496))
     )
-
-
 
     val line3CurvedPoints = listOf(
         LatLng(37.942987138386535, 23.64761813894496), 

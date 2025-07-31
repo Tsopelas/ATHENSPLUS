@@ -50,9 +50,52 @@ class DirectionsDialogManager(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 dialogHeight
             )
+
+            dialog.setCancelable(true)
+            dialog.setCanceledOnTouchOutside(true)
+
+            dialog.setOnCancelListener {
+                android.util.Log.d("DirectionsDialogManager", "Dialog cancelled!")
+                onClose()
+            }
+
+            dialog.window?.setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+            )
             
             val stepsContainer = dialog.findViewById<LinearLayout>(R.id.steps_container)
             val closeButton = dialog.findViewById<ImageButton?>(R.id.close_button)
+
+            closeButton?.let { button ->
+                val parent = button.parent as? ViewGroup
+                if (parent != null) {
+                    val textView = TextView(dialog.context).apply {
+                        text = "✕"
+                        textSize = 20f
+                        setTextColor(android.graphics.Color.parseColor("#663399"))
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(12, 12, 12, 12)
+                        isClickable = true
+                        isFocusable = true
+                        layoutParams = button.layoutParams?.apply {
+                            if (this is ViewGroup.MarginLayoutParams) {
+                                marginEnd = 8
+                                marginStart = 8
+                            }
+                        }
+                        setOnClickListener {
+                            android.util.Log.d("DirectionsDialogManager", "TextView close button clicked!")
+                            dialog.dismiss()
+                            onClose()
+                        }
+                    }
+                    
+                    val index = parent.indexOfChild(button)
+                    parent.removeView(button)
+                    parent.addView(textView, index)
+                }
+            }
             val editFromLocation = dialog.findViewById<EditText>(R.id.edit_from_location)
             val editToLocation = dialog.findViewById<EditText>(R.id.edit_to_location)
             val summaryText = dialog.findViewById<TextView>(R.id.summary_text)
@@ -95,12 +138,7 @@ class DirectionsDialogManager(
                 editFromLocation, editToLocation, fastestButton, easiestButton, allRoutesButton,
                 routeSelectionUI, apiKey, lastFocusedField, onUpdateDirections, onChooseOnMap, onFetchDirections
             )
-            
-            closeButton?.setOnClickListener { 
-                dialog.dismiss()
-                onClose()
-            }
-            
+
             dialog.show()
             
         } catch (e: Exception) {
@@ -192,7 +230,7 @@ class DirectionsDialogManager(
             fastestButton, easiestButton, allRoutesButton, stepsContainer,
             editFromLocation.text.toString(), editToLocation.text.toString()
         ) { routes, mode ->
-            // Handle route selection
+            // todo
         }
     }
     

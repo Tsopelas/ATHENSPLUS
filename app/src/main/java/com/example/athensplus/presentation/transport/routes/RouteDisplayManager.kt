@@ -125,7 +125,7 @@ class RouteDisplayManager(
             instruction.contains("Line 3") || instruction.contains("Blue") -> Color.parseColor("#0057a8")
             instruction.contains("Bus") -> Color.parseColor("#FF9800")
             instruction.contains("Tram") -> Color.parseColor("#9C27B0")
-            else -> Color.parseColor("#663399")
+            else -> Color.parseColor("#009640")
         }
     }
     

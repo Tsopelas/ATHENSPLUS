@@ -47,7 +47,6 @@ class InfoFragment : Fragment() {
         try {
             settingsService = SettingsService(requireContext())
         } catch (e: Exception) {
-            // Log the error but don't crash
             e.printStackTrace()
         }
     }
@@ -227,13 +226,7 @@ class InfoFragment : Fragment() {
             showToast(getString(R.string.error_showing_notification_settings, e.message ?: "Unknown error"))
         }
     }
-    
 
-    
-
-    
-
-    
     private fun createToggleItem(
         title: String, 
         isChecked: Boolean, 

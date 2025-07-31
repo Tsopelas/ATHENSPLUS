@@ -54,8 +54,6 @@ class TimetableManager(
             var instructionText: String? = null
 
             if (!StationData.metroLine3.contains(station)) {
-                // This would need to be implemented with proper interchange logic
-                // For now, we'll use a simplified approach
                 val interchangeStation = findNearestInterchangeToLine3(station)
                 if (interchangeStation != null) {
                     stationForTimetable = interchangeStation
@@ -77,8 +75,6 @@ class TimetableManager(
     }
     
     private fun showTimetableDialog(station: MetroStation, timetableTables: List<Any>, waitTime: Any?) {
-        // This would be implemented based on your existing timetable dialog logic
-        // For now, we'll create a basic dialog
         val dialog = Dialog(fragment.requireContext())
         dialog.setContentView(R.layout.dialog_timetable)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -95,7 +91,6 @@ class TimetableManager(
 
         dialog.findViewById<TextView>(R.id.close_button)?.setOnClickListener { dialog.dismiss() }
 
-        // Add timetable content here based on your existing logic
         val timetableContainer = dialog.findViewById<LinearLayout>(R.id.timetable_container)
         timetableContainer?.removeAllViews()
 
@@ -133,7 +128,6 @@ class TimetableManager(
             interchangeInfoText?.visibility = android.view.View.GONE
         }
 
-        // Add airport timetable content here
         val timesText = times.joinToString(separator = "  •  ")
         val cellTextView = TextView(dialog.context).apply {
             text = timesText
@@ -149,8 +143,6 @@ class TimetableManager(
     }
     
     private fun findNearestInterchangeToLine3(station: MetroStation): MetroStation? {
-        // This is a simplified implementation
-        // In a real app, you'd have more sophisticated interchange logic
         return StationData.metroLine3.find { it.isInterchange }
     }
 } 

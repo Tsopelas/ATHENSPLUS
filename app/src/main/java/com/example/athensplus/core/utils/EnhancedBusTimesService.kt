@@ -43,8 +43,7 @@ class EnhancedBusTimesService(
             
             val destination = URLEncoder.encode(to, "UTF-8")
             val currentTime = System.currentTimeMillis() / 1000
-            
-            // Get multiple route alternatives
+
             val url = "https://maps.googleapis.com/maps/api/directions/json?" +
                     "origin=$origin&destination=$destination&mode=transit&" +
                     "alternatives=true&departure_time=now&key=$apiKey"

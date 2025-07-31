@@ -486,18 +486,66 @@ class DialogManager(
         editFromLocation.setText(selectedStartStation?.nameEnglish ?: "")
         editFromLocation.isEnabled = false
         editFromLocation.isFocusableInTouchMode = false
-        editFromLocation.setTextColor(stationManager.getStationColor(selectedStartStation ?: return))
+        selectedStartStation?.let { station ->
+            val color = stationManager.getStationColor(station)
+            val colorStateList = android.content.res.ColorStateList.valueOf(color)
+            editFromLocation.setTextColor(colorStateList)
+            android.util.Log.d("DialogManager", "Set start station color: ${station.nameEnglish} -> ${String.format("#%06X", color and 0xFFFFFF)}")
+        }
         
         editToLocation.setText(selectedEndStation?.nameEnglish ?: "")
         editToLocation.isEnabled = false
         editToLocation.isFocusableInTouchMode = false
-        editToLocation.setTextColor(stationManager.getStationColor(selectedEndStation ?: return))
+        selectedEndStation?.let { station ->
+            val color = stationManager.getStationColor(station)
+            val colorStateList = android.content.res.ColorStateList.valueOf(color)
+            editToLocation.setTextColor(colorStateList)
+            android.util.Log.d("DialogManager", "Set end station color: ${station.nameEnglish} -> ${String.format("#%06X", color and 0xFFFFFF)}")
+        }
+
+        editFromLocation.post {
+            selectedStartStation?.let { station ->
+                val color = stationManager.getStationColor(station)
+                val colorStateList = android.content.res.ColorStateList.valueOf(color)
+                editFromLocation.setTextColor(colorStateList)
+                editFromLocation.invalidate()
+            }
+        }
+        
+        editToLocation.post {
+            selectedEndStation?.let { station ->
+                val color = stationManager.getStationColor(station)
+                val colorStateList = android.content.res.ColorStateList.valueOf(color)
+                editToLocation.setTextColor(colorStateList)
+                editToLocation.invalidate()
+            }
+        }
+
+        editFromLocation.post {
+            selectedStartStation?.let { station ->
+                val color = stationManager.getStationColor(station)
+                editFromLocation.setTextColor(color)
+                editFromLocation.invalidate()
+            }
+        }
+        
+        editToLocation.post {
+            selectedEndStation?.let { station ->
+                val color = stationManager.getStationColor(station)
+                editToLocation.setTextColor(color)
+                editToLocation.invalidate()
+            }
+        }
 
         val startBullet = dialog.findViewById<ImageView>(R.id.start_location_bullet)
         val endBullet = dialog.findViewById<ImageView>(R.id.end_location_bullet)
         
-        startBullet?.setColorFilter(stationManager.getStationColor(selectedStartStation ?: return))
-        endBullet?.setColorFilter(stationManager.getStationColor(selectedEndStation ?: return))
+        selectedStartStation?.let { station ->
+            startBullet?.setColorFilter(stationManager.getStationColor(station))
+        }
+        selectedEndStation?.let { station ->
+            endBullet?.setColorFilter(stationManager.getStationColor(station))
+        }
         
         val fetchDirections: () -> Unit = {
             fragment.lifecycleScope.launch {
@@ -518,26 +566,21 @@ class DialogManager(
                     val inflater = LayoutInflater.from(dialog.context)
                     
                     val metroDirections = metroDirectionsManager.generateMetroDirections(selectedStartStation ?: return@launch, selectedEndStation ?: return@launch)
-                    
-                    // Filter out redundant "Exit at" steps when there's a corresponding "Arrive at" step
+
                     val filteredDirections = metroDirections.filterIndexed { index: Int, step: com.example.athensplus.presentation.transport.directions.MetroDirectionsManager.MetroStep ->
                         if (step.instruction.contains("Exit at")) {
                             val exitStation = step.instruction.substringAfter("Exit at ")
-                            // Check if there's an "Arrive at" step for the same station
                             val hasArriveStep = metroDirections.any { arriveStep: com.example.athensplus.presentation.transport.directions.MetroDirectionsManager.MetroStep ->
                                 arriveStep.instruction.contains("Arrive at $exitStation")
                             }
-                            // Only keep "Exit at" if there's no corresponding "Arrive at"
                             !hasArriveStep
                         } else {
-                            true // Keep all other steps
+                            true
                         }
                     }
-                    
-                    // Create journey nodes from filtered metro directions
+
                     val journeyNodes = createJourneyNodes(filteredDirections)
-                    
-                    // Add step views to the container and track them
+
                     val stepViews = mutableListOf<View>()
                     for ((index, step) in filteredDirections.withIndex()) {
                         val stepView = inflater.inflate(R.layout.item_metro_direction_step, stepsContainer, false)
@@ -547,13 +590,11 @@ class DialogManager(
                         val directionInstruction = stepView.findViewById<TextView>(R.id.step_instruction)
                         val additionalInfo = stepView.findViewById<TextView>(R.id.step_duration)
                         val connectingLine = stepView.findViewById<View>(R.id.connecting_line)
-                        
-                        // Hide connecting line for the last step
+
                         if (index == metroDirections.size - 1) {
                             connectingLine.visibility = View.GONE
                         }
-                        
-                        // Set station names based on step type
+
                         when {
                             step.instruction.contains("Enter") -> {
                                 val stationName = step.instruction.substringAfter("Enter ").substringBefore(" station")
@@ -587,10 +628,8 @@ class DialogManager(
                                 stationNameContainer.visibility = View.GONE
                             }
                         }
-                        
-                        // Set direction instruction
+
                         if (step.instruction.contains("Take") && step.instruction.contains("towards")) {
-                            // For intermediate steps, show "Take direction towards..." in bold
                             val destination = step.instruction.substringAfter("towards ").substringBefore(" (")
                             directionInstruction.text = "Take direction towards $destination"
                             directionInstruction.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -598,19 +637,20 @@ class DialogManager(
                             directionInstruction.text = step.instruction
                             directionInstruction.setTypeface(null, android.graphics.Typeface.NORMAL)
                         }
-                        
-                        // Set additional info
+
                         additionalInfo.text = step.duration
                         
                         stepsContainer.addView(stepView)
                         stepViews.add(stepView)
                     }
-                    
-                    // Add top and bottom padding for aesthetics
+
                     val paddingPx = (16 * fragment.requireContext().resources.displayMetrics.density).toInt()
                     stepsContainer.setPadding(0, paddingPx, 0, paddingPx)
-                    
-                    // Calculate actual step positions after views are laid out
+
+                    val (estimatedMinutes, totalStations) = calculateRouteInfo(selectedStartStation, selectedEndStation, filteredDirections)
+                    summaryText.text = "Estimated Time: ${estimatedMinutes} min, ${totalStations} stations"
+                    summaryContainer.visibility = View.VISIBLE
+
                     stepsContainer.post {
                         try {
                             val stepPositions = mutableListOf<Float>()
@@ -619,25 +659,20 @@ class DialogManager(
                             val viewTopY = viewLocation[1]
                             
                             for (stepView in stepViews) {
-                                // Get the center Y position of each step view
                                 val location = IntArray(2)
                                 stepView.getLocationInWindow(location)
                                 val stepCenterY = location[1] + (stepView.height / 2)
-                                // Make position relative to the journey column view
                                 val relativeY = stepCenterY - viewTopY
                                 stepPositions.add(relativeY.toFloat())
                             }
-                            
-                            // Set the journey line with actual step positions
+
                             continuousJourneyColumnView?.setJourney(journeyNodes, stepPositions)
-                            
-                            // Ensure the journey line matches the steps height
+
                             val params = continuousJourneyColumnView?.layoutParams
                             params?.height = stepsContainer.height
                             continuousJourneyColumnView?.layoutParams = params
                         } catch (e: Exception) {
                             android.util.Log.e("DialogManager", "Error calculating step positions: ${e.message}", e)
-                            // Fallback to evenly distributed positions
                             val fallbackPositions = (0 until journeyNodes.size).map { i ->
                                 (i * stepsContainer.height.toFloat()) / (journeyNodes.size - 1).coerceAtLeast(1)
                             }
@@ -664,23 +699,16 @@ class DialogManager(
         easiestButton?.visibility = View.GONE
         allRoutesButton?.visibility = View.GONE
         chooseOnMapButton.visibility = View.GONE
-        
-        // Show the go/enter button for metro station directions
+
+        val addStopsButton = dialog.findViewById<ImageButton>(R.id.button_add_from)
+        addStopsButton?.visibility = View.GONE
+
         updateButton.visibility = View.VISIBLE
         updateButton.setOnClickListener {
-            // For metro station directions, the go button provides navigation functionality
             selectedStartStation?.let { startStation ->
                 selectedEndStation?.let { endStation ->
-                    // Show a confirmation dialog or start navigation
                     val message = "Navigate from ${startStation.nameEnglish} to ${endStation.nameEnglish}?"
                     Toast.makeText(dialog.context, message, Toast.LENGTH_SHORT).show()
-                    
-                    // Here you could add more sophisticated navigation functionality:
-                    // - Open Google Maps with the route
-                    // - Show detailed station information
-                    // - Start turn-by-turn navigation
-                    // - Show real-time updates and delays
-                    // - Open station timetable
                 }
             } ?: run {
                 Toast.makeText(dialog.context, "Please select both start and end stations", Toast.LENGTH_SHORT).show()
@@ -718,7 +746,6 @@ class DialogManager(
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startLocation, 15f))
                 if (locationService.isLocationPermissionGranted()) {
                     try {
-                        // Lint: Call requires permission which may be rejected by user
                         googleMap.isMyLocationEnabled = true
                     } catch (e: SecurityException) {
                         Log.w("DialogManager", "Location permission denied for map", e)
@@ -743,13 +770,11 @@ class DialogManager(
                         null
                     }
                     val addressList = addresses?.mapNotNull { it.getAddressLine(0) }?.map { cleanAddress(it) }?.distinct() ?: emptyList()
-                    // Prefer address with a street number
                     val bestAddress = addressList.firstOrNull { it.contains(Regex("\\d+")) } ?: addressList.firstOrNull()
                     val coordString = "Location (${String.format(Locale.US, "%.4f", center.latitude)}, ${String.format(Locale.US, "%.4f", center.longitude)})"
                     val toShow = bestAddress ?: coordString
                     withContext(Dispatchers.Main) {
                         selectedLocationText?.text = toShow
-                        // selectedAddress = toShow // This would need to be handled differently
                     }
                 }
             }
@@ -793,9 +818,6 @@ class DialogManager(
 
         val timetableContainer = dialog.findViewById<LinearLayout>(R.id.timetable_container)
         timetableContainer.removeAllViews()
-
-        // Add timetable content here based on timetableTables
-        // This would need to be implemented based on the specific timetable structure
 
         dialog.show()
     }
@@ -1065,7 +1087,7 @@ class DialogManager(
                 step.instruction.contains("At") && step.instruction.contains("change to") -> {
                     val stationName = step.instruction.substringAfter("At ").substringBefore(",")
                     val station = findStationByName(stationName)
-                    val lineColor = getStationLineColor(station)
+                    val lineColor = getLineColorFromInstruction(step.instruction) ?: getStationLineColor(station)
                     previousLineColor = lineColor
                     MetroLineJourneyColumnView.JourneyNode(
                         station = station ?: MetroStation("", "", com.google.android.gms.maps.model.LatLng(0.0, 0.0), false),
@@ -1139,5 +1161,57 @@ class DialogManager(
             instruction.contains("Line 3") -> Color.parseColor("#0057a8")
             else -> null
         }
+    }
+    
+    private fun calculateRouteInfo(
+        startStation: com.example.athensplus.domain.model.MetroStation?,
+        endStation: com.example.athensplus.domain.model.MetroStation?,
+        directions: List<com.example.athensplus.presentation.transport.directions.MetroDirectionsManager.MetroStep>
+    ): Pair<Int, Int> {
+        if (startStation == null || endStation == null) {
+            return Pair(0, 0)
+        }
+
+        val metroTimeTable = com.example.athensplus.core.utils.MetroTimeTable
+        val stationManager = com.example.athensplus.core.utils.StationManager()
+        val totalStations = if (directions.any { it.instruction.contains("change to") }) {
+            val interchangeStation = stationManager.findInterchangeStation(startStation, endStation)
+            if (interchangeStation != null) {
+                val stationsToInterchange = metroTimeTable.getStationCount(startStation, interchangeStation)
+                val stationsFromInterchange = metroTimeTable.getStationCount(interchangeStation, endStation)
+                stationsToInterchange + stationsFromInterchange
+            } else {
+                metroTimeTable.getStationCount(startStation, endStation)
+            }
+        } else {
+            metroTimeTable.getStationCount(startStation, endStation)
+        }
+
+        val context = fragment.requireContext()
+        
+        val estimatedMinutes = if (directions.any { it.instruction.contains("change to") }) {
+            val stationManager = com.example.athensplus.core.utils.StationManager()
+            val interchangeStation = stationManager.findInterchangeStation(startStation, endStation)
+            android.util.Log.d("RouteCalculation", "Interchange route detected")
+            android.util.Log.d("RouteCalculation", "Start: ${startStation.nameEnglish}, End: ${endStation.nameEnglish}, Interchange: ${interchangeStation?.nameEnglish}")
+            if (interchangeStation != null) {
+                val time = metroTimeTable.getTravelTimeWithInterchange(context, startStation, endStation, interchangeStation)
+                android.util.Log.d("RouteCalculation", "Interchange route time: $time minutes")
+                time
+            } else {
+                val time = metroTimeTable.getTravelTime(context, startStation, endStation)
+                android.util.Log.d("RouteCalculation", "Direct route time: $time minutes")
+                time
+            }
+        } else {
+            // Direct route on same line
+            android.util.Log.d("RouteCalculation", "Direct route detected")
+            android.util.Log.d("RouteCalculation", "Start: ${startStation.nameEnglish}, End: ${endStation.nameEnglish}")
+            val time = metroTimeTable.getTravelTime(context, startStation, endStation)
+            android.util.Log.d("RouteCalculation", "Direct route time: $time minutes")
+            time
+        }
+        
+        return Pair(estimatedMinutes, totalStations)
     }
 } 

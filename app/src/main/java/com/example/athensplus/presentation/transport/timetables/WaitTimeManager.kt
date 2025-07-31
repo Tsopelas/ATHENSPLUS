@@ -30,7 +30,7 @@ class WaitTimeManager(
                     waitTimeText.text = fragment.getString(R.string.reliability_wait_format, reliabilityIcon, waitTimeString)
                 }
             } else if (step.departureTimeValue > 0 && !step.departureTime.isNullOrEmpty()) {
-                val currentTime = System.currentTimeMillis() / 1000 // Current time in seconds
+                val currentTime = System.currentTimeMillis() / 1000
                 val waitTimeSeconds = step.departureTimeValue - currentTime
                 
                 if (waitTimeSeconds > 0) {

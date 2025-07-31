@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Metro timetable data (private)
+app/src/main/assets/metro_timetable.json

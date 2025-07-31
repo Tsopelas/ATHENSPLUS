@@ -26,12 +26,10 @@ class AddressSuggestionAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val suggestion = suggestions[position]
-        
-        // Format the address display
+
         val formattedAddress = formatAddressForDisplay(suggestion)
         holder.addressText.text = formattedAddress
-        
-        // Show additional context in description
+
         val contextInfo = buildContextInfo(suggestion)
         holder.descriptionText.text = contextInfo
         
@@ -44,13 +42,11 @@ class AddressSuggestionAdapter(
     
     private fun formatAddressForDisplay(suggestion: AddressSuggestion): String {
         val parts = mutableListOf<String>()
-        
-        // For establishments, show the establishment name first
+
         if (suggestion.establishmentName != null) {
             parts.add(suggestion.establishmentName)
         }
-        
-        // Then add street name and number
+
         if (suggestion.streetName != null) {
             val streetPart = if (suggestion.streetNumber != null) {
                 "${suggestion.streetName} ${suggestion.streetNumber}"
@@ -59,8 +55,7 @@ class AddressSuggestionAdapter(
             }
             parts.add(streetPart)
         }
-        
-        // Add area and postal code if available
+
         if (suggestion.area != null) {
             val areaPart = if (suggestion.postalCode != null) {
                 "${suggestion.area} ${suggestion.postalCode}"
@@ -75,13 +70,11 @@ class AddressSuggestionAdapter(
     
     private fun buildContextInfo(suggestion: AddressSuggestion): String {
         val contextParts = mutableListOf<String>()
-        
-        // Add establishment type if available
+
         if (suggestion.establishmentType != null) {
             contextParts.add(suggestion.establishmentType)
         }
-        
-        // Add area context if different from main display
+
         if (suggestion.area != null && suggestion.area != "Athens") {
             if (suggestion.postalCode != null) {
                 contextParts.add("${suggestion.area} ${suggestion.postalCode}")
@@ -89,8 +82,7 @@ class AddressSuggestionAdapter(
                 contextParts.add(suggestion.area)
             }
         }
-        
-        // Add additional context from description if it contains useful info
+
         val description = suggestion.description
         if (description.contains("Athens, Greece") && !contextParts.contains("Athens")) {
             contextParts.add("Athens")

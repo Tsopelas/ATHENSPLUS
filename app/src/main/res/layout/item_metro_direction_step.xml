@@ -97,13 +97,13 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Purple Connecting Line (except for last item) -->
+    <!-- Connecting Line (except for last item) -->
     <View
         android:id="@+id/connecting_line"
         android:layout_width="2dp"
         android:layout_height="8dp"
         android:layout_gravity="center_horizontal"
-        android:background="#663399"
+        android:background="#E0E0E0"
         android:visibility="visible" />
 
 </LinearLayout> 

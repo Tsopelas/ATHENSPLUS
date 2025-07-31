@@ -32,7 +32,6 @@ class MapDrawingManager(
                     if (selectedStartStation != null && selectedEndStation != null) {
                         drawRouteForAllLines(googleMap, selectedStartStation, selectedEndStation)
                     } else {
-                        // Draw all lines when no route is selected
                         drawAllMetroLines(googleMap)
                     }
                 }
@@ -53,12 +52,10 @@ class MapDrawingManager(
         val interchangeStation = stationManager.findInterchangeStation(startStation, endStation)
         
         if (interchangeStation != null) {
-            // Route with interchange - draw each segment on its respective line
             val interchangeLine = getStationLine(interchangeStation)
             Log.d("LineDrawing", "Route with interchange: $interchangeStation")
             Log.d("LineDrawing", "Start line: $startLine, Interchange line: $interchangeLine, End line: $endLine")
-            
-            // Draw first segment: start station to interchange
+
             when (startLine) {
                 "Line 1" -> {
                     Log.d("LineDrawing", "Drawing first segment on Line 1: ${startStation.nameEnglish} to ${interchangeStation.nameEnglish}")
@@ -73,8 +70,7 @@ class MapDrawingManager(
                     drawSegmentBetweenStations(googleMap, startStation, interchangeStation, StationData.line3CurvedPoints, 0xFF0057a8.toInt())
                 }
             }
-            
-            // Draw second segment: interchange to end station
+
             when (endLine) {
                 "Line 1" -> {
                     Log.d("LineDrawing", "Drawing second segment on Line 1: ${interchangeStation.nameEnglish} to ${endStation.nameEnglish}")
@@ -90,7 +86,6 @@ class MapDrawingManager(
                 }
             }
         } else {
-            // Direct route - draw single segment
             Log.d("LineDrawing", "Direct route on $startLine: ${startStation.nameEnglish} to ${endStation.nameEnglish}")
             when (startLine) {
                 "Line 1" -> drawSegmentBetweenStations(googleMap, startStation, endStation, StationData.line1CurvedPoints, 0xFF009640.toInt())
@@ -111,7 +106,6 @@ class MapDrawingManager(
         if (startStation != null && endStation != null) {
             val interchangeStation = stationManager.findInterchangeStation(startStation, endStation)
             if (interchangeStation != null) {
-                // Route with interchange
                 if (getStationLine(startStation) == lineName) {
                     drawSegmentBetweenStations(googleMap, startStation, interchangeStation, curvedPoints, color)
                 }
@@ -119,11 +113,9 @@ class MapDrawingManager(
                     drawSegmentBetweenStations(googleMap, interchangeStation, endStation, curvedPoints, color)
                 }
             } else {
-                // Direct route on specific line
                 drawSegmentBetweenStations(googleMap, startStation, endStation, curvedPoints, color)
             }
         } else {
-            // Draw full line when no route is selected
             googleMap?.addPolyline(
                 PolylineOptions()
                     .addAll(curvedPoints)
@@ -136,8 +128,6 @@ class MapDrawingManager(
     }
     
     private fun drawAllMetroLines(googleMap: GoogleMap?) {
-        // This would need to be implemented based on your MapManager
-        // For now, we'll draw each line individually
         googleMap?.addPolyline(
             PolylineOptions()
                 .addAll(StationData.line1CurvedPoints)
@@ -178,7 +168,6 @@ class MapDrawingManager(
         Log.d("LineDrawing", "Start point index: $startPointIndex, End point index: $endPointIndex")
         Log.d("LineDrawing", "Total curved points: ${curvedPoints.size}")
 
-        // For Line 3, the curved points are in reverse order compared to the station list
         val segmentPoints = if (curvedPoints == StationData.line3CurvedPoints) {
             if (startPointIndex >= endPointIndex) {
                 val points = curvedPoints.subList(endPointIndex, startPointIndex + 1)

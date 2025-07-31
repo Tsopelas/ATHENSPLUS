@@ -158,7 +158,7 @@ class TransportDialogManager(
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
-        val closeButton = mapSelectionDialog?.findViewById<androidx.appcompat.widget.AppCompatImageView>(R.id.close_map_button)
+        val closeButton = mapSelectionDialog?.findViewById<ImageButton>(R.id.close_map_button)
         val confirmButton = mapSelectionDialog?.findViewById<LinearLayout>(R.id.confirm_location_button)
         val selectedLocationText = mapSelectionDialog?.findViewById<TextView>(R.id.selected_location_text)
 
@@ -176,7 +176,6 @@ class TransportDialogManager(
 
         confirmButton?.setOnClickListener {
             val addressToUse = selectedAddress ?: ""
-            // Handle the selected address
             mapSelectionDialog?.dismiss()
         }
 
@@ -194,7 +193,7 @@ class TransportDialogManager(
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
-        val closeButton = mapSelectionDialog?.findViewById<androidx.appcompat.widget.AppCompatImageView>(R.id.close_map_button)
+        val closeButton = mapSelectionDialog?.findViewById<ImageButton>(R.id.close_map_button)
         val confirmButton = mapSelectionDialog?.findViewById<LinearLayout>(R.id.confirm_location_button)
         val selectedLocationText = mapSelectionDialog?.findViewById<TextView>(R.id.selected_location_text)
 
@@ -309,7 +308,6 @@ class TransportDialogManager(
         val container = dialog.findViewById<LinearLayout>(R.id.timetable_container)
         container.removeAllViews()
 
-        // Cast timetableTables to the correct type and display them
         @Suppress("UNCHECKED_CAST")
         val tables = timetableTables as? List<com.example.athensplus.domain.model.TimetableTable> ?: emptyList()
         
@@ -436,7 +434,6 @@ class TransportDialogManager(
         val container = dialog.findViewById<LinearLayout>(R.id.timetable_container)
         container.removeAllViews()
 
-        // Create airport timetable using the same format as regular timetables
         val inflater = LayoutInflater.from(dialog.context)
         val tableView = inflater.inflate(R.layout.item_timetable_table, container, false)
 
@@ -454,7 +451,6 @@ class TransportDialogManager(
         title.text = "Airport Departures"
         title.setTextColor(stationColor)
 
-        // Create header row
         val headerRow = TableRow(dialog.context)
         val headerTextView = TextView(dialog.context).apply {
             text = "Departure Times"
@@ -467,16 +463,15 @@ class TransportDialogManager(
         headerRow.addView(headerTextView)
         tableLayout.addView(headerRow)
 
-        // Create data rows - split times into groups of 4 for better display
         val timesPerRow = 4
         times.chunked(timesPerRow).forEach { timeGroup ->
             val tableRow = TableRow(dialog.context)
-            val cellTextView = TextView(dialog.context).apply {
+        val cellTextView = TextView(dialog.context).apply {
                 text = timeGroup.joinToString("  •  ")
-                setTextColor(Color.BLACK)
+            setTextColor(Color.BLACK)
                 setPadding(12, 16, 12, 16)
-                typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
-                gravity = Gravity.CENTER
+            typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
+            gravity = Gravity.CENTER
             }
             tableRow.addView(cellTextView)
             tableLayout.addView(tableRow)
