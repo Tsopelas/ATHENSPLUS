@@ -73,6 +73,49 @@ class DialogManager(
             val summaryContainer = dialog.findViewById<LinearLayout>(R.id.summary_container)
             val updateButton = dialog.findViewById<ImageButton>(R.id.button_update_to)
             val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
+            val continuousJourneyColumnView = dialog.findViewById<MetroLineJourneyColumnView>(R.id.continuous_journey_column_view)
+            
+            // Hide metro column view for address-based searches and adjust layout
+            continuousJourneyColumnView?.visibility = View.GONE
+            
+            // Find the root dialog view and adjust its padding to eliminate left spacing
+            stepsContainer?.let { container ->
+                // Traverse up 3 levels: stepsContainer -> horizontal container -> NestedScrollView -> root LinearLayout
+                var currentView: ViewGroup? = container.parent as? ViewGroup // horizontal container
+                currentView = currentView?.parent as? ViewGroup // NestedScrollView
+                val rootView = currentView?.parent as? ViewGroup // root LinearLayout with padding
+                
+                // This should be the root LinearLayout with android:padding="20dp"
+                rootView?.let { root ->
+                    root.setPadding(
+                        0, // Remove left padding
+                        root.paddingTop, // Keep top padding
+                        root.paddingRight, // Keep right padding  
+                        root.paddingBottom // Keep bottom padding
+                    )
+                }
+            }
+            
+            // Adjust steps container to fill full width when metro column is hidden
+            stepsContainer?.let { container ->
+                val layoutParams = container.layoutParams as? LinearLayout.LayoutParams
+                layoutParams?.let { params ->
+                    params.width = LinearLayout.LayoutParams.MATCH_PARENT // Fill full width instead of using weight
+                    params.weight = 0f // Remove weight system
+                    params.marginStart = 0 // Remove negative margin since metro column is hidden
+                    container.layoutParams = params
+                }
+                
+                // Also adjust the parent container's margin to remove all left spacing
+                val parentContainer = container.parent as? ViewGroup
+                parentContainer?.let { parent ->
+                    val parentLayoutParams = parent.layoutParams as? ViewGroup.MarginLayoutParams
+                    parentLayoutParams?.let { parentParams ->
+                        parentParams.marginStart = 0 // Remove the 6dp margin from parent container
+                        parent.layoutParams = parentParams
+                    }
+                }
+            }
 
             val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
             val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
