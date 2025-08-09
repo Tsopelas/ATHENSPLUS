@@ -38,6 +38,11 @@
     <string name="no_direct_route_airport">No direct route to Airport Line found.</string>
     <string name="take_metro_to_airport">Take Metro to %1$s for Airport Line (Directions shown on map)</string>
     <string name="piraeus_gate_map">Piraeus Gate Map</string>
+    <string name="zoom_in">Zoom In</string>
+    <string name="zoom_out">Zoom Out</string>
+    <string name="my_location">My Location</string>
+    <string name="loading_map">Loading map…</string>
+    <string name="theme_title">Θέμα</string>
 
 
     <!-- Common UI Text -->
@@ -77,6 +82,9 @@
     <string name="subscription">Subscription</string>
     <string name="settings">Settings</string>
     <string name="theme">Theme</string>
+    <string name="theme_system">Σύστημα</string>
+    <string name="theme_dark">Σκούρο</string>
+    <string name="theme_light">Ανοιχτό</string>
     <string name="language">Language</string>
     <string name="notifications">Notifications</string>
     <string name="log_out">Log Out</string>

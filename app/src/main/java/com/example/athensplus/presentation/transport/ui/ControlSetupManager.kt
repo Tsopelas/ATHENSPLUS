@@ -1,6 +1,7 @@
 package com.example.athensplus.presentation.transport.ui
 
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.example.athensplus.R
@@ -82,6 +83,7 @@ class ControlSetupManager(
     
     fun updateModeUI(mode: String) {
         binding.modeText.text = mode
+        binding.modeText.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
         binding.modeIcon.setImageResource(when(mode) {
             "Metro" -> R.drawable.ic_metro
             "Bus Stops" -> R.drawable.ic_transport
@@ -92,12 +94,7 @@ class ControlSetupManager(
     
     fun updateLineUI(line: String) {
         binding.lineText.text = line
-        binding.lineText.setTextColor(when(line) {
-            "Line 1" -> Color.parseColor("#2ECC40")
-            "Line 2" -> Color.parseColor("#FF4136")
-            "Line 3" -> Color.parseColor("#0074D9")
-            else -> Color.parseColor("#2ECC40")
-        })
+        binding.lineText.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
         
         val buttonDot = binding.buttonLinePicker.findViewById<View>(R.id.line_dot)
         when(line) {

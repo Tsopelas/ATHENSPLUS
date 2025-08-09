@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/directions"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:textSize="20sp"
                 android:fontFamily="@font/montserrat_bold" />
         </LinearLayout>
@@ -66,7 +66,7 @@
             android:layout_weight="1"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
-            android:backgroundTint="#F3F1F7">
+            android:backgroundTint="@color/surface_tint">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -89,7 +89,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="#2D3550"
+                    android:textColor="@color/transport_text_on_tinted"
                     android:hint="@string/current_location"
                     android:autofillHints="@string/autofill_from_location"
                     android:paddingStart="4dp"
@@ -130,7 +130,7 @@
             android:layout_weight="1"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
-            android:backgroundTint="#F3F1F7">
+            android:backgroundTint="@color/surface_tint">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -153,7 +153,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="#2D3550"
+                    android:textColor="@color/transport_text_on_tinted"
                     android:hint="@string/to_where"
                     android:autofillHints="@string/autofill_to_location"
                     android:paddingStart="4dp"
@@ -205,7 +205,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_on_map"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:textSize="16sp"
                 android:fontFamily="@font/montserrat_semibold" />
 
@@ -240,7 +240,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/fastest"
                 android:textSize="14sp"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_semibold"
                 android:gravity="center" />
 
@@ -265,7 +265,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/easiest"
                 android:textSize="14sp"
-                android:textColor="#666666"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_semibold"
                 android:gravity="center" />
 
@@ -290,7 +290,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/all"
                 android:textSize="14sp"
-                android:textColor="#666666"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_semibold"
                 android:gravity="center" />
 
@@ -357,7 +357,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="#663399"
+            android:textColor="@color/transport_text_on_tinted"
             android:textSize="18sp"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center_vertical" />
@@ -371,7 +371,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/test_api"
-        android:textColor="#663399"
+        android:textColor="@color/transport_text_on_tinted"
         android:background="@drawable/modern_button_bg"
         android:fontFamily="@font/montserrat_semibold"
         android:visibility="gone" />

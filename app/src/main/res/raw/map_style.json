@@ -8,18 +8,14 @@
     "featureType": "administrative",
     "elementType": "geometry",
     "stylers": [
-      {
-        "visibility": "off"
-      }
+      { "visibility": "off" }
     ]
   },
   {
     "featureType": "landscape",
     "elementType": "geometry",
     "stylers": [
-      {
-        "color": "#f5f5f5"
-      }
+      { "color": "#f5f5f5" }
     ]
   },
   {
@@ -40,11 +36,7 @@
   {
     "featureType": "water",
     "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#e0e0e0"
-      }
-    ]
+    "stylers": [ { "color": "#e0e0e0" } ]
   },
   {
     "featureType": "road",
@@ -76,4 +68,4 @@
     "elementType": "labels",
     "stylers": [{ "visibility": "off" }]
   }
-] 
+]

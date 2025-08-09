@@ -13,7 +13,7 @@
         app:cardCornerRadius="24dp"
         app:cardElevation="2dp"
         android:layout_marginBottom="12dp"
-        android:backgroundTint="@android:color/white">
+        android:backgroundTint="@color/surface_tint">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,7 +86,7 @@
             app:strokeColor="#663399"
             app:strokeWidth="1dp"
             app:closeIconEnabled="false"
-            android:textColor="#663399"
+            android:textColor="@color/transport_text_on_tinted"
             android:layout_marginEnd="8dp" />
     </LinearLayout>
 
@@ -96,7 +96,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/choose_on_map"
-        android:textColor="#2D3550"
+        android:textColor="@color/transport_text_on_tinted"
         android:textSize="16sp"
         android:fontFamily="@font/montserrat_medium"
         app:drawableStartCompat="@drawable/ic_menu"
@@ -109,7 +109,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/show_all"
-        android:textColor="#663399"
+        android:textColor="@color/transport_text_on_tinted"
         android:backgroundTint="#F3F1F7"
         android:fontFamily="@font/montserrat_bold"
         android:layout_marginBottom="8dp"
@@ -126,7 +126,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/current_location"
-        android:textColor="#663399"
+        android:textColor="@color/transport_text_on_tinted"
         android:textSize="14sp"
         android:fontFamily="@font/montserrat_bold"
         android:layout_marginTop="8dp"

@@ -22,7 +22,7 @@
             android:layout_weight="1"
             android:text="@string/choose_location_on_map"
             android:textSize="18sp"
-            android:textColor="#663399"
+        android:textColor="@color/transport_text_on_tinted"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center" />
 
@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/move_map_instruction"
                 android:textSize="14sp"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_medium"
                 android:gravity="center"
                 android:maxLines="2"
@@ -101,7 +101,7 @@
                 android:layout_marginTop="8dp"
                 android:text=""
                 android:textSize="15sp"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_bold"
                 android:gravity="center" />
 
@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/confirm_location"
                 android:textSize="16sp"
-                android:textColor="@android:color/white"
+                android:textColor="@color/transport_text_on_tinted"
                 android:fontFamily="@font/montserrat_bold" />
 
         </LinearLayout>

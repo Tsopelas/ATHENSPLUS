@@ -22,7 +22,8 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/athens_plus_logo_description"
             android:scaleType="fitCenter"
-            android:src="@drawable/athensplus" />
+            android:src="@drawable/athensplus"
+            app:tint="@android:color/white" />
     </LinearLayout>
 
     <!-- Search Section -->
@@ -47,7 +48,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/modern_button_bg"
                 android:fontFamily="@font/montserrat_bold"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:hint="@string/where_do_you_want_to_go"
                 android:paddingTop="0dp"
                 android:paddingBottom="0dp"
@@ -103,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_on_map"
-                android:textColor="#663399"
+                android:textColor="@color/transport_text_on_tinted"
                 android:textSize="16sp"
                 android:fontFamily="@font/montserrat_semibold" />
 
@@ -131,7 +132,55 @@
                 <com.google.android.gms.maps.MapView
                     android:id="@+id/mapView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:background="?attr/colorSurface"
+                    android:alpha="0" />
+                
+                <!-- Map Loading Overlay -->
+                <LinearLayout
+                    android:id="@+id/mapLoadingOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/colorSurface"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:elevation="2dp">
+                    
+                    <!-- Loading Bar Container -->
+                    <LinearLayout
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+                        
+                        <!-- Loading Bar Track -->
+                        <View
+                            android:id="@+id/loadingBarTrack"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp"
+                            android:background="#20663399"
+                            android:layout_marginBottom="4dp" />
+                        
+                        <!-- Animated Loading Bar -->
+                        <View
+                            android:id="@+id/loadingBarProgress"
+                            android:layout_width="0dp"
+                            android:layout_height="4dp"
+                            android:background="#663399"
+                            android:layout_marginTop="-8dp" />
+                    </LinearLayout>
+                    
+                    <TextView
+                        android:id="@+id/mapLoadingText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/loading_map"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp"
+                        android:textStyle="normal" />
+                    
+                </LinearLayout>
 
                 <!-- Reset Map Button -->
                 <LinearLayout
@@ -152,7 +201,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/reset_map"
-                        android:textColor="#663399"
+                        android:textColor="@color/transport_text_on_tinted"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold"
                         android:layout_marginEnd="8dp" />
@@ -196,7 +245,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/peiraias_gate_map"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/transport_text_on_tinted"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold" />
 
@@ -231,7 +280,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/airport_metro_timetable"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/transport_text_on_tinted"
                         android:textSize="14sp"
                         android:fontFamily="@font/montserrat_bold" />
 
@@ -264,7 +313,7 @@
                             android:text="@string/select_station"
                             android:textSize="14sp"
                             android:fontFamily="@font/montserrat_medium"
-                            android:textColor="#663399"/>
+                            android:textColor="@color/transport_text_on_tinted"/>
                     </LinearLayout>
 
                     <!-- Swap Arrow -->
@@ -300,7 +349,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/interchange_label"
                                                           android:textSize="11sp"
-                            android:textColor="#000000"
+                            android:textColor="?attr/colorOnSurface"
                             android:fontFamily="@font/montserrat_regular"/>
                     </LinearLayout>
 
@@ -329,7 +378,7 @@
                             android:text="@string/select_station"
                             android:textSize="14sp"
                             android:fontFamily="@font/montserrat_medium"
-                            android:textColor="#663399"/>
+                            android:textColor="@color/transport_text_on_tinted"/>
                     </LinearLayout>
 
                     <!-- Enter Button -->
@@ -339,11 +388,65 @@
                         android:layout_height="36dp"
                         android:layout_marginStart="8dp"
                         android:src="@drawable/ic_go"
-                        android:background="@drawable/rounded_button_bg"
+                        android:background="@drawable/map_control_button_bg"
                         android:scaleType="centerInside"
                         android:padding="6dp"
-                        app:tint="@android:color/white"
+                        app:tint="#663399"
                         android:contentDescription="@string/enter_button_description"/>
+
+                </LinearLayout>
+
+                <!-- Custom Map Controls -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:orientation="vertical">
+
+                    <!-- Zoom In Button -->
+                    <ImageButton
+                        android:id="@+id/zoom_in_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/map_control_button_bg"
+                        android:src="@drawable/ic_plus"
+                        android:contentDescription="@string/zoom_in"
+                        app:tint="#663399"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:scaleType="centerInside"
+                        android:padding="12dp" />
+
+                    <!-- Zoom Out Button -->
+                    <ImageButton
+                        android:id="@+id/zoom_out_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/map_control_button_bg"
+                        android:src="@drawable/ic_minus"
+                        android:contentDescription="@string/zoom_out"
+                        app:tint="#663399"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:scaleType="centerInside"
+                        android:padding="12dp" />
+
+                    <!-- My Location Button -->
+                    <ImageButton
+                        android:id="@+id/my_location_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/map_control_button_bg"
+                        android:src="@drawable/ic_location"
+                        android:contentDescription="@string/my_location"
+                        app:tint="#663399"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:scaleType="centerInside" />
 
                 </LinearLayout>
 
@@ -399,7 +502,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:text="@string/metro_label"
-                        android:textColor="#663399"
+                        android:textColor="@color/transport_text_on_tinted"
                         android:textSize="16sp"
                         android:fontFamily="@font/montserrat_bold" />
                 </LinearLayout>
@@ -443,7 +546,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/all_lines_label"
-                        android:textColor="#663399"
+                        android:textColor="@color/transport_text_on_tinted"
                         android:textSize="16sp"
                         android:fontFamily="@font/montserrat_bold" />
 

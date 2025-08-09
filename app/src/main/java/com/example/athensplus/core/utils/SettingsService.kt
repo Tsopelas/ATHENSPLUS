@@ -4,12 +4,14 @@ package com.example.athensplus.core.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.athensplus.R
 import com.example.athensplus.domain.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 
 class SettingsService(context: Context) {
+    private val appContext: Context = context.applicationContext
     
     private val preferences: SharedPreferences = context.getSharedPreferences(
         "athens_plus_settings", Context.MODE_PRIVATE
@@ -76,7 +78,8 @@ class SettingsService(context: Context) {
     private fun loadSettings(): AppSettings {
         return AppSettings(
             theme = AppTheme.valueOf(
-                preferences.getString(KEY_THEME, AppTheme.LIGHT.name) ?: AppTheme.LIGHT.name
+                preferences.getString(KEY_THEME, AppTheme.SYSTEM_DEFAULT.name)
+                    ?: AppTheme.SYSTEM_DEFAULT.name
             ),
             language = Language.valueOf(
                 preferences.getString(KEY_LANGUAGE, Language.ENGLISH.name) ?: Language.ENGLISH.name
@@ -95,9 +98,9 @@ class SettingsService(context: Context) {
     
     fun getThemeDisplayName(theme: AppTheme): String {
         return when (theme) {
-            AppTheme.LIGHT -> "Light Theme"
-            AppTheme.DARK -> "Dark Theme"
-            AppTheme.SYSTEM_DEFAULT -> "System Default"
+            AppTheme.LIGHT -> appContext.getString(R.string.theme_light)
+            AppTheme.DARK -> appContext.getString(R.string.theme_dark)
+            AppTheme.SYSTEM_DEFAULT -> appContext.getString(R.string.theme_system)
         }
     }
     

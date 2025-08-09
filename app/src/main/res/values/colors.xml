@@ -6,4 +6,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Light/day surface tint for chips/search bars/buttons -->
+    <color name="surface_tint">#F3F1F7</color>
+    <!-- Transport text on tinted surfaces: purple in light mode -->
+    <color name="transport_text_on_tinted">#663399</color>
+    <!-- Bottom navigation inactive color - light mode -->
+    <color name="bottom_nav_inactive">#9E9E9E</color>
+    <!-- Bottom navigation separator line - light mode -->
+    <color name="bottom_nav_separator">#E0E0E0</color>
 </resources>

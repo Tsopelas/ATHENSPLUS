@@ -8,7 +8,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
+import com.example.athensplus.core.ui.MapStyleUtils
+import com.example.athensplus.core.ui.MapUiUtils
 
 class MapSetupManager(
     private val fragment: Fragment,
@@ -57,30 +58,14 @@ class MapSetupManager(
     }
     
     private fun setupMapStyle(googleMap: GoogleMap) {
-        try {
-            val style = MapStyleOptions.loadRawResourceStyle(fragment.requireContext(), R.raw.map_style)
-            googleMap.setMapStyle(style)
-            Log.d("MapSetupManager", "Map style loaded successfully")
-        } catch (e: Exception) {
-            Log.w("MapSetupManager", "Failed to load map style", e)
-        }
+        MapStyleUtils.applyAppThemeMapStyle(fragment.requireContext(), googleMap)
+        Log.d("MapSetupManager", "Map style applied for current theme")
     }
     
     private fun setupMapSettings(googleMap: GoogleMap) {
         try {
             Log.d(TAG, "Setting up map settings")
-            googleMap.isTrafficEnabled = false
-            googleMap.isBuildingsEnabled = true
-            googleMap.isIndoorEnabled = false
-            googleMap.uiSettings.isMapToolbarEnabled = false
-            googleMap.uiSettings.isCompassEnabled = false
-            googleMap.uiSettings.isIndoorLevelPickerEnabled = false
-            googleMap.uiSettings.isZoomControlsEnabled = false
-            googleMap.uiSettings.isMyLocationButtonEnabled = false
-            googleMap.uiSettings.isScrollGesturesEnabled = true
-            googleMap.uiSettings.isZoomGesturesEnabled = true
-            googleMap.uiSettings.isTiltGesturesEnabled = false
-            googleMap.uiSettings.isRotateGesturesEnabled = false
+            MapUiUtils.applyDefaultUiSettings(googleMap)
             Log.d(TAG, "Map settings configured successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up map settings", e)

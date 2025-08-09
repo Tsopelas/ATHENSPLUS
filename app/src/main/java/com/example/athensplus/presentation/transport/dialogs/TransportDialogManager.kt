@@ -33,6 +33,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.example.athensplus.core.ui.MapStyleUtils
+import com.example.athensplus.core.ui.MapUiUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -227,16 +229,8 @@ class TransportDialogManager(
         mapView?.onCreate(null)
         mapView?.getMapAsync { googleMap ->
             googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-            googleMap.uiSettings.apply {
-                isMapToolbarEnabled = true
-                isCompassEnabled = true
-                isZoomControlsEnabled = true
-                isMyLocationButtonEnabled = true
-                isScrollGesturesEnabled = true
-                isZoomGesturesEnabled = true
-                isTiltGesturesEnabled = true
-                isRotateGesturesEnabled = true
-            }
+            MapStyleUtils.applyAppThemeMapStyle(fragment.requireContext(), googleMap)
+            MapUiUtils.applyDefaultUiSettings(googleMap)
             
             fragment.lifecycleScope.launch {
                 val currentLocation = locationService.getCurrentLocation()

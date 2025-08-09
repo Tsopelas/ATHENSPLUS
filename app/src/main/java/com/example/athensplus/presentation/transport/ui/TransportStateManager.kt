@@ -2,6 +2,7 @@ package com.example.athensplus.presentation.transport.ui
 
 import android.graphics.Color
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.athensplus.R
 import com.example.athensplus.core.utils.StationManager
@@ -32,9 +33,9 @@ class TransportStateManager(
         when {
             selectedStartStation == null -> {
                 startText.text = fragment.getString(R.string.select_station)
-                startText.setTextColor(Color.parseColor("#663399"))
+                startText.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
                 endText.text = fragment.getString(R.string.select_station)
-                endText.setTextColor(Color.parseColor("#663399"))
+                endText.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
                 swapButton.isEnabled = false
                 enterButton.visibility = View.VISIBLE
                 interchangeContainer.visibility = View.GONE
@@ -49,7 +50,7 @@ class TransportStateManager(
                 startText.text = selectedStartStation.nameEnglish
                 startText.setTextColor(startStationColor)
                 endText.text = fragment.getString(R.string.select_station)
-                endText.setTextColor(Color.parseColor("#663399"))
+                endText.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
                 swapButton.isEnabled = false
                 enterButton.visibility = View.VISIBLE
                 interchangeContainer.visibility = View.GONE

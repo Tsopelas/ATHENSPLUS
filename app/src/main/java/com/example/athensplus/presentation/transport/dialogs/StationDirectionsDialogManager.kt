@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -74,7 +75,7 @@ class StationDirectionsDialogManager(
                     val textView = TextView(dialog.context).apply {
                         text = "✕"
                         textSize = 20f
-                        setTextColor(android.graphics.Color.parseColor("#663399"))
+                        setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                         gravity = android.view.Gravity.CENTER
                         setPadding(12, 12, 12, 12)
                         isClickable = true
@@ -128,7 +129,7 @@ class StationDirectionsDialogManager(
                         
                         val loadingText = TextView(dialog.context)
                         loadingText.text = "Finding metro route..."
-                        loadingText.setTextColor(0xFF663399.toInt())
+                        loadingText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                         loadingText.textSize = 16f
                         loadingText.setPadding(24, 32, 24, 32)
                         loadingText.gravity = Gravity.CENTER
@@ -269,7 +270,7 @@ class StationDirectionsDialogManager(
                     } catch (e: Exception) {
                         val errorText = TextView(dialog.context)
                         errorText.text = "Error loading directions: ${e.message}"
-                        errorText.setTextColor(Color.parseColor("#F44336"))
+                        errorText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                         errorText.textSize = 16f
                         errorText.setPadding(24, 32, 24, 32)
                         errorText.gravity = Gravity.CENTER

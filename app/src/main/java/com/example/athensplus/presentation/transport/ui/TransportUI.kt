@@ -76,7 +76,7 @@ class TransportUI(
             }
 
             text.text = title
-            text.setTextColor(Color.parseColor(color))
+            text.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
 
             itemView.setOnClickListener {
                 onLineSelected(title)
@@ -151,7 +151,7 @@ class TransportUI(
             icon.setImageResource(iconRes)
             icon.setColorFilter(Color.parseColor(color))
             text.text = title
-            text.setTextColor(Color.parseColor(color))
+            text.setTextColor(ContextCompat.getColor(fragment.requireContext(), R.color.transport_text_on_tinted))
 
             itemView.setOnClickListener {
                 onModeSelected(title)

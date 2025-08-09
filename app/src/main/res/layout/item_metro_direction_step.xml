@@ -50,7 +50,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="#2D3550" />
+                    android:textColor="?attr/colorOnSurface" />
 
             </LinearLayout>
 
@@ -62,7 +62,7 @@
                 android:layout_marginTop="2dp"
                 android:textSize="14sp"
                 android:fontFamily="@font/montserrat_regular"
-                android:textColor="#2D3550"
+                android:textColor="@color/transport_text_on_tinted"
                 android:lineSpacingExtra="2dp" />
 
             <!-- Step Duration -->
@@ -73,7 +73,7 @@
                 android:layout_marginTop="1dp"
                 android:textSize="12sp"
                 android:fontFamily="@font/montserrat_medium"
-                android:textColor="#B39DDB" />
+                android:textColor="?attr/colorOnSurface" />
 
             <!-- Step Line -->
             <TextView
@@ -83,7 +83,7 @@
                 android:layout_marginTop="1dp"
                 android:textSize="12sp"
                 android:fontFamily="@font/montserrat_medium"
-                android:textColor="#B39DDB"
+                android:textColor="?attr/colorOnSurface"
                 android:visibility="gone" />
 
             <!-- Step Icon -->
@@ -103,7 +103,7 @@
         android:layout_width="2dp"
         android:layout_height="8dp"
         android:layout_gravity="center_horizontal"
-        android:background="#E0E0E0"
+        android:background="?attr/colorOnSurface"
         android:visibility="visible" />
 
 </LinearLayout> 

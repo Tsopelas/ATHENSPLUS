@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material-like dark palette -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_on_surface">#FFFFFF</color>
+    <!-- Solid gray for dark mode chips/search/buttons -->
+    <color name="surface_tint">#333333</color>
+    <!-- Transport text on tinted surfaces: white in dark mode -->
+    <color name="transport_text_on_tinted">#FFFFFF</color>
+    <!-- Bottom navigation inactive color - dark mode -->
+    <color name="bottom_nav_inactive">#757575</color>
+    <!-- Bottom navigation separator line - dark mode -->
+    <color name="bottom_nav_separator">#424242</color>
+</resources>
+
+

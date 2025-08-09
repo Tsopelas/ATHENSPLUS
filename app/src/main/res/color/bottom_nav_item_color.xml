@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Active/selected tab - use app's purple brand color -->
     <item android:color="#663399" android:state_checked="true" />
-    <item android:color="#757575" />
-</selector> 
+    <!-- Inactive tabs - theme-aware gray -->
+    <item android:color="@color/bottom_nav_inactive" />
+</selector>

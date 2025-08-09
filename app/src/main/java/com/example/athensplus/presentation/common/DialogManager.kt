@@ -37,10 +37,13 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
+import com.example.athensplus.core.ui.MapStyleUtils
+import com.example.athensplus.core.ui.MapUiUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import androidx.core.content.ContextCompat
 
 class DialogManager(
     private val fragment: Fragment,
@@ -345,11 +348,11 @@ class DialogManager(
         editFromLocation.setText("")
         editFromLocation.isEnabled = true
         editFromLocation.isFocusableInTouchMode = true
-        editFromLocation.setTextColor(Color.parseColor("#663399"))
+        editFromLocation.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
         editToLocation.setText(destination)
         editToLocation.isEnabled = true
         editToLocation.isFocusableInTouchMode = true
-        editToLocation.setTextColor(Color.parseColor("#663399"))
+        editToLocation.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
 
         val refreshRouteSelection: () -> Unit = {
             val fromText = editFromLocation.text.toString().trim().ifEmpty { fragment.getString(R.string.from_my_current_location) }
@@ -380,7 +383,7 @@ class DialogManager(
             if (toText.isEmpty()) {
                 val errorText = TextView(dialog.context)
                 errorText.text = fragment.getString(R.string.please_enter_destination)
-                errorText.setTextColor(0xFF663399.toInt())
+                errorText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                 errorText.textSize = 16f
                 errorText.setPadding(24, 32, 24, 32)
                 errorText.gravity = Gravity.CENTER
@@ -393,7 +396,7 @@ class DialogManager(
                         
                         val loadingText = TextView(dialog.context)
                         loadingText.text = fragment.getString(R.string.finding_fastest_route)
-                        loadingText.setTextColor(0xFF663399.toInt())
+                        loadingText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                         loadingText.textSize = 16f
                         loadingText.setPadding(24, 32, 24, 32)
                         loadingText.gravity = Gravity.CENTER
@@ -465,7 +468,7 @@ class DialogManager(
                             summaryContainer.visibility = View.GONE
                             val errorText = TextView(dialog.context)
                             errorText.text = fragment.getString(R.string.no_directions_found)
-                            errorText.setTextColor(0xFF663399.toInt())
+                            errorText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                             errorText.textSize = 16f
                             errorText.setPadding(24, 32, 24, 32)
                             errorText.gravity = Gravity.CENTER
@@ -475,7 +478,7 @@ class DialogManager(
                         stepsContainer.removeAllViews()
                         val errorText = TextView(dialog.context)
                         errorText.text = fragment.getString(R.string.error_finding_directions, e.message ?: "Unknown error")
-                        errorText.setTextColor(0xFF663399.toInt())
+                        errorText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                         errorText.textSize = 16f
                         errorText.setPadding(24, 32, 24, 32)
                         errorText.gravity = Gravity.CENTER
@@ -491,7 +494,7 @@ class DialogManager(
             stepsContainer.removeAllViews()
             val loadingText = TextView(dialog.context).apply {
                 text = fragment.getString(R.string.updating_directions)
-                setTextColor(0xFF663399.toInt())
+                setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                 textSize = 16f
                 setPadding(24, 32, 24, 32)
                 gravity = Gravity.CENTER
@@ -597,7 +600,7 @@ class DialogManager(
                     
                     val loadingText = TextView(dialog.context)
                     loadingText.text = "Finding metro route..."
-                    loadingText.setTextColor(0xFF663399.toInt())
+                    loadingText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                     loadingText.textSize = 16f
                     loadingText.setPadding(24, 32, 24, 32)
                     loadingText.gravity = Gravity.CENTER
@@ -727,7 +730,7 @@ class DialogManager(
                     stepsContainer.removeAllViews()
                     val errorText = TextView(dialog.context)
                     errorText.text = "Error generating metro directions: ${e.message}"
-                    errorText.setTextColor(0xFF663399.toInt())
+                    errorText.setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
                     errorText.textSize = 16f
                     errorText.setPadding(24, 32, 24, 32)
                     errorText.gravity = Gravity.CENTER
@@ -773,16 +776,8 @@ class DialogManager(
         mapView?.onCreate(null)
         mapView?.getMapAsync { googleMap ->
             googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-            googleMap.uiSettings.apply {
-                isMapToolbarEnabled = true
-                isCompassEnabled = true
-                isZoomControlsEnabled = true
-                isMyLocationButtonEnabled = true
-                isScrollGesturesEnabled = true
-                isZoomGesturesEnabled = true
-                isTiltGesturesEnabled = true
-                isRotateGesturesEnabled = true
-            }
+            MapStyleUtils.applyAppThemeMapStyle(dialog.context, googleMap)
+            MapUiUtils.applyDefaultUiSettings(googleMap)
             fragment.lifecycleScope.launch {
                 val currentLocation = locationService.getCurrentLocation()
                 val startLocation = currentLocation ?: LatLng(37.9838, 23.7275)
@@ -908,7 +903,7 @@ class DialogManager(
 
         val cellTextView = TextView(dialog.context).apply {
             text = timesText
-            setTextColor(Color.BLACK)
+            setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
             setPadding(16, 16, 16, 16)
             typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
             gravity = Gravity.CENTER
@@ -994,7 +989,7 @@ class DialogManager(
         if (routes.isEmpty()) {
             val noRoutesText = TextView(context).apply {
                 text = fragment.getString(R.string.no_routes_found_destination)
-                setTextColor(Color.parseColor("#F44336"))
+                setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                 textSize = 16f
                 setPadding(24, 32, 24, 32)
                 gravity = Gravity.CENTER
@@ -1023,7 +1018,7 @@ class DialogManager(
             if (routes.size > 1) {
                 val routeHeader = TextView(context).apply {
                     text = fragment.getString(R.string.route_header, index + 1, route.totalDuration)
-                    setTextColor(Color.parseColor("#663399"))
+                    setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                     textSize = 16f
                     setPadding(24, 16, 24, 8)
                     gravity = Gravity.CENTER
@@ -1040,7 +1035,7 @@ class DialogManager(
                         route.frequency?.let { frequency -> append(" • $frequency") }
                         route.crowdLevel?.let { crowd -> append(" • $crowd") }
                     }
-                    setTextColor(Color.parseColor("#666666"))
+                    setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                     textSize = 14f
                     setPadding(32, 4, 24, 8)
                 }
