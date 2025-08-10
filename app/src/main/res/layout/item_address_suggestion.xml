@@ -7,7 +7,10 @@
     android:padding="16dp"
     android:gravity="center_vertical"
     android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="2dp">
+    android:layout_marginVertical="2dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:layout_width="20dp"
@@ -27,7 +30,7 @@
             android:id="@+id/address_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#2D3550"
+            android:textColor="@color/transport_text_on_tinted"
             android:textSize="16sp"
             android:fontFamily="@font/montserrat_medium"
             android:maxLines="1"
@@ -37,7 +40,7 @@
             android:id="@+id/description_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#888888"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:fontFamily="@font/montserrat_regular"
             android:maxLines="1"

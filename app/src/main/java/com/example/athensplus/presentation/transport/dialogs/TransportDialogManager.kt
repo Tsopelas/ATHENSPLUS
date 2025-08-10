@@ -129,6 +129,10 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         dialog.findViewById<TextView>(R.id.station_name_greek).text = fragment.getString(R.string.piraeus_greek)
         dialog.findViewById<TextView>(R.id.station_name_english).text = fragment.getString(R.string.piraeus_english)
@@ -157,6 +161,10 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         mapSelectionDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Set modal behavior: clicking outside closes dialog
+        mapSelectionDialog?.setCancelable(true)
+        mapSelectionDialog?.setCanceledOnTouchOutside(true)
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
@@ -192,6 +200,10 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         mapSelectionDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Set modal behavior: clicking outside closes dialog
+        mapSelectionDialog?.setCancelable(true)
+        mapSelectionDialog?.setCanceledOnTouchOutside(true)
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
@@ -287,6 +299,10 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -352,7 +368,7 @@ class TransportDialogManager(
                 rowData.forEach { cellData ->
                     val cellTextView = TextView(dialog.context).apply {
                         text = cellData
-                        setTextColor(Color.BLACK)
+                        setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                         setPadding(12, 16, 12, 16)
                         typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
                         gravity = Gravity.CENTER
@@ -384,7 +400,7 @@ class TransportDialogManager(
             val waitTimeRow = TableRow(dialog.context)
             val waitTimeCell = TextView(dialog.context).apply {
                 text = waitTime
-                setTextColor(Color.BLACK)
+                setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                 setPadding(12, 16, 12, 16)
                 typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
                 gravity = Gravity.CENTER
@@ -405,6 +421,10 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -462,7 +482,7 @@ class TransportDialogManager(
             val tableRow = TableRow(dialog.context)
         val cellTextView = TextView(dialog.context).apply {
                 text = timeGroup.joinToString("  •  ")
-            setTextColor(Color.BLACK)
+            setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                 setPadding(12, 16, 12, 16)
             typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
             gravity = Gravity.CENTER

@@ -52,6 +52,10 @@ class InfoFragment : Fragment() {
         // Make dialog background transparent to show rounded corners
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
+        
         // Set click listeners for theme cards
         lightCard.setOnClickListener {
             selectTheme(AppTheme.LIGHT, settings, dialog)

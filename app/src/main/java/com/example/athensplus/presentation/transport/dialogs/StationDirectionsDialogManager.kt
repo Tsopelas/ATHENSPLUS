@@ -51,6 +51,7 @@ class StationDirectionsDialogManager(
                 dialogHeight
             )
             
+            // Set modal behavior: clicking outside closes dialog
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
             
@@ -170,9 +171,9 @@ class StationDirectionsDialogManager(
                             duration.text = step.duration
                             
                             if (!step.line.isNullOrEmpty()) {
-                                line.text = step.line
+                                line.text = convertGreekBusLineToEnglish(step.line!!)
                                 line.visibility = View.VISIBLE
-                                line.setTextColor(step.lineColor)
+                                line.setTextColor(android.graphics.Color.WHITE)
                             } else {
                                 line.visibility = View.GONE
                             }
@@ -433,5 +434,20 @@ class StationDirectionsDialogManager(
         }
         
         return Pair(estimatedMinutes, totalStations)
+    }
+    
+    private fun convertGreekBusLineToEnglish(greekLine: String): String {
+        return greekLine
+            .replace("χ", "X", ignoreCase = true)
+            .replace("Χ", "X", ignoreCase = true)
+            .replace("ε", "E", ignoreCase = true)
+            .replace("Ε", "E", ignoreCase = true)
+            .replace("α", "A", ignoreCase = true)
+            .replace("Α", "A", ignoreCase = true)
+            .replace("β", "B", ignoreCase = true)
+            .replace("Β", "B", ignoreCase = true)
+            .replace("μ", "M", ignoreCase = true)
+            .replace("Μ", "M", ignoreCase = true)
+            .trim()
     }
 } 

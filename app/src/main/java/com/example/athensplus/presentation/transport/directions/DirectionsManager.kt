@@ -154,6 +154,10 @@ class DirectionsManager(
         val dialog = Dialog(fragment.requireContext())
         dialog.setContentView(R.layout.dialog_directions)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val displayMetrics = fragment.requireContext().resources.displayMetrics
         val screenHeight = displayMetrics.heightPixels
@@ -176,7 +180,8 @@ class DirectionsManager(
     }
     
     private fun setupDialogContent(editFromLocation: EditText, editToLocation: EditText, destination: String) {
-        editFromLocation.setText(fragment.getString(R.string.from_my_current_location))
+        editFromLocation.hint = fragment.getString(R.string.from_my_current_location)
+        editFromLocation.setText("")
         editToLocation.setText(destination)
     }
     

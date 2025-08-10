@@ -110,7 +110,7 @@ class EnhancedBusTimesService(
         for (i in 0 until stepsArray.length()) {
             val step = stepsArray.getJSONObject(i)
             val travelMode = step.getString("travel_mode")
-            val instruction = step.getString("html_instructions")
+            val rawInstruction = step.getString("html_instructions")
             val duration = step.getJSONObject("duration").getString("text")
             val distance = step.optJSONObject("distance")?.getString("text")
             
@@ -119,15 +119,87 @@ class EnhancedBusTimesService(
             val departureStop = transitDetails?.optJSONObject("departure_stop")?.optString("name") ?: ""
             val arrivalStop = transitDetails?.optJSONObject("arrival_stop")?.optString("name") ?: ""
             val vehicleType = transitDetails?.optJSONObject("line")?.optJSONObject("vehicle")?.optString("type")
+            val numStops = transitDetails?.optInt("num_stops") ?: 0
             
             val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
             val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
             
+            // Enhanced instruction processing
+            val enhancedInstruction = enhanceInstructionFormat(
+                travelMode, rawInstruction, departureStop, arrivalStop, line, vehicleType, numStops, distance
+            )
+            
+            val enhancedSteps = createDetailedSteps(
+                travelMode, enhancedInstruction, rawInstruction, departureStop, arrivalStop, 
+                line, vehicleType, numStops, duration, distance, departureTime, departureTimeValue,
+                totalDuration, totalDistance
+            )
+            
+            steps.addAll(enhancedSteps)
+        }
+        
+        return steps
+    }
+    
+    private fun enhanceInstructionFormat(
+        mode: String,
+        rawInstruction: String,
+        departureStop: String,
+        arrivalStop: String,
+        line: String,
+        vehicleType: String?,
+        numStops: Int,
+        distance: String?
+    ): String {
+        return when (mode) {
+            "WALKING" -> {
+                if (rawInstruction.contains("to", ignoreCase = true)) {
+                    val destination = extractDestinationFromWalkingInstruction(rawInstruction)
+                    "Walk to $destination"
+                } else {
+                    "Walk ($distance)"
+                }
+            }
+            "TRANSIT" -> {
+                val vehicleTypeName = when (vehicleType?.uppercase()) {
+                    "BUS" -> "Bus"
+                    "TRAM" -> "Tram"
+                    "SUBWAY", "HEAVY_RAIL" -> "Metro"
+                    else -> "Bus" // Default to bus for Athens
+                }
+                
+                val direction = extractDirectionFromInstruction(rawInstruction)
+                "$departureStop Station: $vehicleTypeName towards $direction"
+            }
+            else -> rawInstruction
+        }
+    }
+    
+    private fun createDetailedSteps(
+        mode: String,
+        enhancedInstruction: String,
+        rawInstruction: String,
+        departureStop: String,
+        arrivalStop: String,
+        line: String,
+        vehicleType: String?,
+        numStops: Int,
+        duration: String,
+        distance: String?,
+        departureTime: String,
+        departureTimeValue: Long,
+        totalDuration: String,
+        totalDistance: String
+    ): List<TransitStep> {
+        val steps = mutableListOf<TransitStep>()
+        
+        if (mode == "TRANSIT" && numStops > 0 && departureStop.isNotEmpty() && arrivalStop.isNotEmpty()) {
+            // Step 1: Board the vehicle
             steps.add(
                 TransitStep(
-                    mode = travelMode,
-                    instruction = instruction,
-                    duration = duration,
+                    mode = mode,
+                    instruction = enhancedInstruction,
+                    duration = "",
                     line = line,
                     departureStop = departureStop,
                     arrivalStop = arrivalStop,
@@ -139,9 +211,83 @@ class EnhancedBusTimesService(
                     departureTimeValue = departureTimeValue
                 )
             )
+            
+            // Step 2: Pass stations and get off
+            val stationText = if (numStops == 1) "1 station" else "$numStops stations"
+            val passStationsInstruction = "Pass $stationText and get off at $arrivalStop"
+            
+            steps.add(
+                TransitStep(
+                    mode = "TRANSIT_DETAIL",
+                    instruction = passStationsInstruction,
+                    duration = duration,
+                    line = line,
+                    departureStop = departureStop,
+                    arrivalStop = arrivalStop,
+                    walkingDistance = distance,
+                    vehicleType = vehicleType,
+                    totalRouteDuration = totalDuration,
+                    totalRouteDistance = totalDistance,
+                    departureTime = departureTime,
+                    departureTimeValue = departureTimeValue,
+                    numStops = numStops
+                )
+            )
+        } else {
+            // Regular step (walking or transit without detailed info)
+            steps.add(
+                TransitStep(
+                    mode = mode,
+                    instruction = enhancedInstruction,
+                    duration = duration,
+                    line = line,
+                    departureStop = departureStop,
+                    arrivalStop = arrivalStop,
+                    walkingDistance = distance,
+                    vehicleType = vehicleType,
+                    totalRouteDuration = totalDuration,
+                    totalRouteDistance = totalDistance,
+                    departureTime = departureTime,
+                    departureTimeValue = departureTimeValue,
+                    numStops = numStops
+                )
+            )
         }
         
         return steps
+    }
+    
+    private fun extractDestinationFromWalkingInstruction(instruction: String): String {
+        // Remove HTML tags and extract destination
+        val cleanInstruction = instruction.replace("<[^>]*>".toRegex(), "")
+        
+        return when {
+            cleanInstruction.contains("to ", ignoreCase = true) -> {
+                cleanInstruction.substringAfter("to ", "").trim()
+            }
+            cleanInstruction.contains("toward ", ignoreCase = true) -> {
+                cleanInstruction.substringAfter("toward ", "").trim()
+            }
+            else -> cleanInstruction.trim()
+        }
+    }
+    
+    private fun extractDirectionFromInstruction(instruction: String): String {
+        // Remove HTML tags
+        val cleanInstruction = instruction.replace("<[^>]*>".toRegex(), "")
+        
+        return when {
+            cleanInstruction.contains("towards ", ignoreCase = true) -> {
+                cleanInstruction.substringAfter("towards ", "").trim()
+            }
+            cleanInstruction.contains("toward ", ignoreCase = true) -> {
+                cleanInstruction.substringAfter("toward ", "").trim()
+            }
+            cleanInstruction.contains("to ", ignoreCase = true) -> {
+                cleanInstruction.substringAfter("to ", "").trim()
+            }
+            else -> cleanInstruction.trim()
+        }
     }
     
     private fun calculateTimingInfo(steps: List<TransitStep>, currentTime: Long): Triple<Long, Long, Long> {

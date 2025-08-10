@@ -70,15 +70,39 @@
             </LinearLayout>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/step_line"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/transport_text_on_tinted"
-            android:textSize="13sp"
-            android:fontFamily="@font/montserrat_bold"
-            android:layout_marginStart="12dp"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/step_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:fontFamily="@font/montserrat_bold"
+                android:background="@drawable/bus_number_bg"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/expand_arrow"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_dropdown"
+                android:layout_marginStart="8dp"
+                android:padding="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                app:tint="#663399"
+                android:contentDescription="@string/expand_details" />
+
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Expanded Wait Time Information -->
@@ -118,6 +142,73 @@
             android:textColor="#B39DDB"
             android:textSize="12sp"
             android:fontFamily="@font/montserrat_medium" />
+
+    </LinearLayout>
+
+    <!-- Expandable Detailed Content -->
+    <LinearLayout
+        android:id="@+id/expanded_content_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@drawable/route_details_bg"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="4dp"
+        android:padding="12dp">
+
+        <!-- Walking Directions Map Container -->
+        <FrameLayout
+            android:id="@+id/walking_map_container"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:visibility="gone"
+            android:background="@drawable/map_rounded_corners">
+
+            <com.google.android.gms.maps.MapView
+                android:id="@+id/walking_directions_map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </FrameLayout>
+
+        <!-- Transit Detailed Information Container -->
+        <LinearLayout
+            android:id="@+id/transit_details_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/transit_details_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/transit_details_placeholder"
+                android:textColor="@color/transport_text_on_tinted"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_medium" />
+
+        </LinearLayout>
+
+        <!-- General Placeholder for Future Step Types -->
+        <LinearLayout
+            android:id="@+id/general_details_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/general_details_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/step_details_placeholder"
+                android:textColor="@color/transport_text_on_tinted"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_medium" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

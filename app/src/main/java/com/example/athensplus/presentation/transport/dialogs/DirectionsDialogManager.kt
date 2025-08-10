@@ -51,6 +51,7 @@ class DirectionsDialogManager(
                 dialogHeight
             )
 
+            // Set modal behavior: clicking outside closes dialog
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
 
@@ -294,7 +295,7 @@ class DirectionsDialogManager(
             duration.text = step.duration
             
             if (!step.line.isNullOrEmpty()) {
-                line.text = step.line
+                line.text = convertGreekBusLineToEnglish(step.line!!)
                 line.visibility = View.VISIBLE
             } else {
                 line.visibility = View.GONE
@@ -314,5 +315,20 @@ class DirectionsDialogManager(
             step.instruction.contains("Tram") -> R.drawable.ic_tram
             else -> R.drawable.ic_transport
         }
+    }
+    
+    private fun convertGreekBusLineToEnglish(greekLine: String): String {
+        return greekLine
+            .replace("χ", "X", ignoreCase = true)
+            .replace("Χ", "X", ignoreCase = true)
+            .replace("ε", "E", ignoreCase = true)
+            .replace("Ε", "E", ignoreCase = true)
+            .replace("α", "A", ignoreCase = true)
+            .replace("Α", "A", ignoreCase = true)
+            .replace("β", "B", ignoreCase = true)
+            .replace("Β", "B", ignoreCase = true)
+            .replace("μ", "M", ignoreCase = true)
+            .replace("Μ", "M", ignoreCase = true)
+            .trim()
     }
 } 

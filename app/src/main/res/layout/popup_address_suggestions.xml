@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="@android:color/white">
+        app:cardBackgroundColor="@color/surface_tint">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/suggestions_recycler_view"

@@ -186,6 +186,10 @@ class TransportUI(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val greekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val englishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -251,7 +255,7 @@ class TransportUI(
                 rowData.forEach { cellData ->
                     val cellTextView = TextView(dialog.context).apply {
                         text = cellData
-                        setTextColor(Color.BLACK)
+                        setTextColor(ContextCompat.getColor(context, R.color.transport_text_on_tinted))
                         setPadding(12, 16, 12, 16)
                         typeface = ResourcesCompat.getFont(context, R.font.montserrat_regular)
                         gravity = Gravity.CENTER

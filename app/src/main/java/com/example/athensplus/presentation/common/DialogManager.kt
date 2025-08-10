@@ -58,6 +58,10 @@ class DialogManager(
             val dialog = Dialog(fragment.requireContext())
             dialog.setContentView(R.layout.dialog_directions)
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            
+            // Set modal behavior: clicking outside closes dialog
+            dialog.setCancelable(true)
+            dialog.setCanceledOnTouchOutside(true)
 
             val displayMetrics = fragment.requireContext().resources.displayMetrics
             val screenHeight = displayMetrics.heightPixels
@@ -160,6 +164,10 @@ class DialogManager(
             val dialog = Dialog(fragment.requireContext())
             dialog.setContentView(R.layout.dialog_directions)
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            
+            // Set modal behavior: clicking outside closes dialog
+            dialog.setCancelable(true)
+            dialog.setCanceledOnTouchOutside(true)
 
             val displayMetrics = fragment.requireContext().resources.displayMetrics
             val screenHeight = displayMetrics.heightPixels
@@ -221,6 +229,10 @@ class DialogManager(
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            
+            // Set modal behavior: clicking outside closes dialog
+            dialog.setCancelable(true)
+            dialog.setCanceledOnTouchOutside(true)
 
             val mapView = dialog.findViewById<MapView>(R.id.map_selection_view)
             val titleText = dialog.findViewById<TextView>(R.id.map_selection_title)
@@ -308,6 +320,10 @@ class DialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         dialog.findViewById<TextView>(R.id.station_name_greek).text = fragment.getString(R.string.piraeus_greek)
         dialog.findViewById<TextView>(R.id.station_name_english).text = fragment.getString(R.string.piraeus_english)
@@ -425,13 +441,15 @@ class DialogManager(
                                 val waitTimeContainer = stepView.findViewById<LinearLayout>(R.id.wait_time_container)
                                 val waitTimeText = stepView.findViewById<TextView>(R.id.wait_time_text)
                                 val nextDepartureText = stepView.findViewById<TextView>(R.id.next_departure_text)
+                                val expandArrow = stepView.findViewById<ImageView>(R.id.expand_arrow)
+                                val expandedContentContainer = stepView.findViewById<LinearLayout>(R.id.expanded_content_container)
                                 
                                 @Suppress("DEPRECATION")
                                 instruction.text = Html.fromHtml(step.instruction)
                                 duration.text = step.duration
                                 
                                 if (!step.line.isNullOrEmpty()) {
-                                    line.text = step.line
+                                    line.text = convertGreekBusLineToEnglish(step.line!!)
                                     line.visibility = View.VISIBLE
                                 } else {
                                     line.visibility = View.GONE
@@ -446,20 +464,21 @@ class DialogManager(
                                     step.mode == "TRANSIT" && step.vehicleType?.equals("BUS", ignoreCase = true) == true -> R.drawable.ic_transport
                                     step.mode == "TRANSIT" && step.vehicleType?.equals("TRAM", ignoreCase = true) == true -> R.drawable.ic_tram
                                     step.mode == "TRANSIT" && step.vehicleType?.equals("SUBWAY", ignoreCase = true) == true -> R.drawable.ic_metro
-                                    step.mode == "TRANSIT" -> R.drawable.ic_metro
+                                    step.mode == "TRANSIT" -> R.drawable.ic_transport
+                                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("BUS", ignoreCase = true) == true -> R.drawable.ic_transport
+                                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("TRAM", ignoreCase = true) == true -> R.drawable.ic_tram
+                                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("SUBWAY", ignoreCase = true) == true -> R.drawable.ic_metro
+                                    step.mode == "TRANSIT_DETAIL" -> R.drawable.ic_transport
                                     else -> R.drawable.ic_walking
                                 })
 
-                                if (step.mode == "TRANSIT") {
-                                    stepContainer.setOnClickListener {
-                                        if (waitTimeContainer.visibility == View.VISIBLE) {
-                                            waitTimeContainer.visibility = View.GONE
-                                        } else {
-                                            waitTimeContainer.visibility = View.VISIBLE
-                                            showWaitTimeInfo(step, waitTimeText, nextDepartureText)
-                                        }
-                                    }
-                                }
+                                // Setup expandable functionality
+                                val expandableStepManager = ExpandableStepManager(fragment)
+                                expandableStepManager.setupExpandableStep(
+                                    stepContainer, expandArrow, expandedContentContainer, step
+                                )
+
+                                // Wait time information is now handled in the expandable content
                                 
                                 stepsContainer.addView(stepView)
                             }
@@ -842,6 +861,10 @@ class DialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -868,6 +891,10 @@ class DialogManager(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        
+        // Set modal behavior: clicking outside closes dialog
+        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(true)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -1055,7 +1082,7 @@ class DialogManager(
                 duration.text = step.duration
                 
                 if (!step.line.isNullOrEmpty()) {
-                    line.text = step.line
+                    line.text = convertGreekBusLineToEnglish(step.line!!)
                     line.visibility = View.VISIBLE
                 } else {
                     line.visibility = View.GONE
@@ -1070,7 +1097,11 @@ class DialogManager(
                     step.mode == "TRANSIT" && step.vehicleType?.equals("BUS", ignoreCase = true) == true -> R.drawable.ic_transport
                     step.mode == "TRANSIT" && step.vehicleType?.equals("TRAM", ignoreCase = true) == true -> R.drawable.ic_tram
                     step.mode == "TRANSIT" && step.vehicleType?.equals("SUBWAY", ignoreCase = true) == true -> R.drawable.ic_metro
-                    step.mode == "TRANSIT" -> R.drawable.ic_metro
+                    step.mode == "TRANSIT" -> R.drawable.ic_transport
+                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("BUS", ignoreCase = true) == true -> R.drawable.ic_transport
+                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("TRAM", ignoreCase = true) == true -> R.drawable.ic_tram
+                    step.mode == "TRANSIT_DETAIL" && step.vehicleType?.equals("SUBWAY", ignoreCase = true) == true -> R.drawable.ic_metro
+                    step.mode == "TRANSIT_DETAIL" -> R.drawable.ic_transport
                     else -> R.drawable.ic_walking
                 })
                 
@@ -1251,5 +1282,20 @@ class DialogManager(
         }
         
         return Pair(estimatedMinutes, totalStations)
+    }
+    
+    private fun convertGreekBusLineToEnglish(greekLine: String): String {
+        return greekLine
+            .replace("χ", "X", ignoreCase = true)
+            .replace("Χ", "X", ignoreCase = true)
+            .replace("ε", "E", ignoreCase = true)
+            .replace("Ε", "E", ignoreCase = true)
+            .replace("α", "A", ignoreCase = true)
+            .replace("Α", "A", ignoreCase = true)
+            .replace("β", "B", ignoreCase = true)
+            .replace("Β", "B", ignoreCase = true)
+            .replace("μ", "M", ignoreCase = true)
+            .replace("Μ", "M", ignoreCase = true)
+            .trim()
     }
 } 

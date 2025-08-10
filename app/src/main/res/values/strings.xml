@@ -189,6 +189,9 @@
     <string name="location_marker_end_description">End location marker</string>
     <string name="map_search_directions_description">Choose location on map</string>
     <string name="time_icon_description">Travel time icon</string>
+    <string name="expand_details">Expand step details</string>
+    <string name="transit_details_placeholder">Transit details will be shown here</string>
+    <string name="step_details_placeholder">Step details will be shown here</string>
     <string name="autofill_from_location">fromLocation</string>
     <string name="autofill_to_location">toLocation</string>
     

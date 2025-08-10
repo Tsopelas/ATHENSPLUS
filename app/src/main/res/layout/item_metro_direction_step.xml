@@ -80,10 +80,13 @@
                 android:id="@+id/step_line"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="4dp"
                 android:textSize="12sp"
-                android:fontFamily="@font/montserrat_medium"
-                android:textColor="?attr/colorOnSurface"
+                android:fontFamily="@font/montserrat_bold"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/bus_number_bg"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="3dp"
                 android:visibility="gone" />
 
             <!-- Step Icon -->
