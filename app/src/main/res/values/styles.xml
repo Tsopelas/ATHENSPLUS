@@ -6,4 +6,17 @@
         <item name="android:width">0dp</item>
         <item name="android:height">0dp</item>
     </style>
+    
+    <!-- Bottom Navigation Text Appearance -->
+    <style name="BottomNavigationTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    
+    <!-- Bottom Navigation with Montserrat font -->
+    <style name="BottomNavigationStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemTextAppearanceActive">@style/BottomNavigationTextAppearance</item>
+        <item name="itemTextAppearanceInactive">@style/BottomNavigationTextAppearance</item>
+    </style>
 </resources>

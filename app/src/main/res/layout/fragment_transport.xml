@@ -22,8 +22,7 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/athens_plus_logo_description"
             android:scaleType="fitCenter"
-            android:src="@drawable/athensplus"
-            app:tint="@android:color/white" />
+            android:src="@drawable/athensplus" />
     </LinearLayout>
 
     <!-- Search Section -->
