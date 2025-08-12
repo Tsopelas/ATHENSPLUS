@@ -106,16 +106,16 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
         <ImageButton
-            android:id="@+id/button_add_from"
+            android:id="@+id/button_choose_on_map_from"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/modern_button_bg"
-            android:src="@drawable/ic_addstop"
+            android:src="@drawable/ic_mapsearching"
             app:tint="#663399"
             android:scaleType="centerInside"
-            android:padding="2dp"
-            android:contentDescription="@string/add_stop" />
+            android:padding="12dp"
+            android:contentDescription="@string/choose_on_map" />
     </LinearLayout>
 
     <LinearLayout
@@ -179,124 +179,9 @@
             android:contentDescription="@string/update_directions" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/button_choose_on_map_to"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-            android:background="@drawable/modern_button_bg"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:clickable="true"
-            android:focusable="true">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_mapsearching"
-            android:contentDescription="@string/map_search_directions_description"
-                app:tint="#663399"
-                android:scaleType="centerInside"
-                android:layout_marginEnd="8dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/choose_on_map"
-                android:textColor="@color/transport_text_on_tinted"
-                android:textSize="16sp"
-                android:fontFamily="@font/montserrat_semibold" />
 
-    </LinearLayout>
-
-    <!-- Route Selection Buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:baselineAligned="false"
-        android:gravity="center"
-        android:layout_marginBottom="16dp"
-        android:paddingHorizontal="8dp">
-
-        <LinearLayout
-            android:id="@+id/button_fastest"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:background="@drawable/modern_button_bg"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/fastest"
-                android:textSize="14sp"
-                android:textColor="@color/transport_text_on_tinted"
-                android:fontFamily="@font/montserrat_semibold"
-                android:gravity="center" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/button_easiest"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
-            android:background="@drawable/modern_button_bg"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/easiest"
-                android:textSize="14sp"
-                android:textColor="@color/transport_text_on_tinted"
-                android:fontFamily="@font/montserrat_semibold"
-                android:gravity="center" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/button_all_routes"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:background="@drawable/modern_button_bg"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/all"
-                android:textSize="14sp"
-                android:textColor="@color/transport_text_on_tinted"
-                android:fontFamily="@font/montserrat_semibold"
-                android:gravity="center" />
-
-        </LinearLayout>
-
-    </LinearLayout>
 
     <!-- Metro Journey and Steps (Scrollable) -->
     <androidx.core.widget.NestedScrollView

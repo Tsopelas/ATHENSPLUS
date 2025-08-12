@@ -103,12 +103,10 @@ class StationDirectionsDialogManager(
             val summaryText = dialog.findViewById<TextView>(R.id.summary_text)
             val summaryContainer = dialog.findViewById<LinearLayout>(R.id.summary_container)
             val updateButton = dialog.findViewById<ImageButton>(R.id.button_update_to)
-            val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
+            val chooseOnMapButton = dialog.findViewById<ImageButton>(R.id.button_choose_on_map_from)
             val continuousJourneyColumnView = dialog.findViewById<com.example.athensplus.presentation.common.MetroLineJourneyColumnView>(R.id.continuous_journey_column_view)
 
-            val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
-            val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
-            val allRoutesButton = dialog.findViewById<LinearLayout>(R.id.button_all_routes)
+
             
             if (stepsContainer == null || editFromLocation == null || editToLocation == null || summaryText == null || summaryContainer == null || updateButton == null || chooseOnMapButton == null) {
                 Toast.makeText(fragment.context, "Error: Could not find dialog views", Toast.LENGTH_SHORT).show()
@@ -336,17 +334,9 @@ class StationDirectionsDialogManager(
         selectedStartStation: MetroStation?,
         selectedEndStation: MetroStation?
     ) {
-        val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
-        val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
-        val allRoutesButton = dialog.findViewById<LinearLayout>(R.id.button_all_routes)
-        val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
-        val addStopsButton = dialog.findViewById<ImageButton>(R.id.button_add_from)
+        val chooseOnMapButton = dialog.findViewById<ImageButton>(R.id.button_choose_on_map_from)
         
-        fastestButton?.visibility = View.GONE
-        easiestButton?.visibility = View.GONE
-        allRoutesButton?.visibility = View.GONE
         chooseOnMapButton?.visibility = View.GONE
-        addStopsButton?.visibility = View.GONE
     }
     
     private fun setupDialogAutocomplete(editFromLocation: EditText, editToLocation: EditText) {

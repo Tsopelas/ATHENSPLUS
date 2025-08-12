@@ -3,9 +3,11 @@ package com.example.athensplus.presentation.common
 import android.animation.ObjectAnimator
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +16,8 @@ import com.example.athensplus.R
 import com.example.athensplus.core.ui.MapStyleUtils
 import com.example.athensplus.core.ui.MapUiUtils
 import com.example.athensplus.core.utils.WalkingDirectionsService
+import com.example.athensplus.core.utils.StationDeparturesService
+import com.example.athensplus.core.utils.BusDeparture
 import com.example.athensplus.domain.model.TransitStep
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -537,9 +541,141 @@ class ExpandableStepManager(
     private fun setupTransitDetails(transitDetailsContainer: LinearLayout?, step: TransitStep) {
         transitDetailsContainer?.visibility = View.VISIBLE
         
-        // TODO: Implement transit-specific details
-        // This could include:
-
+        // Clear existing content
+        transitDetailsContainer?.removeAllViews()
+        
+        // Add header
+        val headerText = TextView(fragment.requireContext()).apply {
+            text = "Real-time departures from ${step.instruction}"
+            textSize = 16f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTextColor(fragment.requireContext().getColor(R.color.transport_text_on_tinted))
+            setPadding(0, 0, 0, 16)
+        }
+        transitDetailsContainer?.addView(headerText)
+        
+        // Add loading indicator
+        val loadingText = TextView(fragment.requireContext()).apply {
+            text = "Loading departures..."
+            textSize = 14f
+            setTextColor(fragment.requireContext().getColor(R.color.transport_text_on_tinted))
+            setPadding(0, 8, 0, 8)
+        }
+        transitDetailsContainer?.addView(loadingText)
+        
+        // Fetch and display departures
+        fragment.lifecycleScope.launch {
+            try {
+                val apiKey = BuildConfig.GOOGLE_MAPS_API_KEY
+                val departuresService = StationDeparturesService(apiKey)
+                // Use departureStop if available, otherwise fall back to instruction
+                val stationName = step.departureStop?.ifEmpty { step.instruction } ?: step.instruction
+                android.util.Log.d("ExpandableStepManager", "Fetching departures for station: '$stationName' (instruction: '${step.instruction}', departureStop: '${step.departureStop}')")
+                
+                var departures = departuresService.getStationDepartures(stationName)
+                
+                // If no departures found, try with common variations
+                if (departures.isEmpty()) {
+                    val variations = when {
+                        stationName.lowercase().contains("alex") -> listOf("Alexandras", "Alexandras Avenue", "Leoforos Alexandras")
+                        stationName.lowercase().contains("evrou") -> listOf("Evrou 36", "Evrou 36 Station", "Evrou 36, Athens")
+                        stationName.lowercase().contains("syntagma") -> listOf("Syntagma", "Syntagma Square", "Plateia Syntagmatos")
+                        stationName.lowercase().contains("omonia") -> listOf("Omonia", "Omonia Square", "Plateia Omonias")
+                        else -> emptyList()
+                    }
+                    
+                    for (variation in variations) {
+                        if (departures.isEmpty()) {
+                            android.util.Log.d("ExpandableStepManager", "Trying variation: '$variation'")
+                            departures = departuresService.getStationDepartures(variation)
+                        }
+                    }
+                }
+                
+                // Remove loading text
+                transitDetailsContainer?.removeView(loadingText)
+                
+                if (departures.isEmpty()) {
+                    val noDeparturesText = TextView(fragment.requireContext()).apply {
+                        text = "No departures found for $stationName"
+                        textSize = 14f
+                        setTextColor(fragment.requireContext().getColor(R.color.transport_text_on_tinted))
+                        setPadding(0, 8, 0, 8)
+                    }
+                    transitDetailsContainer?.addView(noDeparturesText)
+                    
+                    // Add debug info
+                    val debugText = TextView(fragment.requireContext()).apply {
+                        text = "Debug: Checked station '$stationName'"
+                        textSize = 12f
+                        setTextColor(fragment.requireContext().getColor(android.R.color.darker_gray))
+                        setPadding(0, 4, 0, 8)
+                    }
+                    transitDetailsContainer?.addView(debugText)
+                } else {
+                    // Add each departure
+                    departures.forEach { departure ->
+                        val departureView = createDepartureView(departure)
+                        transitDetailsContainer?.addView(departureView)
+                        
+                        // Add separator line
+                        val separator = View(fragment.requireContext()).apply {
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                1
+                            )
+                            setBackgroundColor(fragment.requireContext().getColor(R.color.bottom_nav_separator))
+                            setPadding(0, 8, 0, 8)
+                        }
+                        transitDetailsContainer?.addView(separator)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ExpandableStepManager", "Error loading departures", e)
+                transitDetailsContainer?.removeView(loadingText)
+                
+                val errorText = TextView(fragment.requireContext()).apply {
+                    text = "Error loading departures"
+                    textSize = 14f
+                    setTextColor(fragment.requireContext().getColor(android.R.color.holo_red_dark))
+                    setPadding(0, 8, 0, 8)
+                }
+                transitDetailsContainer?.addView(errorText)
+            }
+        }
+    }
+    
+    private fun createDepartureView(departure: BusDeparture): View {
+        val inflater = LayoutInflater.from(fragment.requireContext())
+        val view = inflater.inflate(R.layout.item_bus_departure, null)
+        
+        val busCode = view.findViewById<TextView>(R.id.bus_code)
+        val busDirection = view.findViewById<TextView>(R.id.bus_direction)
+        val arrivalTime = view.findViewById<TextView>(R.id.arrival_time)
+        
+        busCode.text = departure.busCode
+        busDirection.text = departure.direction
+        
+        // Format arrival time
+        val timeText = when {
+            departure.arrivalTime == "Now" -> "Now"
+            departure.arrivalTime.endsWith("'") -> departure.arrivalTime
+            else -> "${departure.arrivalTime}'"
+        }
+        arrivalTime.text = timeText
+        
+        // Add express/night line indicators
+        if (departure.isExpress || departure.isNightLine) {
+            val suffix = when {
+                departure.isExpress && departure.isNightLine -> " (EXPRESS-NIGHTLINE)"
+                departure.isExpress -> " (EXPRESS)"
+                departure.isNightLine -> " (NIGHT LINE)"
+                else -> ""
+            }
+            busDirection.text = "${departure.direction}$suffix"
+        }
+        
+        return view
     }
     
     private fun setupGeneralDetails(generalDetailsContainer: LinearLayout?, step: TransitStep) {

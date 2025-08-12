@@ -21,13 +21,15 @@ import com.example.athensplus.BuildConfig
 import com.example.athensplus.R
 import com.example.athensplus.core.utils.BusTimesImprovementService
 import com.example.athensplus.core.utils.FastestRouteService
-import com.example.athensplus.core.utils.RouteSelectionService
-import com.example.athensplus.presentation.common.RouteSelectionUI
+
 import kotlinx.coroutines.launch
 
 class DirectionsDialogManager(
     private val fragment: Fragment,
-    private val locationService: com.example.athensplus.core.utils.LocationService
+    private val locationService: com.example.athensplus.core.utils.LocationService,
+    private val stationManager: com.example.athensplus.core.utils.StationManager,
+    private val timetableService: com.example.athensplus.core.utils.TimetableService,
+    private val addressAutocompleteManager: com.example.athensplus.presentation.common.AddressAutocompleteManager
 ) {
     
     fun showDirectionsDialog(
@@ -144,11 +146,9 @@ class DirectionsDialogManager(
             val summaryText = dialog.findViewById<TextView>(R.id.summary_text)
             val summaryContainer = dialog.findViewById<LinearLayout>(R.id.summary_container)
             val updateButton = dialog.findViewById<ImageButton>(R.id.button_update_to)
-            val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
+            val chooseOnMapButton = dialog.findViewById<ImageButton>(R.id.button_choose_on_map_from)
 
-            val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
-            val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
-            val allRoutesButton = dialog.findViewById<LinearLayout>(R.id.button_all_routes)
+
             
             if (stepsContainer == null || editFromLocation == null || editToLocation == null || summaryText == null || summaryContainer == null || updateButton == null || chooseOnMapButton == null) {
                 Toast.makeText(fragment.context, "Error: Could not find dialog views", Toast.LENGTH_SHORT).show()
@@ -171,15 +171,13 @@ class DirectionsDialogManager(
                 }
             }
             
-            val routeSelectionService = RouteSelectionService(fragment.requireContext(), apiKey, locationService)
-            val routeSelectionUI = RouteSelectionUI(fragment.requireContext(), fragment.lifecycleScope, routeSelectionService)
+
             
             setupTestButton(dialog, stepsContainer, apiKey)
             setupDialogFields(editFromLocation, editToLocation, destination)
             setupDialogButtons(
                 dialog, stepsContainer, summaryContainer, summaryText,
-                editFromLocation, editToLocation, fastestButton, easiestButton, allRoutesButton,
-                routeSelectionUI, apiKey, lastFocusedField, onUpdateDirections, onChooseOnMap, onFetchDirections
+                editFromLocation, editToLocation, apiKey, lastFocusedField, onUpdateDirections, onChooseOnMap, onFetchDirections
             )
 
             dialog.show()
@@ -237,10 +235,6 @@ class DirectionsDialogManager(
         summaryText: TextView,
         editFromLocation: EditText,
         editToLocation: EditText,
-        fastestButton: LinearLayout,
-        easiestButton: LinearLayout,
-        allRoutesButton: LinearLayout,
-        routeSelectionUI: RouteSelectionUI,
         apiKey: String,
         lastFocusedField: EditText?,
         onUpdateDirections: () -> Unit,
@@ -248,14 +242,21 @@ class DirectionsDialogManager(
         onFetchDirections: (String, String) -> Unit
     ) {
         val updateButton = dialog.findViewById<ImageButton>(R.id.button_update_to)
-        val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
+        val chooseOnMapButton = dialog.findViewById<ImageButton>(R.id.button_choose_on_map_from)
         
         updateButton?.setOnClickListener {
             onUpdateDirections()
         }
         
         chooseOnMapButton?.setOnClickListener {
-            onChooseOnMap()
+            val transportDialogManager = com.example.athensplus.presentation.transport.dialogs.TransportDialogManager(
+                fragment, 
+                locationService, 
+                stationManager, 
+                timetableService, 
+                addressAutocompleteManager
+            )
+            transportDialogManager.showMapSelectionDialogForEditText(editToLocation)
         }
         
         editToLocation.setOnEditorActionListener { _, actionId, _ ->
@@ -269,12 +270,7 @@ class DirectionsDialogManager(
             }
         }
         
-        routeSelectionUI.setupRouteSelectionButtons(
-            fastestButton, easiestButton, allRoutesButton, stepsContainer,
-            editFromLocation.text.toString(), editToLocation.text.toString()
-        ) { routes, mode ->
-            // todo
-        }
+
     }
     
     private fun displayRoute(stepsContainer: LinearLayout, steps: List<com.example.athensplus.domain.model.TransitStep>) {

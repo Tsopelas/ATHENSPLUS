@@ -16,14 +16,16 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.athensplus.R
 import com.example.athensplus.core.utils.BusTimesImprovementService
+import com.example.athensplus.core.utils.EnhancedBusTimesService
 import com.example.athensplus.core.utils.FastestRouteService
 import com.example.athensplus.core.utils.LocationService
 import com.example.athensplus.core.utils.RouteSelectionMode
-import com.example.athensplus.core.utils.RouteSelectionService
+
 import android.app.Dialog
 import com.example.athensplus.core.utils.StationManager
 import com.example.athensplus.core.utils.TimetableService
@@ -73,10 +75,8 @@ class DirectionsManager(
             val summaryText = dialog.findViewById<TextView>(R.id.summary_text)
             val summaryContainer = dialog.findViewById<LinearLayout>(R.id.summary_container)
             val updateButton = dialog.findViewById<ImageButton>(R.id.button_update_to)
-            val chooseOnMapButton = dialog.findViewById<LinearLayout>(R.id.button_choose_on_map_to)
-            val fastestButton = dialog.findViewById<LinearLayout>(R.id.button_fastest)
-            val easiestButton = dialog.findViewById<LinearLayout>(R.id.button_easiest)
-            val allRoutesButton = dialog.findViewById<LinearLayout>(R.id.button_all_routes)
+            val chooseOnMapButton = dialog.findViewById<ImageButton>(R.id.button_choose_on_map_from)
+
 
             closeButton?.let { button ->
                 val parent = button.parent as? ViewGroup
@@ -112,31 +112,62 @@ class DirectionsManager(
             setupDialogAutocomplete(editFromLocation, editToLocation)
             
             val apiKey = BuildConfig.GOOGLE_MAPS_API_KEY
-            val routeSelectionService = RouteSelectionService(fragment.requireContext(), apiKey, locationService)
-            val routeSelectionUI = com.example.athensplus.presentation.common.RouteSelectionUI(fragment.requireContext(), fragment.lifecycleScope, routeSelectionService)
             
-            val refreshRouteSelection: () -> Unit = {
+            val fetchFastestRoute: () -> Unit = {
                 val fromText = editFromLocation.text.toString().trim().ifEmpty { fragment.getString(R.string.from_my_current_location) }
                 val toText = editToLocation.text.toString().trim()
                 
-                if (fastestButton != null && easiestButton != null && allRoutesButton != null) {
-                    routeSelectionUI.setupRouteSelectionButtons(
-                        fastestButton,
-                        easiestButton,
-                        allRoutesButton,
-                        stepsContainer,
-                        fromText,
-                        toText
-                    ) { routes, mode ->
-                        displaySelectedRoutes(stepsContainer, routes, mode, dialog.context, summaryContainer, summaryText)
+                // Show loading state
+                stepsContainer.removeAllViews()
+                val loadingText = TextView(dialog.context).apply {
+                    text = "Finding fastest route..."
+                    textSize = 16f
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                    setTextColor(ContextCompat.getColor(dialog.context, R.color.transport_text_on_tinted))
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(0, 32, 0, 32)
+                }
+                stepsContainer.addView(loadingText)
+                
+                // Fetch fastest route automatically
+                fragment.lifecycleScope.launch {
+                    try {
+                        val busTimesImprovementService = BusTimesImprovementService(apiKey, locationService)
+                        val routes = busTimesImprovementService.getIndustryStandardRoutes(fromText, toText, 5)
+                        
+                        if (routes.isNotEmpty()) {
+                            // Take the first route (fastest)
+                            val fastestRoute = routes.first()
+                            displaySelectedRoutes(stepsContainer, listOf(fastestRoute), RouteSelectionMode.FASTEST, dialog.context, summaryContainer, summaryText)
+                        } else {
+                            stepsContainer.removeAllViews()
+                            val noRoutesText = TextView(dialog.context).apply {
+                                text = "No routes found"
+                                textSize = 16f
+                                setTextColor(ContextCompat.getColor(dialog.context, android.R.color.holo_red_dark))
+                                gravity = android.view.Gravity.CENTER
+                                setPadding(0, 32, 0, 32)
+                            }
+                            stepsContainer.addView(noRoutesText)
+                        }
+                    } catch (e: Exception) {
+                        stepsContainer.removeAllViews()
+                        val errorText = TextView(dialog.context).apply {
+                            text = "Error finding route: ${e.message}"
+                            textSize = 16f
+                            setTextColor(ContextCompat.getColor(dialog.context, android.R.color.holo_red_dark))
+                            gravity = android.view.Gravity.CENTER
+                            setPadding(0, 32, 0, 32)
+                        }
+                        stepsContainer.addView(errorText)
                     }
                 }
             }
 
-            refreshRouteSelection()
+            fetchFastestRoute()
 
             updateButton?.setOnClickListener {
-                refreshRouteSelection()
+                fetchFastestRoute()
             }
             
             chooseOnMapButton?.setOnClickListener {
