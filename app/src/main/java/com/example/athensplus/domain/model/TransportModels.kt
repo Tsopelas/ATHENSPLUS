@@ -27,7 +27,9 @@ data class TransitStep(
     val price: String? = null,
     val accessibility: Boolean = false,
     val realTimeUpdates: Boolean = false,
-    val numStops: Int = 0
+    val numStops: Int = 0,
+    val startLocation: LatLng? = null,
+    val endLocation: LatLng? = null
 )
 
 data class MetroStation(

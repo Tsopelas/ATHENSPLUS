@@ -124,6 +124,9 @@ class EnhancedBusTimesService(
             val departureTime = transitDetails?.optJSONObject("departure_time")?.optString("text") ?: ""
             val departureTimeValue = transitDetails?.optJSONObject("departure_time")?.optLong("value") ?: 0L
             
+            // Extract start and end coordinates for walking steps
+            val (startLocation, endLocation) = extractStepCoordinates(step, travelMode)
+            
             // Enhanced instruction processing
             val enhancedInstruction = enhanceInstructionFormat(
                 travelMode, rawInstruction, departureStop, arrivalStop, line, vehicleType, numStops, distance
@@ -132,13 +135,33 @@ class EnhancedBusTimesService(
             val enhancedSteps = createDetailedSteps(
                 travelMode, enhancedInstruction, rawInstruction, departureStop, arrivalStop, 
                 line, vehicleType, numStops, duration, distance, departureTime, departureTimeValue,
-                totalDuration, totalDistance
+                totalDuration, totalDistance, startLocation, endLocation
             )
             
             steps.addAll(enhancedSteps)
         }
         
         return steps
+    }
+    
+    private fun extractStepCoordinates(step: JSONObject, travelMode: String): Pair<com.google.android.gms.maps.model.LatLng?, com.google.android.gms.maps.model.LatLng?> {
+        return try {
+            val startLocation = step.getJSONObject("start_location")
+            val endLocation = step.getJSONObject("end_location")
+            
+            val startLat = startLocation.getDouble("lat")
+            val startLng = startLocation.getDouble("lng")
+            val endLat = endLocation.getDouble("lat")
+            val endLng = endLocation.getDouble("lng")
+            
+            val startCoord = com.google.android.gms.maps.model.LatLng(startLat, startLng)
+            val endCoord = com.google.android.gms.maps.model.LatLng(endLat, endLng)
+            
+            Pair(startCoord, endCoord)
+        } catch (e: Exception) {
+            android.util.Log.w("EnhancedBusTimesService", "Could not extract coordinates for step", e)
+            Pair(null, null)
+        }
     }
     
     private fun enhanceInstructionFormat(
@@ -169,7 +192,7 @@ class EnhancedBusTimesService(
                 }
                 
                 val direction = extractDirectionFromInstruction(rawInstruction)
-                "$departureStop Station: $vehicleTypeName towards $direction"
+                "$departureStop"
             }
             else -> rawInstruction
         }
@@ -189,17 +212,20 @@ class EnhancedBusTimesService(
         departureTime: String,
         departureTimeValue: Long,
         totalDuration: String,
-        totalDistance: String
+        totalDistance: String,
+        startLocation: com.google.android.gms.maps.model.LatLng?,
+        endLocation: com.google.android.gms.maps.model.LatLng?
     ): List<TransitStep> {
         val steps = mutableListOf<TransitStep>()
         
         if (mode == "TRANSIT" && numStops > 0 && departureStop.isNotEmpty() && arrivalStop.isNotEmpty()) {
-            // Step 1: Board the vehicle
+            // Step 1: Board the vehicle - show station name and station direction
+            val stationDirection = getStationDirection(departureStop)
             steps.add(
                 TransitStep(
                     mode = mode,
-                    instruction = enhancedInstruction,
-                    duration = "",
+                    instruction = enhancedInstruction, // This will be just the station name
+                    duration = "towards $stationDirection", // Station direction goes in duration field
                     line = line,
                     departureStop = departureStop,
                     arrivalStop = arrivalStop,
@@ -208,7 +234,9 @@ class EnhancedBusTimesService(
                     totalRouteDuration = totalDuration,
                     totalRouteDistance = totalDistance,
                     departureTime = departureTime,
-                    departureTimeValue = departureTimeValue
+                    departureTimeValue = departureTimeValue,
+                    startLocation = startLocation,
+                    endLocation = endLocation
                 )
             )
             
@@ -230,7 +258,9 @@ class EnhancedBusTimesService(
                     totalRouteDistance = totalDistance,
                     departureTime = departureTime,
                     departureTimeValue = departureTimeValue,
-                    numStops = numStops
+                    numStops = numStops,
+                    startLocation = startLocation,
+                    endLocation = endLocation
                 )
             )
         } else {
@@ -249,7 +279,9 @@ class EnhancedBusTimesService(
                     totalRouteDistance = totalDistance,
                     departureTime = departureTime,
                     departureTimeValue = departureTimeValue,
-                    numStops = numStops
+                    numStops = numStops,
+                    startLocation = startLocation,
+                    endLocation = endLocation
                 )
             )
         }
@@ -310,5 +342,56 @@ class EnhancedBusTimesService(
         }
         
         return Triple(firstDepartureTime, lastArrivalTime, totalWaitTime)
+    }
+    
+    private fun getStationDirection(stationName: String): String {
+        // Find the station in the metro lines and determine its direction
+        val allStations = com.example.athensplus.domain.model.StationData.metroLine1 + 
+                         com.example.athensplus.domain.model.StationData.metroLine2 + 
+                         com.example.athensplus.domain.model.StationData.metroLine3
+        
+        val station = allStations.find { 
+            it.nameEnglish.equals(stationName, ignoreCase = true) || 
+            it.nameGreek.equals(stationName, ignoreCase = true) 
+        }
+        
+        if (station == null) {
+            return "Unknown"
+        }
+        
+        // Determine which line the station is on and its direction
+        return when {
+            com.example.athensplus.domain.model.StationData.metroLine1.contains(station) -> {
+                val stationIndex = com.example.athensplus.domain.model.StationData.metroLine1.indexOf(station)
+                val totalStations = com.example.athensplus.domain.model.StationData.metroLine1.size
+                
+                if (stationIndex < totalStations / 2) {
+                    "Kifisia" // Towards the northern end
+                } else {
+                    "Piraeus" // Towards the southern end
+                }
+            }
+            com.example.athensplus.domain.model.StationData.metroLine2.contains(station) -> {
+                val stationIndex = com.example.athensplus.domain.model.StationData.metroLine2.indexOf(station)
+                val totalStations = com.example.athensplus.domain.model.StationData.metroLine2.size
+                
+                if (stationIndex < totalStations / 2) {
+                    "Anthoupoli" // Towards the northwestern end
+                } else {
+                    "Elliniko" // Towards the southeastern end
+                }
+            }
+            com.example.athensplus.domain.model.StationData.metroLine3.contains(station) -> {
+                val stationIndex = com.example.athensplus.domain.model.StationData.metroLine3.indexOf(station)
+                val totalStations = com.example.athensplus.domain.model.StationData.metroLine3.size
+                
+                if (stationIndex < totalStations / 2) {
+                    "Airport" // Towards the eastern end
+                } else {
+                    "Dimotiko Theatro" // Towards the western end
+                }
+            }
+            else -> "Unknown"
+        }
     }
 } 

@@ -14,6 +14,7 @@ import com.example.athensplus.R
 import com.example.athensplus.core.utils.BusTimesImprovementService
 import com.example.athensplus.core.utils.RouteSelectionMode
 import com.example.athensplus.domain.model.TransitStep
+import com.example.athensplus.presentation.common.ExpandableStepManager
 
 class RouteDisplayManager(
     private val fragment: Fragment
@@ -97,15 +98,27 @@ class RouteDisplayManager(
                 instruction.text = Html.fromHtml(step.instruction)
                 duration.text = step.duration
                 
-                if (!step.line.isNullOrEmpty()) {
-                    line.text = convertGreekBusLineToEnglish(step.line!!)
-                    line.visibility = View.VISIBLE
-                    line.setTextColor(android.graphics.Color.WHITE)
-                } else {
-                    line.visibility = View.GONE
-                }
+                // Hide bus numbers for station cards
+                line.visibility = View.GONE
                 
                 icon.setImageResource(getIconForStep(step))
+                
+                // Get expandable components
+                val stepContainer = stepView.findViewById<LinearLayout>(R.id.step_container)
+                val expandArrow = stepView.findViewById<ImageView>(R.id.expand_arrow)
+                val expandedContentContainer = stepView.findViewById<LinearLayout>(R.id.expanded_content_container)
+                
+                // Setup expandable functionality if components exist
+                android.util.Log.d("RouteDisplayManager", "Setting up expandable for step: ${step.instruction}")
+                if (stepContainer != null && expandArrow != null && expandedContentContainer != null) {
+                    android.util.Log.d("RouteDisplayManager", "Found all expandable components for step: ${step.instruction}")
+                    val expandableStepManager = ExpandableStepManager(fragment)
+                    expandableStepManager.setupExpandableStep(
+                        stepContainer, expandArrow, expandedContentContainer, step
+                    )
+                } else {
+                    android.util.Log.w("RouteDisplayManager", "Missing expandable components! stepContainer: $stepContainer, expandArrow: $expandArrow, expandedContainer: $expandedContentContainer")
+                }
                 
                 if (stepIndex < route.steps.size - 1) {
                     connectingLine.visibility = View.VISIBLE

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Purple background circle -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#663399" />
+            <size android:width="32dp" android:height="32dp" />
+        </shape>
+    </item>
+    <!-- Location pin icon (using a simple dot for now) -->
+    <item android:left="12dp" android:top="8dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFF" />
+            <size android:width="8dp" android:height="8dp" />
+        </shape>
+    </item>
+</layer-list>
+

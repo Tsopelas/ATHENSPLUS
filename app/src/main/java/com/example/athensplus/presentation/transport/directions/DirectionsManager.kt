@@ -168,13 +168,13 @@ class DirectionsManager(
             dialogHeight
         )
 
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
-
-        dialog.window?.setFlags(
-            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-            android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-        )
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
         
         return dialog
     }

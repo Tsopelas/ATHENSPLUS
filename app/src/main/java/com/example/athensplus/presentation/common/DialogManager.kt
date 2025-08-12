@@ -59,9 +59,13 @@ class DialogManager(
             dialog.setContentView(R.layout.dialog_directions)
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
             
-            // Set modal behavior: clicking outside closes dialog
+            // Set modal behavior: clicking outside closes dialog and blocks all background interaction
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
+            
+            // Ensure dialog is truly modal and blocks all touch events outside
+            dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            dialog.window?.setDimAmount(0.3f)
 
             val displayMetrics = fragment.requireContext().resources.displayMetrics
             val screenHeight = displayMetrics.heightPixels
@@ -165,9 +169,13 @@ class DialogManager(
             dialog.setContentView(R.layout.dialog_directions)
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
             
-            // Set modal behavior: clicking outside closes dialog
+            // Set modal behavior: clicking outside closes dialog and blocks all background interaction
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
+            
+            // Ensure dialog is truly modal and blocks all touch events outside
+            dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            dialog.window?.setDimAmount(0.3f)
 
             val displayMetrics = fragment.requireContext().resources.displayMetrics
             val screenHeight = displayMetrics.heightPixels
@@ -230,9 +238,13 @@ class DialogManager(
             )
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
             
-            // Set modal behavior: clicking outside closes dialog
+            // Set modal behavior: clicking outside closes dialog and blocks all background interaction
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
+            
+            // Ensure dialog is truly modal and blocks all touch events outside
+            dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            dialog.window?.setDimAmount(0.3f)
 
             val mapView = dialog.findViewById<MapView>(R.id.map_selection_view)
             val titleText = dialog.findViewById<TextView>(R.id.map_selection_title)
@@ -321,9 +333,13 @@ class DialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         dialog.findViewById<TextView>(R.id.station_name_greek).text = fragment.getString(R.string.piraeus_greek)
         dialog.findViewById<TextView>(R.id.station_name_english).text = fragment.getString(R.string.piraeus_english)
@@ -448,12 +464,8 @@ class DialogManager(
                                 instruction.text = Html.fromHtml(step.instruction)
                                 duration.text = step.duration
                                 
-                                if (!step.line.isNullOrEmpty()) {
-                                    line.text = convertGreekBusLineToEnglish(step.line!!)
-                                    line.visibility = View.VISIBLE
-                                } else {
-                                    line.visibility = View.GONE
-                                }
+                                // Hide bus numbers for station cards
+                                line.visibility = View.GONE
                                 
                                 if (index == bestAlternative.steps.size - 1) {
                                     connectingLine.visibility = View.GONE
@@ -862,9 +874,13 @@ class DialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -892,9 +908,13 @@ class DialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -1081,12 +1101,8 @@ class DialogManager(
                 instruction.text = Html.fromHtml(step.instruction)
                 duration.text = step.duration
                 
-                if (!step.line.isNullOrEmpty()) {
-                    line.text = convertGreekBusLineToEnglish(step.line!!)
-                    line.visibility = View.VISIBLE
-                } else {
-                    line.visibility = View.GONE
-                }
+                // Hide bus numbers for station cards
+                line.visibility = View.GONE
                 
                 if (stepIndex == route.steps.size - 1) {
                     connectingLine.visibility = View.GONE

@@ -51,19 +51,18 @@ class DirectionsDialogManager(
                 dialogHeight
             )
 
-            // Set modal behavior: clicking outside closes dialog
+            // Set modal behavior: clicking outside closes dialog and blocks all background interaction
             dialog.setCancelable(true)
             dialog.setCanceledOnTouchOutside(true)
+            
+            // Ensure dialog is truly modal and blocks all touch events outside
+            dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            dialog.window?.setDimAmount(0.3f)
 
             dialog.setOnCancelListener {
                 android.util.Log.d("DirectionsDialogManager", "Dialog cancelled!")
                 onClose()
             }
-
-            dialog.window?.setFlags(
-                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            )
             
             val stepsContainer = dialog.findViewById<LinearLayout>(R.id.steps_container)
             val closeButton = dialog.findViewById<ImageButton?>(R.id.close_button)
@@ -294,12 +293,8 @@ class DirectionsDialogManager(
             instruction.text = Html.fromHtml(step.instruction)
             duration.text = step.duration
             
-            if (!step.line.isNullOrEmpty()) {
-                line.text = convertGreekBusLineToEnglish(step.line!!)
-                line.visibility = View.VISIBLE
-            } else {
-                line.visibility = View.GONE
-            }
+            // Hide bus numbers for station cards
+            line.visibility = View.GONE
             
             icon.setImageResource(getIconForStep(step))
             

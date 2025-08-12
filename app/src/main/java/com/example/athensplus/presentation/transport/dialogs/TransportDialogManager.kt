@@ -130,9 +130,13 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         dialog.findViewById<TextView>(R.id.station_name_greek).text = fragment.getString(R.string.piraeus_greek)
         dialog.findViewById<TextView>(R.id.station_name_english).text = fragment.getString(R.string.piraeus_english)
@@ -162,9 +166,13 @@ class TransportDialogManager(
         )
         mapSelectionDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         mapSelectionDialog?.setCancelable(true)
         mapSelectionDialog?.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        mapSelectionDialog?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        mapSelectionDialog?.window?.setDimAmount(0.3f)
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
@@ -201,9 +209,13 @@ class TransportDialogManager(
         )
         mapSelectionDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         mapSelectionDialog?.setCancelable(true)
         mapSelectionDialog?.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        mapSelectionDialog?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        mapSelectionDialog?.window?.setDimAmount(0.3f)
 
         val mapView = mapSelectionDialog?.findViewById<MapView>(R.id.map_selection_view)
         val titleText = mapSelectionDialog?.findViewById<TextView>(R.id.map_selection_title)
@@ -300,9 +312,13 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
@@ -422,9 +438,13 @@ class TransportDialogManager(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         val stationGreekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val stationEnglishNameText = dialog.findViewById<TextView>(R.id.station_name_english)

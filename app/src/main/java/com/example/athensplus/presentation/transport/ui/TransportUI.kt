@@ -187,9 +187,13 @@ class TransportUI(
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         
-        // Set modal behavior: clicking outside closes dialog
+        // Set modal behavior: clicking outside closes dialog and blocks all background interaction
         dialog.setCancelable(true)
         dialog.setCanceledOnTouchOutside(true)
+        
+        // Ensure dialog is truly modal and blocks all touch events outside
+        dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window?.setDimAmount(0.3f)
 
         val greekNameText = dialog.findViewById<TextView>(R.id.station_name_greek)
         val englishNameText = dialog.findViewById<TextView>(R.id.station_name_english)
