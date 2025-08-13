@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_transport"
         android:title="@string/nav_transport" />
     <item
+        android:id="@+id/navigation_routes"
+        android:icon="@drawable/ic_saves"
+        android:title="@string/nav_routes" />
+    <item
         android:id="@+id/navigation_explore"
         android:icon="@drawable/bottombar_explore"
         android:title="@string/nav_explore" />

@@ -4,6 +4,7 @@
     
     <!-- Bottom Navigation -->
     <string name="nav_transport">Transport</string>
+    <string name="nav_routes">Routes</string>
     <string name="nav_explore">Explore</string>
     <string name="nav_info">Info</string>
     

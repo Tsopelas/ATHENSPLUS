@@ -18,5 +18,6 @@
     <style name="BottomNavigationStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemTextAppearanceActive">@style/BottomNavigationTextAppearance</item>
         <item name="itemTextAppearanceInactive">@style/BottomNavigationTextAppearance</item>
+        <item name="labelVisibilityMode">labeled</item>
     </style>
 </resources>

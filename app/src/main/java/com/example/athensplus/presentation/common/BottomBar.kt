@@ -6,6 +6,7 @@ import com.example.athensplus.R
 import com.example.athensplus.presentation.info.InfoFragment
 import com.example.athensplus.presentation.transport.TransportFragment
 import com.example.athensplus.presentation.explore.ExploreFragment
+import com.example.athensplus.presentation.routes.RoutesFragment
 import android.view.animation.AccelerateInterpolator
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ class BottomBar(
         val initialFragment = when (initialTabId) {
             R.id.navigation_info -> InfoFragment()
             R.id.navigation_explore -> ExploreFragment()
+            R.id.navigation_routes -> RoutesFragment()
             else -> TransportFragment()
         }
         
@@ -43,6 +45,10 @@ class BottomBar(
             when (item.itemId) {
                 R.id.navigation_transport -> {
                     animateTabTransition(TransportFragment())
+                    true
+                }
+                R.id.navigation_routes -> {
+                    animateTabTransition(RoutesFragment())
                     true
                 }
                 R.id.navigation_explore -> {
