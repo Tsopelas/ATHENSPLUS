@@ -89,6 +89,9 @@
     <string name="language">Language</string>
     <string name="notifications">Notifications</string>
     <string name="log_out">Log Out</string>
+    <string name="save_route">Save Route</string>
+    <string name="toggle_favorite">Toggle Favorite</string>
+    <string name="delete_route">Delete Route</string>
     
     <!-- Transport Fragment -->
 

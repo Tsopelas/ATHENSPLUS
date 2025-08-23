@@ -31,8 +31,7 @@ class WalkingDirectionsService(private val apiKey: String) {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Getting walking route from '$startAddress' to '$endAddress'")
-                
-                // Get coordinates for start and end addresses
+
                 val startCoords = geocodeAddress(startAddress)
                 val endCoords = geocodeAddress(endAddress)
                 
@@ -42,8 +41,7 @@ class WalkingDirectionsService(private val apiKey: String) {
                 }
                 
                 Log.d(TAG, "Successfully geocoded addresses: start=(${startCoords.latitude}, ${startCoords.longitude}), end=(${endCoords.latitude}, ${endCoords.longitude})")
-                
-                // Get walking directions
+
                 getWalkingDirections(startCoords, endCoords)
                 
             } catch (e: Exception) {
@@ -57,8 +55,7 @@ class WalkingDirectionsService(private val apiKey: String) {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Getting walking route from coordinates (${startLocation.latitude}, ${startLocation.longitude}) to (${endLocation.latitude}, ${endLocation.longitude})")
-                
-                // Get walking directions directly using coordinates
+
                 getWalkingDirections(startLocation, endLocation)
                 
             } catch (e: Exception) {

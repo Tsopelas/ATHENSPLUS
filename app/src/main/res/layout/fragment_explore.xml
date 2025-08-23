@@ -7,8 +7,8 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingBottom="16dp"
-    android:paddingTop="64dp"
-    android:clipToPadding="false">
+    android:clipToPadding="false"
+    android:fitsSystemWindows="true">
 
     <!-- Search Bar -->
     <androidx.cardview.widget.CardView

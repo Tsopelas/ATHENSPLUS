@@ -24,6 +24,7 @@ import com.example.athensplus.core.utils.BusTimesImprovementService
 import com.example.athensplus.core.utils.EnhancedBusTimesService
 import com.example.athensplus.core.utils.FastestRouteService
 import com.example.athensplus.core.utils.LocationService
+import com.example.athensplus.core.utils.SavedRoutesService
 import com.example.athensplus.core.utils.RouteSelectionMode
 
 import android.app.Dialog
@@ -138,7 +139,9 @@ class DirectionsManager(
                         if (routes.isNotEmpty()) {
                             // Take the first route (fastest)
                             val fastestRoute = routes.first()
-                            displaySelectedRoutes(stepsContainer, listOf(fastestRoute), RouteSelectionMode.FASTEST, dialog.context, summaryContainer, summaryText)
+                            val fromText = editFromLocation.text.toString().trim().ifEmpty { fragment.getString(R.string.from_my_current_location) }
+                            val toText = editToLocation.text.toString().trim()
+                            displaySelectedRoutes(stepsContainer, listOf(fastestRoute), RouteSelectionMode.FASTEST, dialog.context, summaryContainer, summaryText, fromText, toText)
                         } else {
                             stepsContainer.removeAllViews()
                             val noRoutesText = TextView(dialog.context).apply {
@@ -226,9 +229,17 @@ class DirectionsManager(
         mode: RouteSelectionMode,
         context: Context,
         summaryContainer: LinearLayout,
-        summaryText: TextView
+        summaryText: TextView,
+        fromLocation: String = "",
+        toLocation: String = ""
     ) {
-        routeDisplayManager.displaySelectedRoutes(stepsContainer, routes, mode, context, summaryContainer, summaryText)
+        val savedRoutesService = SavedRoutesService(context)
+        routeDisplayManager.displaySelectedRoutes(
+            stepsContainer, routes, mode, context, summaryContainer, summaryText,
+            fromLocation, toLocation
+        ) { from, to, summary, duration, steps ->
+            savedRoutesService.saveRoute(from, to, summary, duration, steps)
+        }
     }
     
     private fun showStationDirectionsDialog(startStation: MetroStation, endStation: MetroStation) {

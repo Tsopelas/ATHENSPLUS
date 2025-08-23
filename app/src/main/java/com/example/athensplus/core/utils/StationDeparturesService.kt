@@ -26,10 +26,8 @@ class StationDeparturesService(private val apiKey: String) {
         try {
             val encodedStation = URLEncoder.encode(stationName, "UTF-8")
             val currentTime = System.currentTimeMillis() / 1000
-            
-            // Comprehensive list of destinations to ensure we capture all bus routes
+
             val destinations = listOf(
-                // Major Athens destinations
                 "Syntagma", "Omonia", "Monastiraki", "Thiseio", "Acropolis", "Panepistimio", "Akadimia",
                 "Kifisia", "Marousi", "Chalandri", "Agia Paraskevi", "Holargos", "Nomismatokopio",
                 "Piraeus", "Keratsini", "Nikea", "Perama", "Drapetsona", "Korydallos",
@@ -120,19 +118,16 @@ class StationDeparturesService(private val apiKey: String) {
                                                 val arrivalStopName = arrivalStop?.optString("name", "") ?: destination
                                                 val departureTimeText = departureTime.optString("text", "")
                                                 val departureTimeValue = departureTime.optLong("value", 0L)
-                                                
-                                                // Improved station name matching - check if the station name contains our target
+
                                                 val isCorrectStation = isStationMatch(departureStopName, stationName) && busCode.isNotEmpty()
                                                 
                                                 if (isCorrectStation) {
                                                     val direction = "$departureStopName-$arrivalStopName"
-                                                    
-                                                    // Calculate arrival time in minutes
+
                                                     val currentTimeSeconds = System.currentTimeMillis() / 1000
                                                     val timeUntilDeparture = (departureTimeValue - currentTimeSeconds) / 60
                                                     val arrivalTimeText = if (timeUntilDeparture > 0) "${timeUntilDeparture.toInt()}'" else "Now"
-                                                    
-                                                    // Check if it's express or night line
+
                                                     val isExpress = lineName.contains("EXPRESS", ignoreCase = true)
                                                     val isNightLine = lineName.contains("NIGHT", ignoreCase = true)
                                                     
@@ -144,8 +139,7 @@ class StationDeparturesService(private val apiKey: String) {
                                                         isExpress = isExpress,
                                                         isNightLine = isNightLine
                                                     )
-                                                    
-                                                    // Avoid duplicates based on bus code and direction
+
                                                     if (!allDepartures.any { it.busCode == busCode && it.direction == direction }) {
                                                         allDepartures.add(departure)
                                                         Log.d(TAG, "Found departure: $busCode from $departureStopName to $arrivalStopName in ${arrivalTimeText}")
@@ -165,8 +159,7 @@ class StationDeparturesService(private val apiKey: String) {
                     // Continue with next destination
                 }
             }
-            
-            // Group by bus code and keep only the fastest arrival for each unique bus
+
             val uniqueDepartures = allDepartures
                 .groupBy { it.busCode }
                 .mapValues { (_, departures) ->
@@ -192,17 +185,14 @@ class StationDeparturesService(private val apiKey: String) {
     }
     
     private fun isStationMatch(apiStationName: String, targetStationName: String): Boolean {
-        // Normalize station names for better matching
+
         val normalizedApi = apiStationName.lowercase().trim()
         val normalizedTarget = targetStationName.lowercase().trim()
-        
-        // Direct match
+
         if (normalizedApi == normalizedTarget) return true
-        
-        // Contains match
+
         if (normalizedApi.contains(normalizedTarget) || normalizedTarget.contains(normalizedApi)) return true
-        
-        // Handle common variations
+
         val variations = mapOf(
             "alex" to listOf("alexandras", "alexandras avenue", "leoforos alexandras"),
             "evrou 36" to listOf("evrou 36", "evrou 36 station", "evrou 36, athens"),
@@ -212,8 +202,7 @@ class StationDeparturesService(private val apiKey: String) {
             "piraeus" to listOf("piraeus", "piraeus port", "piraeus, athens"),
             "airport" to listOf("airport", "athens airport", "eleftherios venizelos airport")
         )
-        
-        // Check if either name is a variation of the other
+
         for ((key, values) in variations) {
             if (normalizedTarget.contains(key) || key.contains(normalizedTarget)) {
                 if (values.any { normalizedApi.contains(it) || it.contains(normalizedApi) }) {

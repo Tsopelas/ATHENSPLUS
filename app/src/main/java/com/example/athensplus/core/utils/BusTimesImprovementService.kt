@@ -121,7 +121,6 @@ class BusTimesImprovementService(
         }
     }
 
-    // note: i should probably remove this and passthrough to api for the info
     private fun calculateFrequency(alternative: EnhancedBusTimesService.RouteAlternative): String {
         val busLines = alternative.busLines
         val highFrequencyLines = listOf("E14", "E15", "E16", "E17", "E18", "E19", "E20")

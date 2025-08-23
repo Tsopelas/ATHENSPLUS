@@ -2,6 +2,9 @@ package com.example.athensplus
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.athensplus.databinding.ActivityMainBinding
 import com.example.athensplus.presentation.common.BottomBar
 import com.example.athensplus.core.ui.ThemeUtils
@@ -16,6 +19,9 @@ class MainActivity : AppCompatActivity() {
         ThemeUtils.applyTheme(SettingsService(this).getTheme())
         super.onCreate(savedInstanceState)
 
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

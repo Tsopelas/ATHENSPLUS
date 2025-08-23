@@ -49,7 +49,7 @@ class LocationService(private val fragment: Fragment) {
         try {
             if (locationPermissionGranted) {
                 googleMap.isMyLocationEnabled = true
-                googleMap.uiSettings.isMyLocationButtonEnabled = false // Using custom location button
+                googleMap.uiSettings.isMyLocationButtonEnabled = false
             } else {
                 googleMap.isMyLocationEnabled = false
                 googleMap.uiSettings.isMyLocationButtonEnabled = false

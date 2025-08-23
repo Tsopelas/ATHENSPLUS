@@ -208,7 +208,6 @@ class AddressAutocompleteService(
                 for (i in 1 until parts.size) {
                     val part = parts[i]
                     if (part.contains(Regex("\\d+")) && streetName == null) {
-                        // This looks like a street with number
                         val streetMatch = Regex("(.+?)\\s+(\\d+)").find(part)
                         if (streetMatch != null) {
                             streetName = streetMatch.groupValues[1].trim()

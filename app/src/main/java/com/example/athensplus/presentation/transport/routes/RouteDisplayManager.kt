@@ -15,6 +15,8 @@ import com.example.athensplus.core.utils.BusTimesImprovementService
 import com.example.athensplus.core.utils.RouteSelectionMode
 import com.example.athensplus.domain.model.TransitStep
 import com.example.athensplus.presentation.common.ExpandableStepManager
+import com.example.athensplus.core.utils.SavedRoutesService
+import android.widget.ImageButton
 
 class RouteDisplayManager(
     private val fragment: Fragment
@@ -26,7 +28,10 @@ class RouteDisplayManager(
         mode: RouteSelectionMode,
         context: Context,
         summaryContainer: LinearLayout,
-        summaryText: TextView
+        summaryText: TextView,
+        fromLocation: String = "",
+        toLocation: String = "",
+        onSaveRoute: ((String, String, String, String, List<TransitStep>) -> Unit)? = null
     ) {
         stepsContainer.removeAllViews()
         
@@ -54,6 +59,66 @@ class RouteDisplayManager(
             
             summaryText.text = summaryInfo
             summaryContainer.visibility = View.VISIBLE
+            
+            val saveButton = summaryContainer.findViewById<ImageButton>(R.id.save_route_button)
+            saveButton?.let { button ->
+                val savedRoutesService = SavedRoutesService(context)
+                
+                fun updateButtonState() {
+                    val isCurrentlySaved = savedRoutesService.isRouteSaved(fromLocation, toLocation)
+                    button.setImageResource(if (isCurrentlySaved) R.drawable.ic_saves2 else R.drawable.ic_saves)
+                }
+                
+                updateButtonState()
+                
+                button.setOnClickListener {
+                    val isCurrentlySaved = savedRoutesService.isRouteSaved(fromLocation, toLocation)
+                    
+                    if (isCurrentlySaved) {
+                        val existingRoute = savedRoutesService.getAllRoutes().find { 
+                            it.fromLocation.equals(fromLocation, ignoreCase = true) && 
+                            it.toLocation.equals(toLocation, ignoreCase = true) 
+                        }
+                        existingRoute?.let { route ->
+                            savedRoutesService.deleteRoute(route.id)
+                            button.setImageResource(R.drawable.ic_saves)
+                        }
+                    } else {
+                        val routeSteps = route.steps.map { step ->
+                            TransitStep(
+                                mode = step.mode,
+                                instruction = step.instruction,
+                                duration = step.duration,
+                                line = step.line,
+                                departureStop = step.departureStop,
+                                arrivalStop = step.arrivalStop,
+                                nextArrival = step.nextArrival,
+                                walkingDistance = step.walkingDistance,
+                                vehicleType = step.vehicleType,
+                                totalRouteDuration = step.totalRouteDuration,
+                                totalRouteDistance = step.totalRouteDistance,
+                                departureTime = step.departureTime,
+                                departureTimeValue = step.departureTimeValue,
+                                waitTime = step.waitTime,
+                                waitTimeMinutes = step.waitTimeMinutes,
+                                alternativeLines = step.alternativeLines,
+                                frequency = step.frequency,
+                                reliability = step.reliability,
+                                crowdLevel = step.crowdLevel,
+                                price = step.price,
+                                accessibility = step.accessibility,
+                                realTimeUpdates = step.realTimeUpdates,
+                                numStops = step.numStops,
+                                startLocation = step.startLocation,
+                                endLocation = step.endLocation
+                            )
+                        }
+                        
+                        onSaveRoute?.invoke(fromLocation, toLocation, summaryInfo, route.totalDuration, routeSteps)
+                        button.setImageResource(R.drawable.ic_saves2)
+                    }
+                }
+            }
         } else {
             summaryContainer.visibility = View.GONE
         }

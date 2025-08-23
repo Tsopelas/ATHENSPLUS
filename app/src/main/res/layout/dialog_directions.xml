@@ -247,6 +247,20 @@
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center_vertical" />
 
+        <ImageButton
+            android:id="@+id/save_route_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/modern_button_bg"
+            android:src="@drawable/ic_saves"
+            app:tint="#663399"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/save_route"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="12dp" />
+
     </LinearLayout>
 
     <!-- Test Button for API Testing -->

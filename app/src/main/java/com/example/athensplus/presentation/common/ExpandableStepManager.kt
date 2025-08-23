@@ -42,15 +42,12 @@ class ExpandableStepManager(
         isExpanded: Boolean = false
     ) {
         android.util.Log.d("ExpandableStepManager", "Setting up expandable step for: ${step.instruction} (mode: ${step.mode})")
-        
-        // Set initial state
+
         expandedContentContainer.visibility = if (isExpanded) View.VISIBLE else View.GONE
         updateArrowRotation(expandArrow, isExpanded)
-        
-        // Ensure the arrow is visible
+
         expandArrow.visibility = View.VISIBLE
-        
-        // Make both the step container and arrow clickable for better UX
+
         stepContainer.isClickable = true
         stepContainer.isFocusable = true
         expandArrow.isClickable = true
@@ -67,8 +64,7 @@ class ExpandableStepManager(
                 setupExpandedContent(expandedContentContainer, step)
             }
         }
-        
-        // Set click listener on both the step container and arrow
+
         stepContainer.setOnClickListener(clickListener)
         expandArrow.setOnClickListener(clickListener)
     }
@@ -81,8 +77,7 @@ class ExpandableStepManager(
         if (shouldExpand) {
             expandedContentContainer.visibility = View.VISIBLE
             animateArrowRotation(expandArrow, 180f)
-            
-            // Also show the separator line
+
             val separatorLine = expandedContentContainer.parent?.let { parent ->
                 (parent as? android.view.ViewGroup)?.findViewById<View>(com.example.athensplus.R.id.separator_line)
             }
@@ -90,8 +85,7 @@ class ExpandableStepManager(
         } else {
             expandedContentContainer.visibility = View.GONE
             animateArrowRotation(expandArrow, 0f)
-            
-            // Also hide the separator line
+
             val separatorLine = expandedContentContainer.parent?.let { parent ->
                 (parent as? android.view.ViewGroup)?.findViewById<View>(com.example.athensplus.R.id.separator_line)
             }
@@ -114,8 +108,7 @@ class ExpandableStepManager(
         val walkingMapContainer = expandedContentContainer.findViewById<View>(R.id.walking_map_container)
         val transitDetailsContainer = expandedContentContainer.findViewById<LinearLayout>(R.id.transit_details_container)
         val generalDetailsContainer = expandedContentContainer.findViewById<LinearLayout>(R.id.general_details_container)
-        
-        // Hide all containers first
+
         walkingMapContainer?.visibility = View.GONE
         transitDetailsContainer?.visibility = View.GONE
         generalDetailsContainer?.visibility = View.GONE
@@ -152,7 +145,6 @@ class ExpandableStepManager(
         mapView.onCreate(null)
         mapView.getMapAsync { googleMap ->
             try {
-                // Configure UI settings for walking directions map
                 googleMap.uiSettings.apply {
                     isZoomControlsEnabled = false
                     isCompassEnabled = false
@@ -160,16 +152,13 @@ class ExpandableStepManager(
                     isMapToolbarEnabled = false
                     isIndoorLevelPickerEnabled = false
                 }
-                
-                // Always use normal map type to ensure road names and all features are visible
+
                 googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-                
-                // Detect current theme and apply appropriate styling
+
                 val currentNightMode = fragment.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
                 val isDarkMode = currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
                 
                 if (isDarkMode) {
-                    // Dark mode: Apply custom dark theme that preserves road names
                     try {
                         val style = com.google.android.gms.maps.model.MapStyleOptions.loadRawResourceStyle(
                             fragment.requireContext(), 
@@ -178,20 +167,15 @@ class ExpandableStepManager(
                         googleMap.setMapStyle(style)
                     } catch (e: Exception) {
                         android.util.Log.e("ExpandableStepManager", "Error applying walking directions map style", e)
-                        // Fallback to default dark theme
                         MapStyleUtils.applyAppThemeMapStyle(fragment.requireContext(), googleMap)
                     }
                 }
-                // Light mode: No additional styling needed, uses default light Google Maps
-                
-                // Check if we have actual coordinates for the walking step
+
                 if (step.startLocation != null && step.endLocation != null) {
                     android.util.Log.d("ExpandableStepManager", "Using actual coordinates for walking route: (${step.startLocation.latitude}, ${step.startLocation.longitude}) to (${step.endLocation.latitude}, ${step.endLocation.longitude})")
-                    
-                    // Create walking directions service
+
                     val walkingService = WalkingDirectionsService(BuildConfig.GOOGLE_MAPS_API_KEY)
-                    
-                    // Get and display walking route using coordinates
+
                     fragment.lifecycleScope.launch {
                         try {
                             android.util.Log.d("ExpandableStepManager", "Calling walking directions API with coordinates...")
@@ -212,19 +196,16 @@ class ExpandableStepManager(
                         }
                     }
                 } else {
-                                    // Fallback to address-based geocoding if coordinates are not available
+
                 val (startLocation, endLocation) = extractWalkingLocations(step)
-                
-                // Add "Athens, Greece" to make addresses more specific
+
                 val startLocationWithCity = if (startLocation != "Current Location") "$startLocation, Athens, Greece" else "Athens, Greece"
                 val endLocationWithCity = "$endLocation, Athens, Greece"
                 
                 android.util.Log.d("ExpandableStepManager", "Using address geocoding for walking route from '$startLocationWithCity' to '$endLocationWithCity'")
-                
-                // Create walking directions service
+
                 val walkingService = WalkingDirectionsService(BuildConfig.GOOGLE_MAPS_API_KEY)
-                
-                // Get and display walking route
+
                 fragment.lifecycleScope.launch {
                     try {
                         android.util.Log.d("ExpandableStepManager", "Calling walking directions API with addresses...")
@@ -232,11 +213,9 @@ class ExpandableStepManager(
                             
                             if (walkingRoute != null) {
                                 android.util.Log.d("ExpandableStepManager", "Walking route received successfully: ${walkingRoute.polylinePoints.size} points")
-                                // Draw the route on the map
                                 drawWalkingRoute(googleMap, walkingRoute, step)
                             } else {
                                 android.util.Log.w("ExpandableStepManager", "Walking route API returned null, using fallback")
-                                // Fallback to showing basic markers if route fetch fails
                                 showFallbackMap(googleMap, startLocationWithCity, endLocationWithCity)
                             }
                         } catch (e: Exception) {
@@ -255,25 +234,22 @@ class ExpandableStepManager(
     }
     
     private fun extractWalkingLocations(step: TransitStep): Pair<String, String> {
-        // For walking steps, we need to extract the actual locations from the instruction
         val instruction = step.instruction.lowercase()
         
         return when {
-            // If it's a "Walk to X" instruction, extract the destination
             instruction.contains("walk to ") -> {
                 val destination = instruction.substringAfter("walk to ").trim()
-                // Try to get the actual departure stop name if available
                 val startLocation = step.departureStop ?: "Current Location"
                 Pair(startLocation, destination)
             }
-            // If it's a "Walk (X km)" instruction, we need to infer from context
+
             instruction.contains("walk (") -> {
                 // Try to get actual stop names from the step
                 val startLocation = step.departureStop ?: "Current Location"
                 val endLocation = step.arrivalStop ?: "Next Stop"
                 Pair(startLocation, endLocation)
             }
-            // Default fallback
+
             else -> {
                 val startLocation = step.departureStop ?: "Current Location"
                 val endLocation = step.arrivalStop ?: "Destination"
@@ -284,18 +260,17 @@ class ExpandableStepManager(
     
     private fun drawWalkingRoute(googleMap: GoogleMap, route: com.example.athensplus.core.utils.WalkingRoute, step: TransitStep? = null) {
         try {
-            // Add custom start marker (station-style with purple outline)
+
             googleMap.addMarker(
                 MarkerOptions()
                     .position(route.startLocation)
                     .title("Start")
                     .snippet("Walking starts here")
-                    .icon(createStationStyleMarker(0xFF663399.toInt())) // Purple color matching route line
-                    .anchor(0.5f, 0.5f) // Center the marker on the position
-                    .zIndex(2f) // Ensure markers appear above the route line
+                    .icon(createStationStyleMarker(0xFF663399.toInt()))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(2f)
             )
-            
-            // Add custom end marker based on destination type
+
             val endMarkerIcon = getEndMarkerIcon(route.endLocation, step)
             googleMap.addMarker(
                 MarkerOptions()
@@ -303,29 +278,26 @@ class ExpandableStepManager(
                     .title("Destination") 
                     .snippet("${route.duration} • ${route.distance}")
                     .icon(endMarkerIcon)
-                    .anchor(0.5f, 0.5f) // Center the marker on the position
-                    .zIndex(2f) // Ensure markers appear above the route line
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(2f)
             )
-            
-            // Draw the walking route polyline
+
             if (route.polylinePoints.isNotEmpty()) {
                 val polylineOptions = PolylineOptions()
                     .addAll(route.polylinePoints)
-                    .color(0xFF663399.toInt()) // Purple color matching app theme
-                    .width(12f) // Thicker line for better visibility
+                    .color(0xFF663399.toInt())
+                    .width(12f)
                     .geodesic(true)
                 
                 googleMap.addPolyline(polylineOptions)
-                
-                // Adjust camera to show the entire route
+
                 val boundsBuilder = LatLngBounds.Builder()
                 route.polylinePoints.forEach { boundsBuilder.include(it) }
                 val bounds = boundsBuilder.build()
                 
-                val padding = 80 // pixels
+                val padding = 80
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
             } else {
-                // If no polyline points, just focus on start/end
                 val boundsBuilder = LatLngBounds.Builder()
                 boundsBuilder.include(route.startLocation)
                 boundsBuilder.include(route.endLocation)
@@ -343,25 +315,23 @@ class ExpandableStepManager(
     }
     
     private fun showFallbackMap(googleMap: GoogleMap, startLocation: String, endLocation: String) {
-        // Try to geocode the locations for better fallback
+
         fragment.lifecycleScope.launch {
             try {
                 val walkingService = WalkingDirectionsService(BuildConfig.GOOGLE_MAPS_API_KEY)
-                
-                // Try to geocode the addresses
+
                 val startCoords = walkingService.geocodeAddress(startLocation)
                 val endCoords = walkingService.geocodeAddress(endLocation)
                 
                 if (startCoords != null && endCoords != null) {
-                    // Show markers at the geocoded locations
                     googleMap.addMarker(
                         MarkerOptions()
                             .position(startCoords)
                             .title("Start")
                             .snippet(startLocation)
-                            .icon(createStationStyleMarker(0xFF663399.toInt())) // Purple color matching route line
-                            .anchor(0.5f, 0.5f) // Center the marker on the position
-                            .zIndex(2f) // Ensure markers appear above the route line
+                            .icon(createStationStyleMarker(0xFF663399.toInt()))
+                            .anchor(0.5f, 0.5f)
+                            .zIndex(2f)
                     )
                     
                     googleMap.addMarker(
@@ -369,12 +339,11 @@ class ExpandableStepManager(
                             .position(endCoords)
                             .title("Destination")
                             .snippet(endLocation)
-                            .icon(createStationStyleMarker(0xFF663399.toInt())) // Purple color matching route line
-                            .anchor(0.5f, 0.5f) // Center the marker on the position
-                            .zIndex(2f) // Ensure markers appear above the route line
+                            .icon(createStationStyleMarker(0xFF663399.toInt()))
+                            .anchor(0.5f, 0.5f)
+                            .zIndex(2f)
                     )
-                    
-                    // Adjust camera to show both points
+
                     val boundsBuilder = LatLngBounds.Builder()
                     boundsBuilder.include(startCoords)
                     boundsBuilder.include(endCoords)
@@ -385,7 +354,6 @@ class ExpandableStepManager(
                     
                     android.util.Log.d("ExpandableStepManager", "Fallback map: Showing geocoded locations")
                 } else {
-                    // Ultimate fallback to Athens center
                     val athensCenter = LatLng(37.9838, 23.7275)
                     googleMap.addMarker(
                         MarkerOptions()
@@ -399,8 +367,7 @@ class ExpandableStepManager(
                 }
             } catch (e: Exception) {
                 android.util.Log.e("ExpandableStepManager", "Error in fallback map", e)
-                
-                // Ultimate fallback to Athens center
+
                 val athensCenter = LatLng(37.9838, 23.7275)
                 googleMap.addMarker(
                     MarkerOptions()
@@ -425,7 +392,7 @@ class ExpandableStepManager(
                 .anchor(0.5f, 0.5f) // Center the marker on the position
                 .zIndex(2f) // Ensure markers appear above the route line
         )
-        
+
         // Add custom end marker based on destination type
         val endMarkerIcon = getEndMarkerIcon(endLocation, null)
         googleMap.addMarker(
@@ -435,7 +402,7 @@ class ExpandableStepManager(
                 .snippet("Walking ends here")
                 .icon(endMarkerIcon)
         )
-        
+
         // Adjust camera to show both points
         val boundsBuilder = LatLngBounds.Builder()
         boundsBuilder.include(startLocation)
